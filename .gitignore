@@ -61,24 +61,13 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
-# next.js build output
-.next
 
 # OS X temporary files
 .DS_Store
 
-# Rush temporary files
-common/deploy/
-common/temp/
-common/autoinstallers/*/.npmrc
-**/.rush/temp/
 
 # Heft
 .heft
 
 #
 *.d/
-
-# chrome install used by puppeteer
-puppeteer@13.0.0.local-chromium/
-
