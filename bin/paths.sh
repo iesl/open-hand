@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # SCRIPT=$(readlink -f "$0")
 # BIN=$(dirname "$SCRIPT")
@@ -18,6 +18,8 @@ PYENVS="$ROOTD/.local/envs"
 
 S2AND_ENV="$PYENVS/s2and-env"
 
+S2AND="$ROOTD/ext/S2AND"
+
 export CWD
 export TMPD
 export ROOTD
@@ -30,6 +32,7 @@ export PYTHOND
 export PYENVS
 
 export S2AND_ENV
+export S2AND
 
 echo "Directory Structure"
 echo "  ROOTD         $ROOTD"
@@ -43,3 +46,4 @@ echo "  PYTHOND       $PYTHOND"
 echo "  PYENVS        $PYENVS"
 echo
 echo "  S2AND_ENV     $S2AND_ENV"
+echo "  S2AND         $S2AND"

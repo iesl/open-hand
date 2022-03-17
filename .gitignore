@@ -12,7 +12,6 @@ yarn-error.log*
 dist/*
 dist/
 
-
 # Runtime data
 *.pid
 *.seed
@@ -61,10 +60,8 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
-
 # OS X temporary files
 .DS_Store
-
 
 # Heft
 .heft
