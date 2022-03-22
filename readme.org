@@ -19,3 +19,29 @@ hongbin_zhang hong_bo_zhang hongjun_zhang hong_mei_zhang hongwei_zhang hong_xin_
 
 - replace the agglomerative clustering of matrix
 - use tilde ids from openreview as ground truth??
+
+
+*** Author names in Openreview notes:
+There will need to be some fancy name parsing/normalization for f/m/l/initials structure
+example:
+  authors:
+     'Gaurang Prasad'
+     'Kishan M. M.'
+  authorids:
+    '~Gaurang_Prasad1'
+    'https://dblp.org/search/pid/api?q=author:Kishan_M._M.:'
+
+There could also be some transliteration issues wrt spelling of some names (e.g., Zeng vs. Zheng)
+
+
+*** Might we ever want to use Tilde IDs in openreview like emails? to improve coref as opposed to checking it?
+
+* Author Coreference Processing
+** Batch Processing
+*** Fetch notes into 'shadow' Mongo db
+*** Run normalizer over all shadowed notes, update db w/ cached normalized data
+*** For each canopy, load all papers/signatures from mongo w/given canopy
+**** run predict() over single block
+**** Write results back to cluster collection (cluster_id, signature_id)
+
+** Incremental Processing
