@@ -1,4 +1,3 @@
-
 from pprint import pprint
 from lib.mongoconn import dbconn
 from lib.log import logger
@@ -9,11 +8,8 @@ import sys
 from lib.s2and_data import preloads, setup_s2and_env
 
 
-
-def choose_canopy() -> str:
-    cstrs = get_canopy_strs()
-    return cstrs[0]
-
+def choose_canopy(n: int) -> str:
+    return get_canopy_strs()[n]
 
 
 def init_canopy_data(mentions: CanopyMentions):
@@ -30,19 +26,19 @@ def init_canopy_data(mentions: CanopyMentions):
     return anddata
 
 
-if __name__ == "__main__":
+def run(canopy_num: int):
     logger.info("Starting...")
 
-    # canopy = choose_canopy()
-    # logger.info(f"Clustering canopy '{canopy}'")
-    # mentions = get_canopy(canopy)
-    # pcount = len(mentions.papers)
-    # scount = len(mentions.signatures)
-    # logger.info(f'Mention counts papers={pcount} / signatures={scount}')
-    # andData = init_canopy_data(mentions)
+    canopy = choose_canopy(canopy_num)
+    logger.info(f"Clustering canopy '{canopy}'")
+    mentions = get_canopy(canopy)
+    pcount = len(mentions.papers)
+    scount = len(mentions.signatures)
+    logger.info(f"Mention counts papers={pcount} / signatures={scount}")
+    andData = init_canopy_data(mentions)
 
-    # model = load_model()
-    # clusters, dist_mats = model.predict(andData.get_blocks(), andData)
-    # pprint(clusters)
-    # pprint(dist_mats)
+    model = load_model()
+    clusters, dist_mats = model.predict(andData.get_blocks(), andData)
+    pprint(clusters)
+    pprint(dist_mats)
     sys.exit()

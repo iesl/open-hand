@@ -4,12 +4,10 @@ import pickle
 import os
 from .log import logger
 
-from s2and.consts import (
-    PROJECT_ROOT_PATH,
-    NAME_COUNTS_PATH
-)
+from s2and.consts import PROJECT_ROOT_PATH, NAME_COUNTS_PATH
 
 from s2and.file_cache import cached_path
+
 
 def setup_s2and_env():
     print("In setup_s2and_env()")
@@ -31,11 +29,10 @@ class DataPreloads(NamedTuple):
     name_tuples: Set[Tuple[str, str]]
     name_counts: Dict[str, Dict[str, int]]
 
+
 def preloads() -> DataPreloads:
-    return DataPreloads(
-        name_counts=load_name_counts(),
-        name_tuples=load_name_tuples()
-    )
+    return DataPreloads(name_counts=load_name_counts(), name_tuples=load_name_tuples())
+
 
 def load_name_tuples() -> Set[Tuple[str, str]]:
     logger.info("Loading named Tuples")
@@ -47,7 +44,9 @@ def load_name_tuples() -> Set[Tuple[str, str]]:
 
     return name_tuples
 
+
 debug = True
+
 
 def load_name_counts() -> Dict[str, Dict[str, int]]:
     logger.info("Loading name counts")
@@ -72,21 +71,19 @@ def load_name_counts() -> Dict[str, Dict[str, int]]:
 
     return counts
 
+
 ## TODO can this be run once for papers, then again for signatures, or does the normalization need the paper data
 ##    Is it embarrassingly parallel for both papers/signatures?
-def normalize_signatures_papers(
-        signature_dict,
-        paper_dict,
-        pre: DataPreloads):
+def normalize_signatures_papers(signature_dict, paper_dict, pre: DataPreloads):
     ##
     anddata = ANDData(
         signatures=signature_dict,
         papers=paper_dict,
-        name='unnamed',
-        mode="inference", # or 'train'
-        block_type="s2", # or 'original', refers to canopy method 's2' => author_info.block is canopy
+        name="unnamed",
+        mode="inference",  # or 'train'
+        block_type="s2",  # or 'original', refers to canopy method 's2' => author_info.block is canopy
         name_tuples=pre.name_tuples,
-        load_name_counts=pre.name_counts
+        load_name_counts=pre.name_counts,
     )
 
     return (anddata.signatures, anddata.papers)

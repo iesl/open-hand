@@ -1,9 +1,8 @@
 import pprint
-import argparse
 
 from typing import Dict, List, NamedTuple
 
-from mongoconn import dbconn
+from .mongoconn import dbconn
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -78,34 +77,3 @@ def show_canopy(offset: int):
     pp.pprint(sig_canopy)
     pp.pprint(f"Papers for {canopystr}")
     pp.pprint(paper_canopy)
-
-
-def argparser():
-    parser = argparse.ArgumentParser(description=f"{__file__}")
-    parser.add_argument("--list", "--ls", action="store_true", help="list canopies")
-    parser.add_argument("--show", action="store_true", help="show canopies")
-    parser.add_argument(
-        "--offset",
-        "-n",
-        action="store",
-        type=int,
-        default=0,
-        help="canopy index/offset",
-    )
-    args = parser.parse_args()
-    return args
-
-
-import sys
-
-if __name__ == "__main__":
-    args = argparser()
-    print(args)
-    n = args.offset
-    if args.list:
-        list_canopies(n)
-
-    elif args.show:
-        show_canopy(n)
-
-    sys.exit()
