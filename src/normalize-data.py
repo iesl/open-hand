@@ -5,8 +5,8 @@ from s2and.data import Signature, Paper
 pp = pprint.PrettyPrinter(indent=2)
 from lib.log import logger
 
-from mongoconn import dbconn
-from lib.s2and_data import load_name_tuples, normalize_signatures_papers, load_name_counts
+from lib.mongoconn import dbconn
+from lib.s2and_data import load_name_tuples, normalize_signatures_papers, load_name_counts, preloads
 
 def normalize():
     paper_coll = dbconn.paper
@@ -32,16 +32,14 @@ def normalize():
 
     signature_dict = dict(signatures)
 
-    logger.info("Loading named Tuples")
-    name_tuples = load_name_tuples()
-    logger.info(" ... loaded named Tuples")
-
-    logger.info("Loading name counts")
-    name_counts = load_name_counts();
-    logger.info(" ... loaded name counts")
+    data_preloads = preloads()
 
     logger.info("Normalizing data")
-    normal_sigs, normal_papers = normalize_signatures_papers(signature_dict, paper_dict, name_tuples, name_counts)
+    normal_sigs, normal_papers = normalize_signatures_papers(
+        signature_dict,
+        paper_dict,
+        data_preloads
+    )
 
     # pp.pprint("Papers==============================================")
     keys = list(normal_papers)

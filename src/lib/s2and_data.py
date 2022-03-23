@@ -1,7 +1,8 @@
-from typing import Dict, Set, Tuple
+from typing import Dict, Set, Tuple, NamedTuple
 from s2and.data import ANDData
 import pickle
 import os
+from .log import logger
 
 from s2and.consts import (
     PROJECT_ROOT_PATH,
@@ -10,7 +11,34 @@ from s2and.consts import (
 
 from s2and.file_cache import cached_path
 
+def setup_s2and_env():
+    print("In setup_s2and_env()")
+
+    s2and_cache = os.environ.get("S2AND_CACHE")
+    project_root_path = os.environ.get("PROJECT_ROOT_PATH")
+    print(f"s2and_cache: {s2and_cache}")
+    print(f"project_root_path: {project_root_path}")
+
+    try:
+        ROOT_PATH = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))
+    except NameError:
+        ROOT_PATH = os.path.abspath(os.path.join(os.getcwd()))
+
+    os.environ["S2AND_CACHE"] = os.path.join(ROOT_PATH, ".feature_cache.d")
+
+
+class DataPreloads(NamedTuple):
+    name_tuples: Set[Tuple[str, str]]
+    name_counts: Dict[str, Dict[str, int]]
+
+def preloads() -> DataPreloads:
+    return DataPreloads(
+        name_counts=load_name_counts(),
+        name_tuples=load_name_tuples()
+    )
+
 def load_name_tuples() -> Set[Tuple[str, str]]:
+    logger.info("Loading named Tuples")
     name_tuples: Set[Tuple[str, str]] = set()
     with open(os.path.join(PROJECT_ROOT_PATH, "data", "s2and_name_tuples.txt"), "r") as f2:  # type: ignore
         for line in f2:
@@ -22,6 +50,7 @@ def load_name_tuples() -> Set[Tuple[str, str]]:
 debug = True
 
 def load_name_counts() -> Dict[str, Dict[str, int]]:
+    logger.info("Loading name counts")
     counts = {}
     if debug:
         counts["first_dict"] = {}
@@ -48,8 +77,7 @@ def load_name_counts() -> Dict[str, Dict[str, int]]:
 def normalize_signatures_papers(
         signature_dict,
         paper_dict,
-        name_tuples: Set[Tuple[str, str]],
-        name_counts: Dict[str, Dict[str, int]]):
+        pre: DataPreloads):
     ##
     anddata = ANDData(
         signatures=signature_dict,
@@ -57,8 +85,8 @@ def normalize_signatures_papers(
         name='unnamed',
         mode="inference", # or 'train'
         block_type="s2", # or 'original', refers to canopy method 's2' => author_info.block is canopy
-        name_tuples=name_tuples,
-        load_name_counts=name_counts
+        name_tuples=pre.name_tuples,
+        load_name_counts=pre.name_counts
     )
 
     return (anddata.signatures, anddata.papers)
