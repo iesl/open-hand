@@ -1,3 +1,7 @@
-#!/usr/bin/env bash
+#!/bin/env python
+import sys
+sys.path.append('./src')
 
-python src/cli.py "$@"
+from cli.cli import go
+
+sys.exit(go())

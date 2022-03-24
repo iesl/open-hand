@@ -40,6 +40,9 @@ https://github.com/allenai/specter
 
 *** Authors that have published in multiple languages are split one per language
 
+*** monitor to record times for canopy processing
+*** Need to get better sense of timing for N2 canopy processing times
+
 * Author Coreference Processing
 ** Batch Processing
 *** Fetch notes into 'shadow' Mongo db
