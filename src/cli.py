@@ -23,9 +23,9 @@ def predict(offset: int):
         raise click.BadParameter("no offset provided")
 
     click.echo(f"offset={offset}")
-    import predict
+    from lib.predict import run
 
-    predict.run(offset)
+    run(offset)
 
 
 @cli.group()
@@ -45,11 +45,18 @@ def canopyshow(index: int):
 @canopy.command("list")
 @click.argument("index", type=int)
 def canopylist(index: int):
-    """Show a canopy"""
-    from lib.canopies import list_canopies
+    """list canopies w/mention counts, starting at index"""
+    from lib.canopies import list_canopies_counted
 
-    list_canopies(index)
+    list_canopies_counted(index)
 
+@cli.group()
+def cluster():
+    """Cluster related commands"""
+
+@cluster.command('show')
+def cluster_show():
+    """Show the results of cluster prediction"""
 
 if __name__ == "__main__":
     sys.exit(cli())

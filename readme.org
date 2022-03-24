@@ -35,6 +35,10 @@ There could also be some transliteration issues wrt spelling of some names (e.g.
 
 
 *** Might we ever want to use Tilde IDs in openreview like emails? to improve coref as opposed to checking it?
+*** User of pretrained SPECTER models from AllenAI ??
+https://github.com/allenai/specter
+
+*** Authors that have published in multiple languages are split one per language
 
 * Author Coreference Processing
 ** Batch Processing
