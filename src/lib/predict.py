@@ -41,7 +41,6 @@ def yellowB(s: str) -> str:
 
 
 def run(canopy_num: int):
-
     canopy = choose_canopy(canopy_num)
     logger.info(f"Clustering canopy '{canopy}'")
     mentions = get_canopy(canopy)
@@ -66,7 +65,7 @@ def run(canopy_num: int):
         ]
 
         author_variations = [v for v in author_variations0 if len(v) > 0]
-        names = '\n'.join([yellowB(n) for n in set(author_variations)])
+        names = "\n".join([yellowB(n) for n in set(author_variations)])
 
         click.echo(f">> Cluster {i}")
         click.echo(f"Name Variations ")

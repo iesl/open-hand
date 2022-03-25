@@ -3,7 +3,9 @@
 # SCRIPT=$(readlink -f "$0")
 # BIN=$(dirname "$SCRIPT")
 
-export PYVER="3.7.13"
+# export PYVER="3.7.13" ## <- original version used by S2AND
+# export PYVER="3.10.4" ## <- incompatible with numpy
+export PYVER="3.9.11"
 
 CWD=$(pwd)
 ROOTD=$(pwd)
@@ -16,7 +18,8 @@ PYSRC_URL="http://www.python.org/ftp/python/$PYVER/$PYTGZ"
 PYTHOND="$ROOTD/.local/python"
 PYENVS="$ROOTD/.local/envs"
 
-S2AND_ENV="$PYENVS/s2and-env"
+# S2AND_ENV="$PYENVS/s2and-env"
+S2AND_ENV="$PYENVS/open-and-env"
 
 S2AND="$ROOTD/ext/S2AND"
 

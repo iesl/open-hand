@@ -6,6 +6,10 @@ BIN=$(dirname "$SCRIPT")
 # shellcheck source=./paths.sh
 . "$BIN/paths.sh"
 
+rm -r "$S2AND_ENV"
+"$PYTHOND/bin/pip3" install --ignore-installed virtualenv
+"$PYTHOND/bin/virtualenv" "$S2AND_ENV"
+
 active_python=$(which python)
 env_python="$S2AND_ENV/bin/python"
 
@@ -25,3 +29,7 @@ cd "$S2AND" || exit
 
 pip3 install -r requirements.in
 pip3 install -e .
+
+cd "$ROOTD" || exit
+
+pip3 install -r requirements.in

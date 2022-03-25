@@ -43,26 +43,24 @@ def run(ctx: Context, task, *args, **kwds):
         task(*args, **kwds)
 
 
-
 from celery import current_app as current_celery_app
 from celery import Task
 
 current_app: Union[Celery, None] = None
 
+
 def make_celery() -> Celery:
     global current_app
 
     if current_app is None:
-        current_app  = Celery(
+        current_app = Celery(
             "cli",
-            broker = "redis://localhost:6379/0",
-            backend = "redis://localhost:6379/0",
-            # include=('cli')
+            broker="redis://localhost:6379/0",
+            backend="redis://localhost:6379/0",
         )
         # current_app.Task = MTask
 
     return current_app
-
 
 
 class MTask(Task):

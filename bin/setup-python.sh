@@ -46,7 +46,7 @@ make install
 
 cd "$ROOTD" || exit
 
-"$PYTHOND/bin/pip3" install virtualenv
+"$PYTHOND/bin/pip3" install --ignore-installed virtualenv
 "$PYTHOND/bin/virtualenv" "$S2AND_ENV"
 
 echo "Done. Activate with 'source $S2AND_ENV/bin/activate'"

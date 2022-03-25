@@ -1,16 +1,13 @@
 import click
-import sys
 
 from click.core import Context
-# import cserver as cs
-# import utils
-# import commands as cmd
 
 from . import cserver as cs
 from . import utils
 from . import commands as cmd
 
 app = utils.make_celery()
+
 
 @click.group()
 @click.option("--remote", "-x", is_flag=True, help="run command on server")
@@ -20,44 +17,21 @@ def cli(ctx: Context, remote: bool):
     ctx.obj["remote"] = remote
 
 
-#####
-#####
-#####
-#####
-
-
 @cli.command()
+@click.pass_context
 @click.argument("x", type=int)
 @click.argument("y", type=int)
-@click.pass_context
-def add(ctx: Context, x: int, y: int):
-    """(add) Testing out celery/click combo"""
-    res = x + y
-    print(res)
-    return res
-
-
-@cli.command()
-@click.argument("x", type=int)
-@click.argument("y", type=int)
-@click.pass_context
 def mul(ctx: Context, x: int, y: int):
     """(mul) Testing out celery/click combo"""
     return utils.run(ctx, cs.mul, x, y)
     # return cmd.mul(x, y)
 
 
-#####
-#####
-#####
-
-
 @cli.command()
-def normalize():
+@click.pass_context
+def normalize(ctx: Context):
     """Normalize all un-normalized papers/signatures"""
-    from lib.normalizer import normalize
-
-    normalize()
+    return utils.run(ctx, cs.normalize)
 
 
 @cli.command()
@@ -105,8 +79,10 @@ def cluster():
 def cluster_show():
     """Show the results of cluster prediction"""
 
+
 def go():
     cli(obj={})
+
 
 if __name__ == "__main__":
     go()
