@@ -13,7 +13,7 @@ from . import commands as cmd
 app = utils.make_celery()
 
 @click.group()
-@click.option("--remote", "-x", is_flag=True)
+@click.option("--remote", "-x", is_flag=True, help="run command on server")
 @click.pass_context
 def cli(ctx: Context, remote: bool):
     ctx.ensure_object(dict)
