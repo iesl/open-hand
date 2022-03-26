@@ -1,0 +1,93 @@
+
+.btn-lightlink,
+.btn-lightlink:active,
+.btn-lightlink[disabled] {
+    padding: 0;
+    margin: 3px;
+    border: 0;
+    background-color: transparent;
+    background-image: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+.btn-lightlink {
+    border-color: transparent;
+    cursor: pointer;
+    color: #999999;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    font-size: small;
+}
+.btn-lightlink:hover {
+  color: #333333;
+  //text-decoration: underline;
+  background-color: transparent;
+}
+.btn-lightlink[disabled]:hover {
+  color: #333333;
+  text-decoration: none;
+}
+
+.btn-darklink,
+.btn-darklink:active,
+.btn-darklink[disabled] {
+    background-color: transparent;
+    background-image: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+}
+.btn-darklink {
+    border-color: transparent;
+    background-color: white;
+    cursor: pointer;
+    color: black;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border: 0;
+    border-radius: 0;
+    text-decoration: underline;
+    font-size: 80%;
+}
+.btn-darklink:hover {
+    color: #6600ff;
+    background-color: blue;
+}
+.btn-darklink[disabled]:hover {
+    color: #333333;
+    text-decoration: none;
+}
+
+
+.btn-icon,
+.btn-icon:active,
+.btn-icon[disabled] {
+    display: inline-block;
+    width: 30px;
+    padding: 3px 2px;
+    color: rgba(255, 255, 255, 1);
+    font-size: 1.3em;
+    font-weight: normal;
+    text-align: center;
+    text-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 4px 4px 4px 4px;
+    background-color: transparent;
+    background-image: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+}
+
+.btn-icon:hover {
+    color: #333333;
+    //text-decoration: underline;
+    background-color: transparent;
+}
+.btn-icon[disabled]:hover {
+    color: #333333;
+    text-decoration: none;
+}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Canopy '{{ canopy }}''{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  {% for sigid, sig  in signatures.items() %}
+    {% set paper = papers[sig.paper_id] %}
+    <div class="blue">{{ paper.title }} ({{ paper.year }})</div>
+    <div>
+      &nbsp;&nbsp;
+      {% for author in paper.authors %}
+        {% if author.position == sig.author_info.position %}
+          <span style="color: blue">{{author.author_name}},</span>
+        {% else %}
+          <span style="color: gray">{{author.author_name}},</span>
+        {% endif %}
+        &nbsp;
+      {% endfor %}
+    </div>
+  {% endfor %}
+{% endblock %}
