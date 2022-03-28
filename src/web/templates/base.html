@@ -1,34 +1,40 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <title>{% block title %}{% endblock %} - Flaskr</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
-  {% assets "home_css" %}
+    {% assets "home_css" %}
     <link rel="stylesheet" href="{{ ASSET_URL }}"></link>
-  {% endassets %}
+    {% endassets %}
 
-  {% assets "home_js" %}
+    {% assets "home_js" %}
     <script rel="text/javascript" href="{{ ASSET_URL }}"></script>
-  {% endassets %}
+    {% endassets %}
 
-</head>
-<body>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="navbar">
+          <a href="/">/Home</a> {% block header %}{% endblock %}
+        </div>
+      </div>
 
-  <section class="content">
-    <nav>
-        <a href="/">Root</a>
-    </nav>
-    <header>
-      {% block header %}{% endblock %}
-    </header>
-    {% for message in get_flashed_messages() %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
-    {% block content %}{% endblock %}
-  </section>
+      <div class="content">
+        {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+      </div>
 
-</body>
+      <div class="footer">
+        <p>Footer Text</p>
+
+      </div>
+
+    </div>
+  </body>
 </html>

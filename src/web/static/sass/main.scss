@@ -1,6 +1,8 @@
 @import 'inc/_solarized';
 @import 'inc/_list';
 @import 'inc/_alignment';
+@import 'inc/_tables';
+@import 'inc/_layouts';
 
 // stretch element height to specified top and bottom position
 @mixin stretch-y($offset-top:0, $offset-bottom:0) {
@@ -22,31 +24,4 @@
 }
 
 
-table {
-  table-layout: fixed;
-  width: 60%;
-  border-collapse: collapse;
-  border: 1px solid purple;
-}
 
-thead th:nth-child(1) {
-  width: 25%;
-}
-
-thead th:nth-child(2) {
-  width: 25%;
-}
-thead th:nth-child(3) {
-  width: 50%;
-}
-
-thead th {
-  text-align: left;
-}
-tbody td {
-  text-align: left;
-}
-
-tfoot th {
-  text-align: right;
-}

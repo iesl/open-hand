@@ -1,0 +1,42 @@
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 99vh;
+    width: 50%;
+    background-color: white;
+    border: 1px solid black;
+    text-align: left;
+    border-collapse: collapse;
+    overflow-y: hidden;
+    padding-left: 2vh;
+}
+
+.header {
+    justify-self: flex-start;
+    background-color: #cdcdcd;
+    padding: 8px;
+}
+
+.content {
+    flex: 1 1 auto;
+    height: 0px;
+    min-height: 300px;
+
+    border: 1px solid black;
+    padding: 8px;
+    overflow-y: scroll;
+}
+
+.footer {
+    justify-self: flex-end;
+    background-color: #cdcdcd;
+    padding: 8px;
+}
+
+.navbar {
+    display: flex;
+    flex-direction: row;
+    border-collapse: collapse;
+    overflow-y: hidden;
+}

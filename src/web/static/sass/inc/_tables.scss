@@ -1,0 +1,30 @@
+
+table {
+  // table-layout: fixed;
+  // width: 60%;
+  border-collapse: collapse;
+  border: 1px solid purple;
+}
+
+thead th:nth-child(1) {
+  width: 25%;
+}
+
+thead th:nth-child(2) {
+  width: 25%;
+}
+thead th:nth-child(3) {
+  width: 50%;
+}
+
+
+thead th {
+  text-align: left;
+}
+tbody td {
+  text-align: left;
+}
+
+tfoot th {
+  text-align: right;
+}
