@@ -1,0 +1,45 @@
+
+* AllenAI Author Coreference Server
+** Notes
+*** Some datasets have position always == 0 (pubmed), others have it set properly
+*** block vs. given_block, sometimes the same, other times given_block is null, sometimes variations (j_yang vs j yang)
+- block refers to the canopy, which is all items having the same string for block attribute
+- given_block seems to be a reference to some unknown original canopy assignment
+*** Original paper used canopies first-initial/last-name. Some Asian names might not be amenable to this (Guohua Zhang, Guangjun Zhang)
+examples:
+guangjun_zhang guo_hua_zhang
+hongbin_zhang hong_bo_zhang hongjun_zhang hong_mei_zhang hongwei_zhang hong_xin_zhang hongyu_zhang
+
+*** Do we need (or want) the references for each paper to take advantage of SPECTER?
+- only needed at training time
+
+*** Incremental prediction
+- based on 'seed' cluster, which are coreference sets that are supplied to the model and override inference
+- Format of cluster seeds is tuples of [signature1, signature2, "require"|"disallow"]
+
+
+- replace the agglomerative clustering of matrix
+- use tilde ids from openreview as ground truth??
+
+
+*** Author names in Openreview notes:
+There will need to be some fancy name parsing/normalization for f/m/l/initials structure
+example:
+  authors:
+     'Gaurang Prasad'
+     'Kishan M. M.'
+  authorids:
+    '~Gaurang_Prasad1'
+    'https://dblp.org/search/pid/api?q=author:Kishan_M._M.:'
+
+There could also be some transliteration issues wrt spelling of some names (e.g., Zeng vs. Zheng)
+
+
+*** Might we ever want to use Tilde IDs in openreview like emails? to improve coref as opposed to checking it?
+*** User of pretrained SPECTER models from AllenAI ??
+https://github.com/allenai/specter
+
+*** Authors that have published in multiple languages are split one per language
+
+*** monitor to record times for canopy processing
+*** Need to get better sense of timing for N2 canopy processing times

@@ -39,7 +39,8 @@ echo "Deleting python envs $PYENVS/*"
 rm -rf "$PYENVS"
 mkdir -p "$PYENVS"
 
-./configure --prefix="$PYTHOND" --enable-optimizations
+./configure --prefix="$PYTHOND" --enable-optimizations --with-lto --enable-loadable-sqlite-extensions
+
 make clean
 make build_all
 make install

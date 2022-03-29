@@ -1,7 +1,13 @@
 pymongo==4.0.2
 celery==5.2.3
 Flask==2.0.3
+Flask-Assets==2.0
+libsass==0.21.0
+marshmallow==3.15.0
+ipython==8.2.0
 
 celery[redis]
+
+## Dependecy version inspections utils:
 johnnydep
 luddite

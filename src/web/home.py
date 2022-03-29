@@ -5,7 +5,8 @@ from flask import (
     # request, url_for, flash, g, redirect,
 )
 
-from lib.canopies import CanopyMentions, get_canopy, get_canopy_strs, list_canopies
+from lib.canopies import MentionRecords, add_all_referenced_signatures, get_canopy, get_canopy_strs, list_canopies
+from lib.data import get_paper_with_signatures
 
 # from werkzeug.exceptions import abort
 
@@ -22,15 +23,14 @@ def home():
 import math
 
 
-def author_name_variants(canopy: CanopyMentions) -> List[str]:
+def author_name_variants(canopy: MentionRecords) -> List[str]:
     variants: List[str] = []
 
     for sigid, sig in canopy.signatures.items():
-        paper = canopy.papers[sig["paper_id"]]
-        if "authors" in paper:
-            for author in paper["authors"]:
-                if author["position"] == sig["author_info"]["position"]:
-                    variants.append(author["author_name"])
+        paper = canopy.papers[sig.paper_id]
+        for author in paper.authors:
+            if author.position == sig.author_info.position:
+                variants.append(author.author_name)
 
     return list(set(variants))
 
@@ -62,8 +62,13 @@ def show_canopies(page: int = None):
 
 @bp.route("/canopy/<string:id>")
 def show_canopy(id: str):
-    papers, signatures = get_canopy(id)
-    return render_template("canopy.html", canopy=id, signatures=signatures, papers=papers)
+    mentions_init = get_canopy(id)
+    init_signatures = mentions_init.signatures.values()
+    mentions = add_all_referenced_signatures(mentions_init)
+    papers_with_sigs = [get_paper_with_signatures(mentions, s) for s in init_signatures]
+
+    return render_template("canopy.html", canopy=id, pws_iter=papers_with_sigs)
+    # return render_template("canopy.html", canopy=id, signatures=signatures, papers=papers)
 
 
 @bp.route("/clusters")
@@ -73,4 +78,6 @@ def show_clusters():
 
 @bp.route("/cluster/<string:id>")
 def show_cluster(id: str):
+    mentions = get_canopy(id)
+    papers, signatures = mentions.papers, mentions.signatures
     return render_template("cluster.html")

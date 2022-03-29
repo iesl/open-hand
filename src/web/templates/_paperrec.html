@@ -1,0 +1,20 @@
+{% macro paper(pws) %}
+
+<div>
+  <div style="color: black">{{ pws.paper.title }} ({{ pws.paper.year }})</div>
+  <div>
+    &nbsp;&nbsp;
+    {% for sig in pws.signatures %}
+    {% if sig.has_focus %}
+    <span style="color: blue">{{sig.signature.author_info.fullname}},</span>
+    {% else %}
+    <span style="color: gray">
+      <a href="/canopy/{{sig.signature.author_info.block}}" style="color: gray">{{sig.signature.author_info.fullname}},</a>
+    </span>
+    {% endif %}
+    &nbsp;
+    {% endfor %}
+  </div>
+</div>
+
+{%- endmacro %}

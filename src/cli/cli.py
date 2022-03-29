@@ -1,6 +1,9 @@
 import click
 
 from click.core import Context
+from marshmallow.utils import pprint
+
+from lib.predict import displayMentions
 
 from . import cserver as cs
 from . import utils
@@ -24,7 +27,6 @@ def cli(ctx: Context, remote: bool):
 def mul(ctx: Context, x: int, y: int):
     """(mul) Testing out celery/click combo"""
     return utils.run(ctx, cs.mul, x, y)
-    # return cmd.mul(x, y)
 
 
 @cli.command()
@@ -35,17 +37,20 @@ def normalize(ctx: Context):
 
 
 @cli.command()
-@click.option("--offset", "-n", type=int, help="canopy index")
-def predict(offset: int):
-    """Run prediction on canopy #[offset]"""
-    if offset is None:
-        raise click.BadParameter("no offset provided")
+@click.argument("canopy", type=str)
+def predict(canopy: str):
+    """Run prediction on canopy"""
 
-    click.echo(f"offset={offset}")
-    from lib.predict import run
+    click.echo(f"canopy={canopy}")
+    from lib import predict
 
-    run(offset)
+    clusters = predict.dopredict(canopy)
+    for cluster in clusters:
+        print(f"Mentions for cluster {cluster.cluster_id}")
+        displayMentions(cluster.mentions)
+        print("")
 
+    # predict.run(offset)
 
 @cli.group()
 def canopy():
@@ -78,6 +83,15 @@ def cluster():
 @cluster.command("show")
 def cluster_show():
     """Show the results of cluster prediction"""
+    from lib.canopies import get_cluster
+
+    cluster = get_cluster("a mccallum_1")
+
+    for id, item in cluster.mentions.signatures.items():
+        pprint(item)
+
+    for id, item in cluster.mentions.papers.items():
+        pprint(item)
 
 
 def go():

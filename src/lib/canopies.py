@@ -1,15 +1,12 @@
 import pprint
 
-from typing import Dict, List, NamedTuple, Any
+from typing import List, Tuple
 
 from .mongoconn import dbconn
 
 pp = pprint.PrettyPrinter(indent=2)
 
-
-class CanopyMentions(NamedTuple):
-    papers: Dict[str, Any]
-    signatures: Dict[str, Any]
+from lib.data import ClusteringRecord, MentionRecords, PaperRec, PaperRecSchema, SignatureRec, SignatureRecSchema
 
 
 def get_canopy_strs() -> List[str]:
@@ -18,15 +15,76 @@ def get_canopy_strs() -> List[str]:
     return canopies
 
 
-def get_canopy(canopystr: str) -> CanopyMentions:
+def get_cluster(clusterstr: str) -> ClusteringRecord:
+    clusterings_coll = dbconn.clusterings
+
+    final_cluster = [
+        p
+        for p in clusterings_coll.aggregate(
+            [
+                {"$match": {"clid": {"$eq": clusterstr}}},
+                {"$project": {"_id": 0}},
+                {
+                    "$lookup": {
+                        "from": "signatures",
+                        "localField": "sigid",
+                        "foreignField": "signature_id",
+                        "as": "signatures",
+                    }
+                },
+                {
+                    "$lookup": {
+                        "from": "paper",
+                        "localField": "signatures.paper_id",
+                        "foreignField": "paper_id",
+                        "as": "papers",
+                    }
+                },
+            ]
+        )
+    ]
+
+    # paper_canopy_dict = dict(paper_canopy)
+
+    # pprint.pprint(final_cluster)
+    papers = [PaperRecSchema().load(rec["papers"][0]) for rec in final_cluster]
+    signatures = [SignatureRecSchema().load(rec["signatures"][0]) for rec in final_cluster]
+    paperdict = dict([(p.paper_id, p) for p in papers])
+    sigdict = dict([(s.signature_id, s) for s in signatures])
+    mentions = MentionRecords(papers=paperdict, signatures=sigdict)
+
+    c0 = final_cluster[0]
+    cluster_id = c0["clid"]
+    clustering_id = c0["id"]
+    canopystr = c0["canopy"]
+
+    return ClusteringRecord(mentions=mentions, clustering_id=clustering_id, cluster_id=cluster_id, canopy=canopystr)
+
+
+def add_all_referenced_signatures(mentions: MentionRecords) -> MentionRecords:
+    signature_coll = dbconn.signatures
+    paperids = [paper_id for (paper_id, _) in mentions.papers.items()]
+    all_sigs: List[SignatureRec] = [
+        SignatureRecSchema().load(sig) for sig in signature_coll.find({"paper_id": {"$in": paperids}})
+    ]
+    sigdict = dict([(sig.signature_id, sig) for sig in all_sigs])
+    combined_sigdict = mentions.signatures | sigdict
+    return MentionRecords(papers=mentions.papers, signatures=combined_sigdict)
+
+
+def get_canopy(canopystr: str) -> MentionRecords:
     signature_coll = dbconn.signatures
 
-    sig_canopy = [(sig["signature_id"], sig) for sig in signature_coll.find({"author_info.block": {"$eq": canopystr}})]
+    sig_canopy: List[Tuple[str, SignatureRec]] = [
+        (sig["signature_id"], SignatureRecSchema().load(sig))
+        for sig in signature_coll.find({"author_info.block": {"$eq": canopystr}})
+    ]
 
     sig_canopy_dict = dict(sig_canopy)
+    # pprint.pprint(f"get_canopy({canopystr})")
 
-    paper_canopy = [
-        (p["paper_id"], p)
+    paper_canopy: List[Tuple[str, PaperRec]] = [
+        (p["paper_id"], PaperRecSchema().load(p))
         for p in signature_coll.aggregate(
             [
                 {"$match": {"author_info.block": {"$eq": canopystr}}},
@@ -50,13 +108,14 @@ def get_canopy(canopystr: str) -> CanopyMentions:
                     }
                 },
                 {"$project": {"fromItems": 0}},
+                {"$project": {"_id": 0, "__v": 0}},
             ]
         )
     ]
 
     paper_canopy_dict = dict(paper_canopy)
 
-    return CanopyMentions(papers=paper_canopy_dict, signatures=sig_canopy_dict)
+    return MentionRecords(papers=paper_canopy_dict, signatures=sig_canopy_dict)
 
 
 def list_canopies(offset: int):
@@ -81,10 +140,12 @@ def list_canopies_counted(offset: int):
 def show_canopy(offset: int):
     all_canopies = get_canopy_strs()
     canopystr = all_canopies[offset]
-    sig_canopy, paper_canopy = get_canopy(canopystr)
+    # sig_canopy, paper_canopy = get_canopy(canopystr)
+    mentions = get_canopy(canopystr)
+    papers, signatures = mentions.papers, mentions.signatures
 
     pp.pprint(f"Using Canopy {canopystr}")
     pp.pprint(f"Signatures for {canopystr}")
-    pp.pprint(sig_canopy)
+    pp.pprint(signatures)
     pp.pprint(f"Papers for {canopystr}")
-    pp.pprint(paper_canopy)
+    pp.pprint(papers)

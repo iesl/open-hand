@@ -1,9 +1,12 @@
 from cli import utils
 from cli import commands as cmd
 
+## Commands in this module are called from the cli module, and have the same names as
+## the calling functions.
+
 app = utils.make_celery()
 
-@app.task(name='mul')
+@app.task(name="mul")
 def mul(x: int, y: int):
     return cmd.mul(x, y)
 
@@ -14,6 +17,7 @@ def normalize():
     from lib.normalizer import normalize
 
     return normalize()
+
 
 if __name__ == "__main__":
     app.worker_main()
