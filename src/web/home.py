@@ -68,7 +68,6 @@ def show_canopy(id: str):
     papers_with_sigs = [get_paper_with_signatures(mentions, s) for s in init_signatures]
 
     return render_template("canopy.html", canopy=id, pws_iter=papers_with_sigs)
-    # return render_template("canopy.html", canopy=id, signatures=signatures, papers=papers)
 
 
 @bp.route("/clusters")

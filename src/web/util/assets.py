@@ -1,17 +1,16 @@
-
+from pathlib import Path
 from flask_assets import Bundle
 
+home_css = Bundle(
+    "css/app.css",
+    "sass/main.scss",
+    filters="libsass",
+    output="gen/home.%(version)s.css",
+)
 
-bundles = {
-    # 'home_js': Bundle(
-    #     # filters='jsmin'
-    #     output='gen/home.%(version)s.js'
-    # ),
+watch = Path("sass/inc/*")
+home_css.depends.append(watch)
 
-    'home_css': Bundle(
-        'css/app.css',
-        'sass/main.scss',
-        filters='libsass',
-        output='gen/home.%(version)s.css'
-    ),
-}
+bundles = {"home_css": home_css}
+
+# 'home_js': Bundle( filters='jsmin' output='gen/home.%(version)s.js')

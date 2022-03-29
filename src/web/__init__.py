@@ -4,7 +4,7 @@ from flask import Flask
 
 # from sassutils.wsgi import SassMiddleware
 
-from flask_assets import Environment, Bundle, assets
+from flask_assets import Environment
 from .util.assets import bundles
 
 def create_app(test_config=None):
