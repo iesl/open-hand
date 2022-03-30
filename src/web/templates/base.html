@@ -2,7 +2,6 @@
 <html>
 
   <head>
-
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
@@ -13,28 +12,25 @@
     {% assets "home_js" %}
     <script rel="text/javascript" href="{{ ASSET_URL }}"></script>
     {% endassets %}
-
   </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <div class="navbar">
-          <a href="/">/Home</a> {% block header %}{% endblock %}
-        </div>
+
+  <body class="">
+
+    <section class="fixed-header">
+      <div class="navbar">
+        <a href="/canopies">Browse Canopies</a>
       </div>
+    </section>
 
-      <div class="content">
-        {% for message in get_flashed_messages() %}
-        <div class="flash">{{ message }}</div>
-        {% endfor %}
-        {% block content %}{% endblock %}
-      </div>
+    <section class="flash-messages">
+      {% for message in get_flashed_messages() %}
+      <div class="flash">{{ message }}</div>
+      {% endfor %}
+    </section>
 
-      <div class="footer">
-        <p>Footer Text</p>
-
-      </div>
-
+    <div class="main">
+      {% block content %}{% endblock %}
     </div>
+
   </body>
 </html>

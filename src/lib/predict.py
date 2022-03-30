@@ -1,8 +1,20 @@
-from typing import Callable, List, Dict, Tuple
-
+from itertools import groupby
 from pprint import pprint
+from typing import Callable, Dict, List, Tuple
 
-from lib.data import AuthorRec, ClusteringRecord, MentionRecords, PaperRec, SignatureRec
+from lib.data import (
+    AuthorRec,
+    ClusterID,
+    ClusteringRecord,
+    MentionRecords,
+    PaperWithSignatures,
+    SignatureRec,
+    SignatureWithFocus,
+    get_paper_with_signatures,
+    papers2dict,
+    signatures2dict,
+)
+from lib.database import add_all_referenced_signatures
 from lib.mongoconn import dbconn
 from lib.log import logger
 from lib.model import load_model
@@ -33,10 +45,6 @@ def init_canopy_data(mentions: MentionRecords):
     return anddata
 
 
-def format_authors(authors: List[AuthorRec], fn: Callable[[AuthorRec, int], str]) -> List[str]:
-    return [fn(a, i) for i, a in enumerate(authors)]
-
-
 def dim(s: str) -> str:
     return click.style(s, dim=True)
 
@@ -45,22 +53,24 @@ def yellowB(s: str) -> str:
     return click.style(s, fg="yellow", bold=True)
 
 
-def papers2dict(ps: List[PaperRec]) -> Dict[str, PaperRec]:
-    return dict([(p.paper_id, p) for p in ps])
+def format_authors(authors: List[AuthorRec], fn: Callable[[AuthorRec, int], str]) -> List[str]:
+    return [fn(a, i) for i, a in enumerate(authors)]
 
 
-def signatures2dict(ps: List[SignatureRec]) -> Dict[str, SignatureRec]:
-    return dict([(p.signature_id, p) for p in ps])
+def format_sig(sig: SignatureWithFocus) -> str:
+    if sig.has_focus:
+        return yellowB(f"{sig.signature.author_info.fullname}")
+    return dim(f"{sig.signature.author_info.fullname}")
 
 
-def zip_signature_paper_pairs(mentions: MentionRecords) -> List[Tuple[SignatureRec, PaperRec]]:
-    ps = mentions.papers
-    return [(sig, ps[sig.paper_id]) for _, sig in mentions.signatures.items()]
+def predict_all():
+    canopies = get_canopy_strs()
+    for canopy in canopies:
+        dopredict(canopy, commit=True)
 
 
-def dopredict(canopy: str) -> List[ClusteringRecord]:
-    # canopy = choose_canopy(canopy_num)
-    logger.info(f"Clustering canopy '{canopy}'")
+def dopredict(canopy: str, *, commit: bool = False) -> List[ClusteringRecord]:
+    logger.info(f"Clustering canopy '{canopy}', commit = {commit}")
     mentions = get_canopy(canopy)
     pcount = len(mentions.papers)
     scount = len(mentions.signatures)
@@ -77,93 +87,75 @@ def dopredict(canopy: str) -> List[ClusteringRecord]:
         papers = [mentions.papers[sig.paper_id] for sig in sigs]
         rec = ClusteringRecord(
             cluster_id=cluster_id,
-            clustering_id="p.1",
+            prediction_group="p.1",
             canopy=canopy,
             mentions=MentionRecords(signatures=signatures2dict(sigs), papers=papers2dict(papers)),
         )
         cluster_records.append(rec)
 
+    if commit:
+        logger.info(f"Committing {len(cluster_records)} clusters for {canopy}")
+        commit_clusters(cluster_records)
+
     return cluster_records
 
 
-def dopredict00(canopy_num: int):
-    canopy = choose_canopy(canopy_num)
-    logger.info(f"Clustering canopy '{canopy}'")
-    mentions = get_canopy(canopy)
-    pcount = len(mentions.papers)
-    scount = len(mentions.signatures)
-    logger.info(f"Mention counts papers={pcount} / signatures={scount}")
-    andData = init_canopy_data(mentions)
-
-    model = load_model()
-    clusters, _ = model.predict(andData.get_blocks(), andData)
-
-    ## Create a new collection for clusterings
-    # [{ clusteringId, clusterId, signatureId, canopyStr  }]
-    # { '~', '~MSmith1;', 'sig#35', 'm smith' }
-    # { 'p.1', 'm_smith_3', 'sig#35', 'm smith' }
-    for clid, cluster in clusters.items():
-        cluster_members = [dict(id="p.1", clid=clid, sigid=sigid, canopy=canopy) for sigid in cluster]
-        dbconn.clusterings.insert_many(cluster_members)
-
-
-def displayMentions(mentions: MentionRecords):
-    sig_paper_pairs = zip_signature_paper_pairs(mentions)
-    for sig, paper in sig_paper_pairs:
-        title = click.style(paper.title, fg="blue")
-        authors: List[AuthorRec] = paper.authors
-        position = sig.author_info.position
-        authfmt = format_authors(
-            authors, lambda a, i: yellowB(a.author_name) if i == position else dim(a.author_name)
+def commit_cluster(cluster: ClusteringRecord):
+    cluster_members = [
+        dict(
+            prediction_group=cluster.prediction_group,
+            cluster_id=cluster.cluster_id,
+            signature_id=sigid,
+            canopy=cluster.canopy,
         )
-        auths = ", ".join(authfmt)
-
-        click.echo(f"   {title}")
-        click.echo(f"      {auths}")
-
-    click.echo("\n")
-
-# def run(canopy_num: int):
-#     canopy = choose_canopy(canopy_num)
-#     logger.info(f"Clustering canopy '{canopy}'")
-#     mentions = get_canopy(canopy)
-#     pcount = len(mentions.papers)
-#     scount = len(mentions.signatures)
-#     logger.info(f"Mention counts papers={pcount} / signatures={scount}")
-#     andData = init_canopy_data(mentions)
-
-#     model = load_model()
-#     clusters, _ = model.predict(andData.get_blocks(), andData)
-#     ## Show the results:
-#     ## TODO move this stuff elsewhere
-
-#     clustered_signatures = [[mentions.signatures[sid] for sid in cluster] for _, cluster in clusters.items()]
-#     clusters = [[(sig, mentions.papers[sig.paper_id]) for sig in sigcluster] for sigcluster in clustered_signatures]
+        for sigid, _ in cluster.mentions.signatures.items()
+    ]
+    dbconn.clusters.insert_many(cluster_members)
 
 
-#     for i, cluster in enumerate(clusters):
+def commit_clusters(clusters: List[ClusteringRecord]):
+    for c in clusters:
+        commit_cluster(c)
 
-#         author_variations0 = [
-#             "".join(format_authors(paper.authors, lambda a, i: a.author_name if sig.author_info_position == i else ""))
-#             for sig, paper in cluster
-#         ]
 
-#         author_variations = [v for v in author_variations0 if len(v) > 0]
-#         names = "\n".join([yellowB(n) for n in set(author_variations)])
+def mentions_to_displayables(
+    mentions_init: MentionRecords,
+) -> Tuple[MentionRecords, Dict[ClusterID, List[PaperWithSignatures]]]:
+    def keyfn(s: SignatureRec):
+        if s.cluster_id is None:
+            return "<unclustered>"
+        return s.cluster_id
 
-#         click.echo(f">> Cluster {i}")
-#         click.echo(f"Name Variations ")
-#         click.echo(names)
-#         for sig, paper in cluster:
-#             title = click.style(paper.title, fg="blue")
-#             authors: List[Author] = paper.authors
-#             position = sig.author_info_position
-#             authfmt = format_authors(
-#                 authors, lambda a, i: yellowB(a.author_name) if i == position else dim(a.author_name)
-#             )
-#             auths = ", ".join(authfmt)
+    cluster_groups: Dict[str, List[SignatureRec]] = dict(
+        [(k, list(grp)) for k, grp in groupby(mentions_init.signatures.values(), keyfn)]
+    )
 
-#             click.echo(f"   {title}")
-#             click.echo(f"      {auths}")
+    cluster_ids = list(cluster_groups)
 
-#         click.echo("\n")
+    mentions = add_all_referenced_signatures(mentions_init)
+    cluster_tuples: List[Tuple[ClusterID, List[PaperWithSignatures]]] = []
+    for id in cluster_ids:
+        sig_zip_papers = [get_paper_with_signatures(mentions, sig) for sig in cluster_groups[id]]
+        cluster_tuples.append((ClusterID(id), sig_zip_papers))
+
+    cluster_dict = dict(cluster_tuples)
+
+    return (mentions, cluster_dict)
+
+
+def displayMentions(mentions_init: MentionRecords):
+    mentions, cluster_dict = mentions_to_displayables(mentions_init)
+
+    cluster_ids = list(cluster_dict)
+    for cluster_id in cluster_ids:
+        click.echo(f"Cluster is: {cluster_id}")
+        cluster = cluster_dict[cluster_id]
+        for pws in cluster:
+            paper = pws.paper
+            title = click.style(paper.title, fg="blue")
+            fmtsigs = [format_sig(sig) for sig in pws.signatures]
+            auths = ", ".join(fmtsigs)
+            click.echo(f"   {title}")
+            click.echo(f"      {auths}")
+
+        click.echo("\n")

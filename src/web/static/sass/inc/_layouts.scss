@@ -1,37 +1,43 @@
+body{
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
 
 .container {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+    width: 90%;
+    margin: 0 auto; /* Center the DIV horizontally */
+}
+.fixed-header, .fixed-footer{
     width: 100%;
-    background-color: white;
-    border: 1px solid black;
-    text-align: left;
-    border-collapse: collapse;
-    overflow-y: hidden;
-    padding-left: 2vh;
+    max-height: 3em;
+    position: fixed;
+    background: #cdcdcd;
+    padding: 10px 0;
+    color: #fff;
 }
 
-.header {
-    justify-self: flex-start;
-    background-color: #cdcdcd;
-    padding: 8px;
+.fixed-header{
+    top: 0;
 }
 
-.content {
-    flex: 1 1 auto;
-    height: 0px;
-    min-height: 300px;
-
-    border: 1px solid black;
-    padding: 8px;
-    overflow-y: scroll;
+.main {
+    top: 3em;
+    // height:
+}
+.fixed-footer{
+    bottom: 0;
+    max-height: 3em;
 }
 
-.footer {
-    justify-self: flex-end;
-    background-color: #cdcdcd;
-    padding: 8px;
+/* Some more styles to beutify this example */
+nav a{
+    color: #fff;
+    text-decoration: none;
+    padding: 7px 25px;
+    display: inline-block;
+}
+.container p{
+    line-height: 200px; /* Create scrollbar to test positioning */
 }
 
 .navbar {
@@ -40,3 +46,44 @@
     border-collapse: collapse;
     overflow-y: hidden;
 }
+
+
+.mention-list {
+
+}
+
+// .container {
+//     display: flex;
+//     flex-direction: column;
+//     height: 100vh;
+//     width: 100%;
+//     background-color: white;
+//     border: 1px solid black;
+//     text-align: left;
+//     border-collapse: collapse;
+//     overflow-y: hidden;
+//     padding-left: 2vh;
+// }
+
+// .header {
+//     justify-self: flex-start;
+//     background-color: #cdcdcd;
+//     padding: 8px;
+// }
+
+// .content {
+//     flex: 1 1 auto;
+//     height: 0px;
+//     min-height: 300px;
+
+//     border: 1px solid black;
+//     padding: 8px;
+//     overflow-y: scroll;
+// }
+
+// .footer {
+//     justify-self: flex-end;
+//     background-color: #cdcdcd;
+//     padding: 8px;
+// }
+

@@ -3,6 +3,7 @@
 @import 'inc/_alignment';
 @import 'inc/_tables';
 @import 'inc/_layouts';
+@import 'inc/_holygrail';
 
 // stretch element height to specified top and bottom position
 @mixin stretch-y($offset-top:0, $offset-bottom:0) {
@@ -24,4 +25,42 @@
 }
 
 
+.cluster-record {
+  margin-bottom: 0.5em;
+  padding-left: 5px;
+}
 
+.paper-title {
+  // text-size-adjust:
+
+  font-weight: bold;
+}
+
+.paper-authors {
+  padding-left: 1em;
+}
+.author {
+  font-weight: bolder;
+  color: blue;
+}
+
+.coauthor > a {
+  // font-weight: lighter;
+  color: darkcyan;
+}
+
+a:link {
+  text-decoration: none;
+}
+
+a:visited {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:active {
+  text-decoration: underline;
+}

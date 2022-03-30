@@ -2,12 +2,12 @@ import click
 
 from click.core import Context
 from marshmallow.utils import pprint
+from lib.database import get_canopied_signatures
 
 from lib.predict import displayMentions
 
 from . import cserver as cs
 from . import utils
-from . import commands as cmd
 
 app = utils.make_celery()
 
@@ -38,13 +38,14 @@ def normalize(ctx: Context):
 
 @cli.command()
 @click.argument("canopy", type=str)
-def predict(canopy: str):
+@click.option("--commit", "-c", is_flag=True, help="commit results to mongodb")
+def predict(canopy: str, commit: bool):
     """Run prediction on canopy"""
 
     click.echo(f"canopy={canopy}")
     from lib import predict
 
-    clusters = predict.dopredict(canopy)
+    clusters = predict.dopredict(canopy, commit=commit)
     for cluster in clusters:
         print(f"Mentions for cluster {cluster.cluster_id}")
         displayMentions(cluster.mentions)
@@ -52,23 +53,24 @@ def predict(canopy: str):
 
     # predict.run(offset)
 
+
 @cli.group()
 def canopy():
     """Canopy related commands"""
 
 
 @canopy.command("show")
-@click.argument("index", type=int)
-def canopyshow(index: int):
+@click.argument("canopy", type=str)
+def canopy_show(canopy: str):
     """Show a canopy"""
-    from lib.canopies import show_canopy
-
-    show_canopy(index)
+    from lib.canopies import get_canopy
+    c = get_canopy(canopy)
+    displayMentions(c)
 
 
 @canopy.command("list")
 @click.argument("index", type=int)
-def canopylist(index: int):
+def canopy_list(index: int):
     """list canopies w/mention counts, starting at index"""
     from lib.canopies import list_canopies_counted
 
@@ -83,7 +85,7 @@ def cluster():
 @cluster.command("show")
 def cluster_show():
     """Show the results of cluster prediction"""
-    from lib.canopies import get_cluster
+    from lib.database import get_cluster
 
     cluster = get_cluster("a mccallum_1")
 

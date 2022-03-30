@@ -1,15 +1,15 @@
 from marshmallow import Schema, fields, EXCLUDE, post_load
 from dataclasses import dataclass, asdict
 
-from typing import Any, Dict, List, Optional
-
-from marshmallow.utils import _signature
+from typing import Any, Dict, List, Optional, Tuple, NewType
 
 # from s2and.data import Author as S2AuthorNorm, Signature as S2SignatureNorm
 
-OptStringField = fields.Str(allow_none=True)
+OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)
 IntField = fields.Int(allow_none=False)
+
+ClusterID = NewType("ClusterID", str)
 
 
 @dataclass
@@ -99,6 +99,7 @@ class SignatureRec:
     paper_id: str
     signature_id: str
     author_info: AuthorInfoBlock
+    cluster_id: Optional[str]
 
 
 class SignatureRecSchema(Schema):
@@ -109,6 +110,7 @@ class SignatureRecSchema(Schema):
     paper_id = StrField
     signature_id = StrField
     author_info = fields.Nested(AuthorInfoBlockSchema)
+    cluster_id = OptStringField
 
     @post_load
     def make(self, data, **_) -> SignatureRec:
@@ -132,21 +134,37 @@ class SignatureWithFocus:
     signature: SignatureRec
     has_focus: bool
 
+
 @dataclass
 class PaperWithSignatures:
     paper: PaperRec
     signatures: List[SignatureWithFocus]
 
+
 def get_paper_with_signatures(mentions: MentionRecords, signature: SignatureRec) -> PaperWithSignatures:
     paper = mentions.papers[signature.paper_id]
     num_authors = len(paper.authors)
-    signature_ids = [(f"{paper.paper_id}_{i}", signature.author_info.position==i) for i in range(num_authors)]
+    signature_ids = [(f"{paper.paper_id}_{i}", signature.author_info.position == i) for i in range(num_authors)]
     signatures = [SignatureWithFocus(mentions.signatures[id], has_focus) for (id, has_focus) in signature_ids]
     return PaperWithSignatures(paper, signatures)
+
 
 @dataclass
 class ClusteringRecord:
     mentions: MentionRecords
-    clustering_id: str
+    prediction_group: str
     cluster_id: str
     canopy: str
+
+
+def papers2dict(ps: List[PaperRec]) -> Dict[str, PaperRec]:
+    return dict([(p.paper_id, p) for p in ps])
+
+
+def signatures2dict(ps: List[SignatureRec]) -> Dict[str, SignatureRec]:
+    return dict([(p.signature_id, p) for p in ps])
+
+
+def zip_signature_paper_pairs(mentions: MentionRecords) -> List[Tuple[SignatureRec, PaperRec]]:
+    ps = mentions.papers
+    return [(sig, ps[sig.paper_id]) for _, sig in mentions.signatures.items()]

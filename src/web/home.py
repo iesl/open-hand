@@ -2,25 +2,26 @@ from typing import List
 from flask import (
     Blueprint,
     render_template,
+    abort,
+    redirect,
+    url_for,
     # request, url_for, flash, g, redirect,
 )
 
-from lib.canopies import MentionRecords, add_all_referenced_signatures, get_canopy, get_canopy_strs, list_canopies
-from lib.data import get_paper_with_signatures
+from lib.data import MentionRecords, get_paper_with_signatures
+from lib.database import add_all_referenced_signatures, get_canopy, get_canopy_strs
+from lib.predict import mentions_to_displayables
 
-# from werkzeug.exceptions import abort
+import math
+
 
 bp = Blueprint("app", __name__, template_folder="templates")
 
 from flask import render_template
 
-
 @bp.route("/")
-def home():
-    return render_template("home.html")
-
-
-import math
+def index():
+    return redirect(url_for(".show_canopies"))
 
 
 def author_name_variants(canopy: MentionRecords) -> List[str]:
@@ -62,6 +63,14 @@ def show_canopies(page: int = None):
 
 @bp.route("/canopy/<string:id>")
 def show_canopy(id: str):
+    mentions = get_canopy(id)
+    _, cluster_dict = mentions_to_displayables(mentions)
+    cluster_ids = list(cluster_dict)
+
+    return render_template("canopy.html", canopy=id, cluster_ids=cluster_ids, cluster_dict=cluster_dict)
+
+
+def XXXshow_canopy0(id: str):
     mentions_init = get_canopy(id)
     init_signatures = mentions_init.signatures.values()
     mentions = add_all_referenced_signatures(mentions_init)
