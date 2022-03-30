@@ -46,7 +46,7 @@ def load_name_tuples() -> Set[Tuple[str, str]]:
     return name_tuples
 
 
-debug = True
+debug = False
 
 
 def load_name_counts() -> Dict[str, Dict[str, int]]:

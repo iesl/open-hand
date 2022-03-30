@@ -11,7 +11,7 @@ MongoDB
 Redis
 
 *** Python install deps
-apt install libsqlite3-dev
+
 * Author Coreference Processing
 ** Batch Processing
 *** Fetch notes into 'shadow' Mongo db

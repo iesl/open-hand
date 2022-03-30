@@ -19,6 +19,7 @@ bp = Blueprint("app", __name__, template_folder="templates")
 
 from flask import render_template
 
+
 @bp.route("/")
 def index():
     return redirect(url_for(".show_canopies"))

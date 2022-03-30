@@ -20,8 +20,5 @@ def load_model() -> Clusterer:
         return cl
 
 
-def predict(cl: Clusterer, anddata: ANDData):
-    pred_clusters, pred_distance_matrices = cl.predict(anddata.get_blocks(), anddata)
-
-    # clust: Dict[str, List[str]]
-    # mats: Dict[str, ndarray[Unknown, Unknown]] | None
+# def predict(cl: Clusterer, anddata: ANDData):
+#     pred_clusters, pred_distance_matrices = cl.predict(anddata.get_blocks(), anddata)

@@ -2,6 +2,8 @@ from itertools import groupby
 from pprint import pprint
 from typing import Callable, Dict, List, Tuple
 
+from s2and.model import Clusterer
+
 from lib.data import (
     AuthorRec,
     ClusterID,
@@ -20,7 +22,7 @@ from lib.log import logger
 from lib.model import load_model
 from lib.canopies import get_canopy, get_canopy_strs
 from s2and.data import ANDData
-from lib.s2and_data import preloads
+from lib.s2and_data import DataPreloads, preloads
 
 import click
 
@@ -29,8 +31,9 @@ def choose_canopy(n: int) -> str:
     return get_canopy_strs()[n]
 
 
-def init_canopy_data(mentions: MentionRecords):
-    pre = preloads()
+def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
+    if pre is None:
+        pre = preloads()
     signature_dict = mentions.signature_dict()
     paper_dict = mentions.paper_dict()
     anddata = ANDData(
@@ -64,21 +67,24 @@ def format_sig(sig: SignatureWithFocus) -> str:
 
 
 def predict_all():
+    model = load_model()
+    pre = preloads()
     canopies = get_canopy_strs()
     for canopy in canopies:
-        dopredict(canopy, commit=True)
+        dopredict(canopy, commit=True, model=model, pre=pre)
 
-
-def dopredict(canopy: str, *, commit: bool = False) -> List[ClusteringRecord]:
+def dopredict(canopy: str, *, commit: bool = False, model: Clusterer = None, pre: DataPreloads) -> List[ClusteringRecord]:
     logger.info(f"Clustering canopy '{canopy}', commit = {commit}")
     mentions = get_canopy(canopy)
     pcount = len(mentions.papers)
     scount = len(mentions.signatures)
     logger.info(f"Mention counts papers={pcount} / signatures={scount}")
 
-    andData = init_canopy_data(mentions)
+    andData = init_canopy_data(mentions, pre)
 
-    model = load_model()
+    if model is None:
+        model = load_model()
+
     clustered_signatures, _ = model.predict(andData.get_blocks(), andData)
     cluster_records: List[ClusteringRecord] = []
 

@@ -51,8 +51,12 @@ def predict(canopy: str, commit: bool):
         displayMentions(cluster.mentions)
         print("")
 
-    # predict.run(offset)
 
+@cli.command()
+def predict_all():
+    """Run prediction on all canopy"""
+    from lib import predict
+    predict.predict_all()
 
 @cli.group()
 def canopy():
@@ -64,6 +68,7 @@ def canopy():
 def canopy_show(canopy: str):
     """Show a canopy"""
     from lib.canopies import get_canopy
+
     c = get_canopy(canopy)
     displayMentions(c)
 
