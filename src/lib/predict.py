@@ -73,7 +73,10 @@ def predict_all():
     for canopy in canopies:
         dopredict(canopy, commit=True, model=model, pre=pre)
 
-def dopredict(canopy: str, *, commit: bool = False, model: Clusterer = None, pre: DataPreloads) -> List[ClusteringRecord]:
+
+def dopredict(
+    canopy: str, *, commit: bool = False, model: Clusterer = None, pre: DataPreloads = None
+) -> List[ClusteringRecord]:
     logger.info(f"Clustering canopy '{canopy}', commit = {commit}")
     mentions = get_canopy(canopy)
     pcount = len(mentions.papers)

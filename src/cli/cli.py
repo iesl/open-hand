@@ -56,7 +56,9 @@ def predict(canopy: str, commit: bool):
 def predict_all():
     """Run prediction on all canopy"""
     from lib import predict
+
     predict.predict_all()
+
 
 @cli.group()
 def canopy():
