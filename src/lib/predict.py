@@ -1,6 +1,6 @@
 from itertools import groupby
 from pprint import pprint
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from s2and.model import Clusterer
 
@@ -31,7 +31,7 @@ def choose_canopy(n: int) -> str:
     return get_canopy_strs()[n]
 
 
-def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
+def init_canopy_data(mentions: MentionRecords, pre: Optional[DataPreloads]):
     if pre is None:
         pre = preloads()
     signature_dict = mentions.signature_dict()
@@ -75,7 +75,7 @@ def predict_all():
 
 
 def dopredict(
-    canopy: str, *, commit: bool = False, model: Clusterer = None, pre: DataPreloads = None
+    canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: Optional[DataPreloads] = None
 ) -> List[ClusteringRecord]:
     logger.info(f"Clustering canopy '{canopy}', commit = {commit}")
     mentions = get_canopy(canopy)
@@ -87,6 +87,7 @@ def dopredict(
 
     if model is None:
         model = load_model()
+
 
     clustered_signatures, _ = model.predict(andData.get_blocks(), andData)
     cluster_records: List[ClusteringRecord] = []

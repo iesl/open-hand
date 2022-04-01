@@ -19,11 +19,11 @@ def setup_s2and_env():
     print(f"project_root_path: {project_root_path}")
 
     try:
-        ROOT_PATH = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))
+        root_path = os.path.abspath(os.path.join(__file__, os.pardir, os.pardir))
     except NameError:
-        ROOT_PATH = os.path.abspath(os.path.join(os.getcwd()))
+        root_path = os.path.abspath(os.path.join(os.getcwd()))
 
-    os.environ["S2AND_CACHE"] = os.path.join(ROOT_PATH, ".feature_cache.d")
+    os.environ["S2AND_CACHE"] = os.path.join(root_path, ".feature_cache.d")
 
 
 class DataPreloads(NamedTuple):
@@ -51,7 +51,7 @@ debug = False
 
 def load_name_counts() -> Dict[str, Dict[str, int]]:
     logger.info("Loading name counts")
-    counts = {}
+    counts: Dict[str, Dict[str, int]] = dict()
     if debug:
         counts["first_dict"] = {}
         counts["last_dict"] = {}

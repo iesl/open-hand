@@ -1,36 +1,7 @@
 from typing import Union
 from celery.app.base import Celery
-import click
 from click.core import Context
-from functools import wraps
 
-
-def rcall(*args, **kwds):
-    f = args[0]
-    impl = kwds["impl"]
-    print(impl)
-    # print(f"Decorating function {f.__name__} with {impl})
-
-    @click.pass_context
-    @wraps(f)
-    def wrapper(*args, **kwds):
-        print("Calling decorated function")
-        return f(*args, **kwds)
-
-    return wrapper
-
-
-def impl(impl):
-    def decorate(f):
-        @click.pass_context
-        @wraps(f)
-        def wrapper(*args, **kwds):
-            print(f"Calling decorated function {f.__name__}({impl.__name__})({[a for a in args]})")
-            # return impl(*args, **kwds)
-
-        return wrapper
-
-    return decorate
 
 
 def run(ctx: Context, task, *args, **kwds):
@@ -43,7 +14,6 @@ def run(ctx: Context, task, *args, **kwds):
         task(*args, **kwds)
 
 
-from celery import current_app as current_celery_app
 from celery import Task
 
 current_app: Union[Celery, None] = None

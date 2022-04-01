@@ -10,30 +10,30 @@
     <span><a href="/canopies/{{ n }}">{{ n }} |</a></span>
   {% endfor %}
   <table>
-      <thead>
-          <tr>
-              <th class="blue"> Canopy Name </th>
-              <th> Canopy Size </th>
-              <th> Name Variations </th>
-          </tr>
-      </thead>
-      <tbody>
+    <thead>
+      <tr>
+        <th class="blue"> Canopy Name </th>
+        <th> Canopy Size </th>
+        <th> Name Variations </th>
+      </tr>
+    </thead>
+    <tbody>
 
-        {% for canopynum, canopysize, canopystr, namevariants in canopies %}
-          <tr>
-              <td> <a href="/canopy/{{ canopystr }}">'{{ canopystr }}'</a> </td>
-              <td> {{ canopysize }} </td>
-              <td>
+      {% for canopynum, canopysize, canopystr, namevariants in canopies %}
+        <tr>
+          <td> <a href="/canopy/{{ canopystr }}">'{{ canopystr }}'</a> </td>
+          <td> {{ canopysize }} </td>
+          <td>
 
-              {% for v in namevariants %}
+            {% for v in namevariants %}
               <ul class='inline-ul'>
                 <li>{{ v }},&nbsp;</li>
               </ul>
-              {% endfor %}
-              </td>
-          </tr>
-        {% endfor %}
+            {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
 
-      </tbody>
+    </tbody>
   </table>
 {% endblock %}

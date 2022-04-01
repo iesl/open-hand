@@ -20,4 +20,5 @@ Redis
 **** run predict() over single block
 **** Write results back to cluster collection (cluster_id, signature_id)
 
+
 ** Incremental Processing

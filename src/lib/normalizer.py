@@ -9,6 +9,11 @@ from lib.log import logger
 from lib.mongoconn import dbconn
 from lib.s2and_data import load_name_tuples, normalize_signatures_papers, load_name_counts, preloads
 
+# TODO normalize canopy strings
+# import unicodedata
+# stringVal = "Här är ett exempel på en svensk mening att ge dig."
+# print(unicodedata.normalize("NFKD", stringVal).encode("ascii", "ignore"))
+
 
 def normalize():
     paper_coll = dbconn.paper

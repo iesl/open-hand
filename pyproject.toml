@@ -7,3 +7,96 @@ addopts = "-ra -rP -v"
 testpaths = [
     "src/test",
 ]
+
+[tool.pyright]
+
+include = ["src"]
+exclude = [
+        "**/__pycache__",
+        "./ext/**",
+        "./fil-result/**",
+        ]
+ignore = []
+
+# stubPath = "src/stubs"
+# venv = "env367"
+
+useLibraryCodeForTypes = true
+typeCheckingMode = "strict" # vs strict/none
+
+# pythonVersion = "3.9"
+# pythonPlatform = "Linux"
+
+executionEnvironments = [
+                      # { root = "src/web", pythonVersion = "3.5", pythonPlatform = "Windows", extraPaths = [ "src/service_libs" ] },
+                      # { root = "src/sdk", pythonVersion = "3.0", extraPaths = [ "src/backend" ] },
+                      # { root = "src/tests", extraPaths = ["src/tests/e2e", "src/sdk" ]},
+                      # { root = "src" }
+]
+
+### https://github.com/microsoft/pyright/blob/main/docs/configuration.md#diagnostic-rule-defaults
+reportMissingImports = true #[boolean or string, optional]
+reportMissingTypeStubs = false #[boolean or string, optional]
+
+# strictListInference #[boolean]
+# strictDictionaryInference #[boolean]
+# strictSetInference #[boolean]
+# strictParameterNoneValue #[boolean]
+# enableTypeIgnoreComments #[boolean]
+reportGeneralTypeIssues = "warning" #[boolean or string, optional]
+reportPropertyTypeMismatch = "warning" #[boolean or string, optional]
+# reportFunctionMemberAccess #[boolean or string, optional]
+# reportMissingModuleSource #[boolean or string, optional]
+# reportImportCycles #[boolean or string, optional]
+reportUnusedImport = "warning" #[boolean or string, optional]
+# reportUnusedClass #[boolean or string, optional]
+# reportUnusedFunction #[boolean or string, optional]
+reportUnusedVariable = "information" #[boolean or string, optional]
+# reportDuplicateImport #[boolean or string, optional]
+# reportWildcardImportFromLibrary #[boolean or string, optional]
+# reportOptionalSubscript #[boolean or string, optional]
+# reportOptionalMemberAccess #[boolean or string, optional]
+# reportOptionalCall #[boolean or string, optional]
+# reportOptionalIterable #[boolean or string, optional]
+# reportOptionalContextManager #[boolean or string, optional]
+# reportOptionalOperand #[boolean or string, optional]
+# reportTypedDictNotRequiredAccess #[boolean or string, optional]
+reportUntypedFunctionDecorator = false #[boolean or string, optional]
+# reportUntypedClassDecorator #[boolean or string, optional]
+# reportUntypedBaseClass #[boolean or string, optional]
+# reportUntypedNamedTuple #[boolean or string, optional]
+# reportPrivateUsage #[boolean or string, optional]
+# reportPrivateImportUsage #[boolean or string, optional]
+# reportConstantRedefinition #[boolean or string, optional]
+# reportIncompatibleMethodOverride #[boolean or string, optional]
+# reportIncompatibleVariableOverride #[boolean or string, optional]
+# reportInconsistentConstructor #[boolean or string, optional]
+# reportOverlappingOverload #[boolean or string, optional]
+# reportMissingSuperCall #[boolean or string, optional]
+# reportUninitializedInstanceVariable #[boolean or string, optional]
+# reportInvalidStringEscapeSequence #[boolean or string, optional]
+reportUnknownParameterType = "warning" #[boolean or string, optional]
+reportUnknownArgumentType = "warning" #[boolean or string, optional]
+reportUnknownLambdaType = "warning" #[boolean or string, optional]
+reportUnknownVariableType = "warning" #[boolean or string, optional]
+reportUnknownMemberType = "none" #[boolean or string, optional]
+reportMissingParameterType = "warning" #[boolean or string, optional]
+# reportMissingTypeArgument #[boolean or string, optional]
+# reportInvalidTypeVarUse #[boolean or string, optional]
+# reportCallInDefaultInitializer #[boolean or string, optional]
+# reportUnnecessaryIsInstance #[boolean or string, optional]
+# reportUnnecessaryCast #[boolean or string, optional]
+# reportUnnecessaryComparison #[boolean or string, optional]
+# reportAssertAlwaysTrue #[boolean or string, optional]
+# reportSelfClsParameterName #[boolean or string, optional]
+# reportImplicitStringConcatenation #[boolean or string, optional]
+# reportUndefinedVariable #[boolean or string, optional]
+# reportUnboundVariable #[boolean or string, optional]
+# reportInvalidStubStatement #[boolean or string, optional]
+# reportIncompleteStub #[boolean or string, optional]
+# reportUnsupportedDunderAll #[boolean or string, optional]
+# reportUnusedCallResult #[boolean or string, optional]
+# reportUnusedCoroutine #[boolean or string, optional]
+# reportUnusedExpression #[boolean or string, optional]
+# reportUnnecessaryTypeIgnoreComment #[boolean or string, optional]
+# reportMatchNotExhaustive #[boolean or string, optional]

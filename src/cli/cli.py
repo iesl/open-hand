@@ -2,7 +2,6 @@ import click
 
 from click.core import Context
 from marshmallow.utils import pprint
-from lib.database import get_canopied_signatures
 
 from lib.predict import displayMentions
 
@@ -18,15 +17,6 @@ app = utils.make_celery()
 def cli(ctx: Context, remote: bool):
     ctx.ensure_object(dict)
     ctx.obj["remote"] = remote
-
-
-@cli.command()
-@click.pass_context
-@click.argument("x", type=int)
-@click.argument("y", type=int)
-def mul(ctx: Context, x: int, y: int):
-    """(mul) Testing out celery/click combo"""
-    return utils.run(ctx, cs.mul, x, y)
 
 
 @cli.command()
@@ -96,10 +86,10 @@ def cluster_show():
 
     cluster = get_cluster("a mccallum_1")
 
-    for id, item in cluster.mentions.signatures.items():
+    for item in cluster.mentions.signatures.values():
         pprint(item)
 
-    for id, item in cluster.mentions.papers.items():
+    for item in cluster.mentions.papers.values():
         pprint(item)
 
 

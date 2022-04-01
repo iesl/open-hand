@@ -11,6 +11,8 @@ IntField = fields.Int(allow_none=False)
 
 ClusterID = NewType("ClusterID", str)
 
+# fields.Str(validate=)
+
 
 @dataclass
 class AuthorRec:
@@ -23,7 +25,7 @@ class AuthorRecSchema(Schema):
     position = fields.Int()
 
     @post_load
-    def make(self, data, **_) -> AuthorRec:
+    def make(self, data: Any, **_) -> AuthorRec:
         return AuthorRec(**data)
 
 
@@ -40,7 +42,7 @@ class PaperRec:
 
 
 class PaperRecSchema(Schema):
-    class Meta:
+    class Meta(Schema.Meta):
         unknown = EXCLUDE
 
     abstract = OptStringField
@@ -53,7 +55,7 @@ class PaperRecSchema(Schema):
     year = IntField
 
     @post_load
-    def make(self, data, **_) -> PaperRec:
+    def make(self, data: Any, **_) -> PaperRec:
         return PaperRec(**data)
 
 
@@ -73,7 +75,7 @@ class AuthorInfoBlock:
 
 
 class AuthorInfoBlockSchema(Schema):
-    class Meta:
+    class Meta(Schema.Meta):
         unknown = EXCLUDE
 
     affiliations = fields.List(StrField)
@@ -89,7 +91,7 @@ class AuthorInfoBlockSchema(Schema):
     suffix = OptStringField
 
     @post_load
-    def make(self, data, **_) -> AuthorInfoBlock:
+    def make(self, data: Any, **_) -> AuthorInfoBlock:
         return AuthorInfoBlock(**data)
 
 
@@ -103,7 +105,7 @@ class SignatureRec:
 
 
 class SignatureRecSchema(Schema):
-    class Meta:
+    class Meta(Schema.Meta):
         unknown = EXCLUDE
 
     author_id = StrField
@@ -113,7 +115,7 @@ class SignatureRecSchema(Schema):
     cluster_id = OptStringField
 
     @post_load
-    def make(self, data, **_) -> SignatureRec:
+    def make(self, data: Any, **_) -> SignatureRec:
         return SignatureRec(**data)
 
 
@@ -168,3 +170,30 @@ def signatures2dict(ps: List[SignatureRec]) -> Dict[str, SignatureRec]:
 def zip_signature_paper_pairs(mentions: MentionRecords) -> List[Tuple[SignatureRec, PaperRec]]:
     ps = mentions.papers
     return [(sig, ps[sig.paper_id]) for _, sig in mentions.signatures.items()]
+
+
+@dataclass
+class NoteContent:
+    pass
+    # 'abstract'?: string;
+    # html?: string; // this is a URL
+    # venueid: string;
+    # title: string;
+    # authors: string[];
+    # authorids: string[];
+    # venue: string;
+    # _bibtex: string;
+
+
+@dataclass
+class Note:
+    pass
+    # id: string;
+    # content: NoteContent;
+
+
+@dataclass
+class Notes:
+    pass
+    # notes: Note[];
+    # count: number;
