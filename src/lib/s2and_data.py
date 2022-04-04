@@ -1,8 +1,12 @@
-from typing import Dict, Set, Tuple, NamedTuple
-from s2and.data import ANDData
+from typing import NamedTuple, Optional
+from s2and.data import ANDData #, NameCounts
 
 import pickle
 import os
+
+# from s2and.text import name_counts
+
+from lib.typedefs import NameCountDict, NameEquivalenceSet
 from .log import logger
 
 from s2and.consts import PROJECT_ROOT_PATH, NAME_COUNTS_PATH
@@ -27,17 +31,19 @@ def setup_s2and_env():
 
 
 class DataPreloads(NamedTuple):
-    name_tuples: Set[Tuple[str, str]]
-    name_counts: Dict[str, Dict[str, int]]
+    name_tuples: Optional[NameEquivalenceSet]
+    name_counts: Optional[NameCountDict]
 
 
-def preloads() -> DataPreloads:
-    return DataPreloads(name_counts=load_name_counts(), name_tuples=load_name_tuples())
+def preloads(*, use_name_counts: bool, use_name_tuples: bool) -> DataPreloads:
+    name_counts = load_name_counts() if use_name_counts else None
+    name_tuples = load_name_tuples() if use_name_tuples else None
+    return DataPreloads(name_counts=name_counts, name_tuples=name_tuples)
 
 
-def load_name_tuples() -> Set[Tuple[str, str]]:
+def load_name_tuples() -> NameEquivalenceSet:
     logger.info("Loading named Tuples")
-    name_tuples: Set[Tuple[str, str]] = set()
+    name_tuples: NameEquivalenceSet = set()
     with open(os.path.join(PROJECT_ROOT_PATH, "data", "s2and_name_tuples.txt"), "r") as f2:  # type: ignore
         for line in f2:
             line_split = line.strip().split(",")  # type: ignore
@@ -46,9 +52,9 @@ def load_name_tuples() -> Set[Tuple[str, str]]:
     return name_tuples
 
 
-def load_name_counts() -> Dict[str, Dict[str, int]]:
+def load_name_counts() -> NameCountDict:
     logger.info("Loading name counts")
-    counts: Dict[str, Dict[str, int]] = dict()
+    counts: NameCountDict = dict()
     with open(cached_path(NAME_COUNTS_PATH), "rb") as f:
         (
             first_dict,
@@ -67,15 +73,17 @@ def load_name_counts() -> Dict[str, Dict[str, int]]:
 ## TODO can this be run once for papers, then again for signatures, or does the normalization need the paper data
 ##    Is it embarrassingly parallel for both papers/signatures?
 def normalize_signatures_papers(signature_dict, paper_dict, pre: DataPreloads):
-    ##
+
+    name_counts = pre.name_counts if pre.name_counts is not None else False
+    name_tuples = pre.name_tuples if pre.name_tuples is not None else NameEquivalenceSet()
     anddata = ANDData(
         signatures=signature_dict,
         papers=paper_dict,
         name="unnamed",
         mode="inference",  # or 'train'
         block_type="s2",  # or 'original', refers to canopy method 's2' => author_info.block is canopy
-        name_tuples=pre.name_tuples,
-        load_name_counts=pre.name_counts,
+        name_tuples=name_tuples,
+        load_name_counts=name_counts,
     )
 
     return (anddata.signatures, anddata.papers)

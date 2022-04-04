@@ -1,12 +1,11 @@
 from itertools import groupby
-from pprint import pprint
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from s2and.model import Clusterer
+from lib.cli_utils import dim, yellowB
 
 from lib.data import (
     AuthorRec,
-    ClusterID,
     ClusteringRecord,
     MentionRecords,
     PaperWithSignatures,
@@ -26,34 +25,28 @@ from lib.s2and_data import DataPreloads, preloads
 
 import click
 
+from lib.typedefs import ClusterID, NameCountDict, NameEquivalenceSet
+
 
 def choose_canopy(n: int) -> str:
     return get_canopy_strs()[n]
 
 
-def init_canopy_data(mentions: MentionRecords, pre: Optional[DataPreloads]):
-    if pre is None:
-        pre = preloads()
+def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
     signature_dict = mentions.signature_dict()
     paper_dict = mentions.paper_dict()
+    name_counts: Union[NameCountDict, bool] = pre.name_counts if pre.name_counts is not None else False
+    name_tuples: NameEquivalenceSet = pre.name_tuples if pre.name_tuples is not None else set()
     anddata = ANDData(
         signatures=signature_dict,
         papers=paper_dict,
         name="unnamed",
         mode="inference",  # or 'train'
         block_type="s2",  # or 'original', refers to canopy method 's2' => author_info.block is canopy
-        name_tuples=pre.name_tuples,
-        load_name_counts=pre.name_counts,
+        name_tuples=name_tuples,
+        load_name_counts=name_counts,
     )
     return anddata
-
-
-def dim(s: str) -> str:
-    return click.style(s, dim=True)
-
-
-def yellowB(s: str) -> str:
-    return click.style(s, fg="yellow", bold=True)
 
 
 def format_authors(authors: List[AuthorRec], fn: Callable[[AuthorRec, int], str]) -> List[str]:
@@ -68,14 +61,14 @@ def format_sig(sig: SignatureWithFocus) -> str:
 
 def predict_all():
     model = load_model()
-    pre = preloads()
+    pre = preloads(use_name_counts=False, use_name_tuples=True)
     canopies = get_canopy_strs()
     for canopy in canopies:
         dopredict(canopy, commit=True, model=model, pre=pre)
 
 
 def dopredict(
-    canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: Optional[DataPreloads] = None
+    canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: DataPreloads
 ) -> List[ClusteringRecord]:
     logger.info(f"Clustering canopy '{canopy}', commit = {commit}")
     mentions = get_canopy(canopy)
@@ -88,7 +81,7 @@ def dopredict(
     if model is None:
         model = load_model()
 
-    clustered_signatures, _ = model.predict(andData.get_blocks(), andData)
+    (clustered_signatures, _) = model.predict(andData.get_blocks(), andData)
     cluster_records: List[ClusteringRecord] = []
 
     for cluster_id, sigids in clustered_signatures.items():
@@ -153,7 +146,7 @@ def mentions_to_displayables(
 
 
 def displayMentions(mentions_init: MentionRecords):
-    mentions, cluster_dict = mentions_to_displayables(mentions_init)
+    _, cluster_dict = mentions_to_displayables(mentions_init)
 
     cluster_ids = list(cluster_dict)
     for cluster_id in cluster_ids:

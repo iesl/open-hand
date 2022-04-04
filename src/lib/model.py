@@ -19,7 +19,3 @@ def load_model() -> Clusterer:
         cl: Clusterer = clusterer["clusterer"]
         cl.use_cache = False
         return cl
-
-
-# def predict(cl: Clusterer, anddata: ANDData):
-#     pred_clusters, pred_distance_matrices = cl.predict(anddata.get_blocks(), anddata)

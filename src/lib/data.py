@@ -9,7 +9,7 @@ OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)
 IntField = fields.Int(allow_none=False)
 
-ClusterID = NewType("ClusterID", str)
+
 
 # fields.Str(validate=)
 

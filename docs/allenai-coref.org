@@ -43,3 +43,14 @@ https://github.com/allenai/specter
 
 *** monitor to record times for canopy processing
 *** Need to get better sense of timing for N2 canopy processing times
+
+*** FastText usage
+Used for language detection
+
+*** First/FirstLast/... name lookups
+pickle is ~600M (1G unpickled), quickly overflows memory
+
+# TODO normalize canopy strings
+# import unicodedata
+# stringVal = "Här är ett exempel på en svensk mening att ge dig."
+# print(unicodedata.normalize("NFKD", stringVal).encode("ascii", "ignore"))

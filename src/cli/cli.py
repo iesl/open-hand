@@ -4,8 +4,9 @@ from click.core import Context
 from marshmallow.utils import pprint
 
 from lib.predict import displayMentions
+from lib.s2and_data import preloads
 
-from . import cserver as cs
+# from . import cserver as cs
 from . import utils
 
 app = utils.make_celery()
@@ -19,11 +20,11 @@ def cli(ctx: Context, remote: bool):
     ctx.obj["remote"] = remote
 
 
-@cli.command()
-@click.pass_context
-def normalize(ctx: Context):
-    """Normalize all un-normalized papers/signatures"""
-    return utils.run(ctx, cs.normalize)
+# @cli.command()
+# @click.pass_context
+# def normalize(ctx: Context):
+#     """Normalize all un-normalized papers/signatures"""
+#     return utils.run(ctx, cs.normalize)
 
 
 @cli.command()
@@ -35,7 +36,8 @@ def predict(canopy: str, commit: bool):
     click.echo(f"canopy={canopy}")
     from lib import predict
 
-    clusters = predict.dopredict(canopy, commit=commit)
+    pre = preloads(use_name_counts=False, use_name_tuples=True)
+    clusters = predict.dopredict(canopy, commit=commit, pre=pre)
     for cluster in clusters:
         print(f"Mentions for cluster {cluster.cluster_id}")
         displayMentions(cluster.mentions)
