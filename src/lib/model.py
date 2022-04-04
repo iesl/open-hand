@@ -1,16 +1,17 @@
 import pickle
 from os.path import join
-import os
 
-from s2and.consts import (
-    PROJECT_ROOT_PATH,
-)
-from s2and.data import ANDData
 from s2and.model import Clusterer
+from lib.log import logger
 
-modeldir = join(PROJECT_ROOT_PATH, os.pardir, "s2and-model")
-model_file = join(modeldir, "production_model.pickle")
+from s2and.consts import CONFIG
 
+MAIN_DATA_DIR = CONFIG["main_data_dir"]
+
+# modeldir = join(PROJECT_ROOT_PATH, os.pardir, "s2and-model")
+model_file = join(MAIN_DATA_DIR, "production_model.pickle")
+
+logger.info(f"Using model files in data dir {MAIN_DATA_DIR}")
 
 def load_model() -> Clusterer:
     with open(model_file, "rb") as _pkl_file:
