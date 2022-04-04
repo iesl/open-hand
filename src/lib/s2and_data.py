@@ -46,29 +46,20 @@ def load_name_tuples() -> Set[Tuple[str, str]]:
     return name_tuples
 
 
-debug = False
-
-
 def load_name_counts() -> Dict[str, Dict[str, int]]:
     logger.info("Loading name counts")
     counts: Dict[str, Dict[str, int]] = dict()
-    if debug:
-        counts["first_dict"] = {}
-        counts["last_dict"] = {}
-        counts["first_last_dict"] = {}
-        counts["last_first_initial_dict"] = {}
-    else:
-        with open(cached_path(NAME_COUNTS_PATH), "rb") as f:
-            (
-                first_dict,
-                last_dict,
-                first_last_dict,
-                last_first_initial_dict,
-            ) = pickle.load(f)
-            counts["first_dict"] = first_dict
-            counts["last_dict"] = last_dict
-            counts["first_last_dict"] = first_last_dict
-            counts["last_first_initial_dict"] = last_first_initial_dict
+    with open(cached_path(NAME_COUNTS_PATH), "rb") as f:
+        (
+            first_dict,
+            last_dict,
+            first_last_dict,
+            last_first_initial_dict,
+        ) = pickle.load(f)
+        counts["first_dict"] = first_dict
+        counts["last_dict"] = last_dict
+        counts["first_last_dict"] = first_last_dict
+        counts["last_first_initial_dict"] = last_first_initial_dict
 
     return counts
 

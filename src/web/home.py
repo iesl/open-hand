@@ -1,8 +1,7 @@
-from typing import List
+from typing import List, Optional
 from flask import (
     Blueprint,
     render_template,
-    abort,
     redirect,
     url_for,
     # request, url_for, flash, g, redirect,
@@ -27,7 +26,7 @@ def index():
 def author_name_variants(canopy: MentionRecords) -> List[str]:
     variants: List[str] = []
 
-    for sigid, sig in canopy.signatures.items():
+    for _, sig in canopy.signatures.items():
         paper = canopy.papers[sig.paper_id]
         for author in paper.authors:
             if author.position == sig.author_info.position:
@@ -38,7 +37,7 @@ def author_name_variants(canopy: MentionRecords) -> List[str]:
 
 @bp.route("/canopies")
 @bp.route("/canopies/<int:page>")
-def show_canopies(page: int = None):
+def show_canopies(page: Optional[int] = None):
     if page is None:
         page = 0
 

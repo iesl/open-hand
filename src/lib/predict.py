@@ -88,7 +88,6 @@ def dopredict(
     if model is None:
         model = load_model()
 
-
     clustered_signatures, _ = model.predict(andData.get_blocks(), andData)
     cluster_records: List[ClusteringRecord] = []
 
