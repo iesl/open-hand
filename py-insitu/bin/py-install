@@ -2,10 +2,12 @@
 
 # Created by argbash-init v2.10.0
 # DEFINE_SCRIPT_DIR([])
-# ARG_OPTIONAL_BOOLEAN([rebuild])
+# ARG_OPTIONAL_BOOLEAN([rebuild-script])
 # ARG_OPTIONAL_BOOLEAN([info])
-# ARG_OPTIONAL_BOOLEAN([clean])
+# ARG_OPTIONAL_BOOLEAN([make])
+# ARG_OPTIONAL_BOOLEAN([download])
 # ARG_OPTIONAL_BOOLEAN([install])
+# ARG_OPTIONAL_BOOLEAN([install-env])
 # ARG_OPTIONAL_BOOLEAN([dry-run])
 # ARG_HELP([<The general help message of my script>])
 # ARGBASH_GO()
@@ -32,17 +34,19 @@ begins_with_short_option()
 }
 
 # THE DEFAULTS INITIALIZATION - OPTIONALS
-_arg_rebuild="off"
+_arg_rebuild_script="off"
 _arg_info="off"
-_arg_clean="off"
+_arg_make="off"
+_arg_download="off"
 _arg_install="off"
+_arg_install_env="off"
 _arg_dry_run="off"
 
 
 print_help()
 {
 	printf '%s\n' "<The general help message of my script>"
-	printf 'Usage: %s [--(no-)rebuild] [--(no-)info] [--(no-)clean] [--(no-)install] [--(no-)dry-run] [-h|--help]\n' "$0"
+	printf 'Usage: %s [--(no-)rebuild-script] [--(no-)info] [--(no-)make] [--(no-)download] [--(no-)install] [--(no-)install-env] [--(no-)dry-run] [-h|--help]\n' "$0"
 	printf '\t%s\n' "-h, --help: Prints help"
 }
 
@@ -53,21 +57,29 @@ parse_commandline()
 	do
 		_key="$1"
 		case "$_key" in
-			--no-rebuild|--rebuild)
-				_arg_rebuild="on"
-				test "${1:0:5}" = "--no-" && _arg_rebuild="off"
+			--no-rebuild-script|--rebuild-script)
+				_arg_rebuild_script="on"
+				test "${1:0:5}" = "--no-" && _arg_rebuild_script="off"
 				;;
 			--no-info|--info)
 				_arg_info="on"
 				test "${1:0:5}" = "--no-" && _arg_info="off"
 				;;
-			--no-clean|--clean)
-				_arg_clean="on"
-				test "${1:0:5}" = "--no-" && _arg_clean="off"
+			--no-make|--make)
+				_arg_make="on"
+				test "${1:0:5}" = "--no-" && _arg_make="off"
+				;;
+			--no-download|--download)
+				_arg_download="on"
+				test "${1:0:5}" = "--no-" && _arg_download="off"
 				;;
 			--no-install|--install)
 				_arg_install="on"
 				test "${1:0:5}" = "--no-" && _arg_install="off"
+				;;
+			--no-install-env|--install-env)
+				_arg_install_env="on"
+				test "${1:0:5}" = "--no-" && _arg_install_env="off"
 				;;
 			--no-dry-run|--dry-run)
 				_arg_dry_run="on"
@@ -100,14 +112,28 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || { echo "Couldn't d
 
 # shellcheck disable=2154
 source "$script_dir/paths.sh"
+
 # shellcheck disable=2154
 info=$_arg_info
+
 # shellcheck disable=2154
-rebuild=$_arg_rebuild
+rebuild_script=$_arg_rebuild_script
+
 # shellcheck disable=2154
 dryrun=$_arg_dry_run
+
+# shellcheck disable=2154
+download=$_arg_download
+
+# shellcheck disable=2154
+arg_make=$_arg_make
+
 # shellcheck disable=2154
 install=$_arg_install
+
+# shellcheck disable=2154
+install_env=$_arg_install_env
+
 
 doit() {
     local cmds=("$@")
@@ -133,7 +159,7 @@ with_dirs() {
     echo "In dir: $(pwd)"
 }
 
-rebuild_script() {
+do_rebuild_script() {
     echo "Rebuilding script.."
     with_dirs "$script_dir"
     argbash py-install.m4 -o py-install
@@ -192,28 +218,39 @@ install_python() {
     doit rm -rf "$PYTHOND"
     doit mkdir -p "$PYTHOND"
     doit make install
+    doit "$PYTHOND/bin/pip3" install --ignore-installed virtualenv
 }
 
-create_env() {
+install_env() {
     with_dirs "$PROJECT_ROOT"
     echo "Deleting python envs $PYENVS/*"
     doit rm -rf "$PYENVS"
     doit mkdir -p "$PYENVS"
-    doit "$PYTHOND/bin/pip3" install --ignore-installed virtualenv
     doit "$PYTHOND/bin/virtualenv" "$ENV_ROOT"
 }
 
 test "$info" = on && show_paths && exit 0
-test "$rebuild" = on && rebuild_script && exit 0
+test "$rebuild_script" = on && do_rebuild_script && exit 0
 
-download_python
-unpack_python
-make_python
+if [ "$download" = on ]; then
+    echo "Downloading Python"
+    download_python
+    unpack_python
+fi
+
+if [ "$arg_make" = on ]; then
+    echo "Making Python"
+    make_python
+fi
 
 if [ "$install" = on ]; then
     echo "Installing Python"
     install_python
-    create_env
+fi
+
+if [ "$install_env" = on ]; then
+    echo "(Re)installing Env"
+    install_env
 fi
 
 

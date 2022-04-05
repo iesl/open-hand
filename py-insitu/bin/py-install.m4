@@ -4,10 +4,12 @@
 echo "This is just a script template, not the script (yet) - pass it to 'argbash' to fix this." >&2
 exit 11  #)Created by argbash-init v2.10.0
 # DEFINE_SCRIPT_DIR()
-# ARG_OPTIONAL_BOOLEAN([rebuild])
+# ARG_OPTIONAL_BOOLEAN([rebuild-script])
 # ARG_OPTIONAL_BOOLEAN([info])
-# ARG_OPTIONAL_BOOLEAN([clean])
+# ARG_OPTIONAL_BOOLEAN([make])
+# ARG_OPTIONAL_BOOLEAN([download])
 # ARG_OPTIONAL_BOOLEAN([install])
+# ARG_OPTIONAL_BOOLEAN([install-env])
 # ARG_OPTIONAL_BOOLEAN([dry-run])
 # ARG_HELP([<The general help message of my script>])
 # ARGBASH_GO
@@ -16,14 +18,28 @@ exit 11  #)Created by argbash-init v2.10.0
 
 # shellcheck disable=2154
 source "$script_dir/paths.sh"
+
 # shellcheck disable=2154
 info=$_arg_info
+
 # shellcheck disable=2154
-rebuild=$_arg_rebuild
+rebuild_script=$_arg_rebuild_script
+
 # shellcheck disable=2154
 dryrun=$_arg_dry_run
+
+# shellcheck disable=2154
+download=$_arg_download
+
+# shellcheck disable=2154
+arg_make=$_arg_make
+
 # shellcheck disable=2154
 install=$_arg_install
+
+# shellcheck disable=2154
+install_env=$_arg_install_env
+
 
 doit() {
     local cmds=("$@")
@@ -49,7 +65,7 @@ with_dirs() {
     echo "In dir: $(pwd)"
 }
 
-rebuild_script() {
+do_rebuild_script() {
     echo "Rebuilding script.."
     with_dirs "$script_dir"
     argbash py-install.m4 -o py-install
@@ -108,28 +124,39 @@ install_python() {
     doit rm -rf "$PYTHOND"
     doit mkdir -p "$PYTHOND"
     doit make install
+    doit "$PYTHOND/bin/pip3" install --ignore-installed virtualenv
 }
 
-create_env() {
+install_env() {
     with_dirs "$PROJECT_ROOT"
     echo "Deleting python envs $PYENVS/*"
     doit rm -rf "$PYENVS"
     doit mkdir -p "$PYENVS"
-    doit "$PYTHOND/bin/pip3" install --ignore-installed virtualenv
     doit "$PYTHOND/bin/virtualenv" "$ENV_ROOT"
 }
 
 test "$info" = on && show_paths && exit 0
-test "$rebuild" = on && rebuild_script && exit 0
+test "$rebuild_script" = on && do_rebuild_script && exit 0
 
-download_python
-unpack_python
-make_python
+if [ "$download" = on ]; then
+    echo "Downloading Python"
+    download_python
+    unpack_python
+fi
+
+if [ "$arg_make" = on ]; then
+    echo "Making Python"
+    make_python
+fi
 
 if [ "$install" = on ]; then
     echo "Installing Python"
     install_python
-    create_env
+fi
+
+if [ "$install_env" = on ]; then
+    echo "(Re)installing Env"
+    install_env
 fi
 
 
