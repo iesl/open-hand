@@ -1,5 +1,5 @@
 from typing import NamedTuple, Optional
-from s2and.data import ANDData #, NameCounts
+from s2and.data import ANDData  # , NameCounts
 
 import pickle
 import os
@@ -31,13 +31,22 @@ def setup_s2and_env():
 
 
 class DataPreloads(NamedTuple):
-    name_tuples: Optional[NameEquivalenceSet]
-    name_counts: Optional[NameCountDict]
+    name_tuples: NameEquivalenceSet
+    name_counts: NameCountDict
 
 
-def preloads(*, use_name_counts: bool, use_name_tuples: bool) -> DataPreloads:
-    name_counts = load_name_counts() if use_name_counts else None
-    name_tuples = load_name_tuples() if use_name_tuples else None
+EMPTY_NAME_COUNTS: NameCountDict = {
+    "first_dict": dict(),
+    "last_dict": dict(),
+    "first_last_dict": dict(),
+    "last_first_initial_dict": dict(),
+}
+
+EMPTY_NAME_EQUIVS: NameEquivalenceSet = set()
+
+def preload_data(*, use_name_counts: bool, use_name_tuples: bool) -> DataPreloads:
+    name_counts: NameCountDict = load_name_counts() if use_name_counts else EMPTY_NAME_COUNTS
+    name_tuples = load_name_tuples() if use_name_tuples else EMPTY_NAME_EQUIVS
     return DataPreloads(name_counts=name_counts, name_tuples=name_tuples)
 
 

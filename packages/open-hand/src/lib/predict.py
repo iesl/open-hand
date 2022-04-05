@@ -21,7 +21,7 @@ from lib.log import logger
 from lib.model import load_model
 from lib.canopies import get_canopy, get_canopy_strs
 from s2and.data import ANDData
-from lib.s2and_data import DataPreloads, preloads
+from lib.s2and_data import DataPreloads, preload_data
 
 import click
 
@@ -61,7 +61,7 @@ def format_sig(sig: SignatureWithFocus) -> str:
 
 def predict_all():
     model = load_model()
-    pre = preloads(use_name_counts=False, use_name_tuples=True)
+    pre = preload_data(use_name_counts=False, use_name_tuples=True)
     canopies = get_canopy_strs()
     for canopy in canopies:
         dopredict(canopy, commit=True, model=model, pre=pre)

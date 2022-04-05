@@ -13,6 +13,7 @@ model_file = join(MAIN_DATA_DIR, "production_model.pickle")
 
 logger.info(f"Using model files in data dir {MAIN_DATA_DIR}")
 
+
 def load_model() -> Clusterer:
     with open(model_file, "rb") as _pkl_file:
         clusterer = pickle.load(_pkl_file)

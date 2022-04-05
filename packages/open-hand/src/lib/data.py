@@ -10,7 +10,6 @@ StrField = fields.Str(allow_none=False)
 IntField = fields.Int(allow_none=False)
 
 
-
 # fields.Str(validate=)
 
 

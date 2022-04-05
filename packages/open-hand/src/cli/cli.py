@@ -4,7 +4,7 @@ from click.core import Context
 from marshmallow.utils import pprint
 
 from lib.predict import displayMentions
-from lib.s2and_data import preloads
+from lib.s2and_data import preload_data
 
 # from . import cserver as cs
 from . import utils
@@ -36,7 +36,7 @@ def predict(canopy: str, commit: bool):
     click.echo(f"canopy={canopy}")
     from lib import predict
 
-    pre = preloads(use_name_counts=False, use_name_tuples=True)
+    pre = preload_data(use_name_counts=False, use_name_tuples=False)
     clusters = predict.dopredict(canopy, commit=commit, pre=pre)
     for cluster in clusters:
         print(f"Mentions for cluster {cluster.cluster_id}")
