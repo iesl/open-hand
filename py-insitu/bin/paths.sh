@@ -1,52 +1,40 @@
 #!/usr/bin/env bash
 
-# SCRIPT=$(readlink -f "$0")
-# BIN=$(dirname "$SCRIPT")
+SCRIPT=$(readlink -f "$0")
+SCRIPT_BIN=$(dirname "$SCRIPT")
 
 # export PYVER="3.7.13" ## <- original version used by S2AND
 # export PYVER="3.10.4" ## <- incompatible with numpy
 export PYVER="3.9.11"
 
-CWD=$(pwd)
-ROOTD=$(pwd)
-TMPD="$ROOTD/install.tmp.d"
+PY_INSITU_ROOT=$(dirname "$SCRIPT_BIN")
+PROJECT_ROOT=$(pwd)
+
+INSTALL_TMPD="$PY_INSITU_ROOT/install.tmp.d"
 
 PYSRC="Python-$PYVER"
 PYTGZ="$PYSRC.tgz"
 PYSRC_URL="http://www.python.org/ftp/python/$PYVER/$PYTGZ"
 
-PYTHOND="$ROOTD/.local/python"
-PYENVS="$ROOTD/.local/envs"
+PYTHOND="$PROJECT_ROOT/.local/python"
+PYENVS="$PROJECT_ROOT/.local/envs"
 
-# S2AND_ENV="$PYENVS/s2and-env"
-S2AND_ENV="$PYENVS/open-and-env"
+ENV_NAME="open-hand-env"
+ENV_ROOT="$PYENVS/$ENV_NAME"
 
-S2AND="$ROOTD/ext/S2AND"
-
-export CWD
-export TMPD
-export ROOTD
-
-export PYSRC
-export PYTGZ
-export PYSRC_URL
-
-export PYTHOND
-export PYENVS
-
-export S2AND_ENV
-export S2AND
-
-echo "Directory Structure"
-echo "  ROOTD         $ROOTD"
-echo "  TMPD          $TMPD"
-echo
-echo "  PYSRC         $PYSRC"
-echo "  PYTGZ         $PYTGZ"
-echo "  PYSRC_URL     $PYSRC_URL"
-echo
-echo "  PYTHOND       $PYTHOND"
-echo "  PYENVS        $PYENVS"
-echo
-echo "  S2AND_ENV     $S2AND_ENV"
-echo "  S2AND         $S2AND"
+show_paths() {
+    echo "Directory Structure"
+    echo "  PROJECT_ROOT   $PROJECT_ROOT"
+    echo "  PY_INSITU      $PY_INSITU_ROOT"
+    echo "  INSTALL_TMPD   $INSTALL_TMPD"
+    echo
+    echo "  PYSRC          $PYSRC"
+    echo "  PYTGZ          $PYTGZ"
+    echo "  PYSRC_URL      $PYSRC_URL"
+    echo
+    echo "  PYTHOND        $PYTHOND"
+    echo "  PYENVS         $PYENVS"
+    echo
+    echo "  ENV_NAME       $ENV_NAME"
+    echo "  ENV_ROOT       $ENV_ROOT"
+}

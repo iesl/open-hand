@@ -6,10 +6,11 @@ BIN=$(dirname "$SCRIPT")
 # shellcheck source=./paths.sh
 . "$BIN/paths.sh"
 
-if [ ! -d "$TMPD" ]; then
-    mkdir "$TMPD"
+if [ ! -d "$INSTALL_TMPD" ]; then
+    mkdir "$INSTALL_TMPD"
 fi
-cd "$TMPD" || exit
+
+cd "$INSTALL_TMPD" || exit
 
 if [ ! -f "$PYTGZ" ]; then
     wget "$PYSRC_URL"
@@ -34,6 +35,7 @@ cd "$PYSRC" || exit
 echo "Deleting old python install $PYTHOND"
 rm -rf "$PYTHOND"
 mkdir -p "$PYTHOND"
+
 echo "Deleting python envs $PYENVS/*"
 
 rm -rf "$PYENVS"
