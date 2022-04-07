@@ -59,18 +59,27 @@ def format_sig(sig: SignatureWithFocus) -> str:
     return dim(f"{sig.signature.author_info.fullname}")
 
 
-def predict_all():
+def predict_all(*, commit: bool = True, profile: bool = False):
     model = load_model()
     pre = preload_data(use_name_counts=False, use_name_tuples=True)
     canopies = get_canopy_strs()
     for canopy in canopies:
-        dopredict(canopy, commit=True, model=model, pre=pre)
+        dopredict(canopy, commit=commit, model=model, pre=pre, profile=profile)
+
+
+import cProfile, pstats
+
 
 
 def dopredict(
-    canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: DataPreloads
+    canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: DataPreloads, profile: bool = False
 ) -> List[ClusteringRecord]:
-    logger.info(f"Clustering canopy '{canopy}', commit = {commit}")
+    logger.info(f"Clustering canopy '{canopy}', commit = {commit}, profiling={profile}")
+
+    profiler = cProfile.Profile()
+    if profile:
+        profiler.enable()
+
     mentions = get_canopy(canopy)
     pcount = len(mentions.papers)
     scount = len(mentions.signatures)
@@ -98,6 +107,14 @@ def dopredict(
     if commit:
         logger.info(f"Committing {len(cluster_records)} clusters for {canopy}")
         commit_clusters(cluster_records)
+
+    if profile:
+        profiler.disable()
+        stats = pstats.Stats(profiler).sort_stats("tottime")
+        cname = canopy.replace(" ", "_")
+        stats_file = f"canopy_{cname}_n{scount}.prof"
+        logger.info(f"Writing stats to {stats_file}")
+        stats.dump_stats(stats_file)
 
     return cluster_records
 

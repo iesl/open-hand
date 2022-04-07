@@ -1,14 +1,12 @@
 {% extends 'base.html' %}
+{% import '_pager.html' as pager %}
 
 {% block header %}
   <h4 class='blue'>{% block title %}All Canopies{% endblock %}</h4>
 {% endblock %}
 
 {% block content %}
-  <p>Page {{page}} of {{ pagecount }}</p>
-  {% for n in range(pagecount) %}
-    <span><a href="/canopies/{{ n }}">{{ n }} |</a></span>
-  {% endfor %}
+  {{ pager.pager(pagecount, page) }}
   <table>
     <thead>
       <tr>

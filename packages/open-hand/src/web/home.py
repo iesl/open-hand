@@ -18,6 +18,7 @@ bp = Blueprint("app", __name__, template_folder="templates")
 
 from flask import render_template
 
+
 @bp.route("/")
 def index():
     return redirect(url_for(".show_canopies"))
@@ -41,7 +42,7 @@ def show_canopies(page: Optional[int] = None):
     if page is None:
         page = 0
 
-    pagesize = 50
+    pagesize = 80
     offset = page * pagesize
 
     canopystrs = get_canopy_strs()
@@ -67,15 +68,6 @@ def show_canopy(id: str):
     cluster_ids = list(cluster_dict)
 
     return render_template("canopy.html", canopy=id, cluster_ids=cluster_ids, cluster_dict=cluster_dict)
-
-
-def XXXshow_canopy0(id: str):
-    mentions_init = get_canopy(id)
-    init_signatures = mentions_init.signatures.values()
-    mentions = add_all_referenced_signatures(mentions_init)
-    papers_with_sigs = [get_paper_with_signatures(mentions, s) for s in init_signatures]
-
-    return render_template("canopy.html", canopy=id, pws_iter=papers_with_sigs)
 
 
 @bp.route("/clusters")

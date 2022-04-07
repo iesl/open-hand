@@ -2,11 +2,11 @@ import click
 
 from click.core import Context
 from marshmallow.utils import pprint
+from lib.model import load_model
 
 from lib.predict import displayMentions
 from lib.s2and_data import preload_data
 
-# from . import cserver as cs
 from . import utils
 
 app = utils.make_celery()
@@ -20,24 +20,21 @@ def cli(ctx: Context, remote: bool):
     ctx.obj["remote"] = remote
 
 
-# @cli.command()
-# @click.pass_context
-# def normalize(ctx: Context):
-#     """Normalize all un-normalized papers/signatures"""
-#     return utils.run(ctx, cs.normalize)
-
-
 @cli.command()
 @click.argument("canopy", type=str)
+@click.option("--profile", is_flag=True, help="profile program execution")
+@click.option("--use-name-dicts", is_flag=True, help="Use (expensive to load) model data for names")
 @click.option("--commit", "-c", is_flag=True, help="commit results to mongodb")
-def predict(canopy: str, commit: bool):
+def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
     """Run prediction on canopy"""
 
     click.echo(f"canopy={canopy}")
     from lib import predict
 
-    pre = preload_data(use_name_counts=False, use_name_tuples=False)
-    clusters = predict.dopredict(canopy, commit=commit, pre=pre)
+    pre = preload_data(use_name_counts=use_name_dicts, use_name_tuples=True)
+    model = load_model()
+    clusters = predict.dopredict(canopy, commit=commit, pre=pre, profile=profile, model=model)
+
     for cluster in clusters:
         print(f"Mentions for cluster {cluster.cluster_id}")
         displayMentions(cluster.mentions)
@@ -45,11 +42,12 @@ def predict(canopy: str, commit: bool):
 
 
 @cli.command()
-def predict_all():
-    """Run prediction on all canopy"""
+@click.option("--profile", is_flag=True, help="profile program execution")
+def predict_all(profile: bool):
+    """Run prediction on all canopies"""
     from lib import predict
 
-    predict.predict_all()
+    predict.predict_all(profile=profile)
 
 
 @cli.group()

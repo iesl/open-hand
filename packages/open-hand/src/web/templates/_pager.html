@@ -1,0 +1,23 @@
+{% macro pager(pagecount, page) %}
+<div>
+    <div>
+        <span>
+            <ul class="inline-ul">
+                <li> <a href="/canopies/{{ page-1 }}"> &lt;&lt;Prev </a> </li>
+                <li> <span> Page {{page}} of {{ pagecount }} </span> </li>
+                <li> <a href="/canopies/{{ page+1 }}"> Next &gt;&gt; </a> </li>
+            </ul>
+        </span>
+        <label for="jumptopage">Jump to page:</label>
+        <input
+          type="number"
+          id="jumptopage"
+          name="jumptopage"
+          min="0"
+          max="{{pagecount}}"
+          onchange="window.document.location=window.location.origin + '/canopies/' + this.value"
+        >
+    </div>
+
+</div>
+{%- endmacro %}

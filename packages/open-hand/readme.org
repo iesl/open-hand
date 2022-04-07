@@ -21,4 +21,13 @@ Redis
 **** Write results back to cluster collection (cluster_id, signature_id)
 
 
-** Incremental Processing
+*** Jaccard distance is very slow
+perhaps MinHash?
+*** Parallelism for sklearn prediction
+
+https://scikit-learn.org/stable/computing/parallelism.html
+
+** Profile viewing
+https://github.com/jrfonseca/xdot.py
+https://github.com/jrfonseca/gprof2dot
+https://github.com/jiffyclub/snakeviz

@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple, NewType
 OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)
 IntField = fields.Int(allow_none=False)
+OptIntField = fields.Int(load_default=None)
 
 
 # fields.Str(validate=)
@@ -37,7 +38,7 @@ class PaperRec:
     references: List[str]
     title: str
     venue: Optional[str]
-    year: int
+    year: Optional[int]
 
 
 class PaperRecSchema(Schema):
@@ -51,7 +52,7 @@ class PaperRecSchema(Schema):
     references = fields.List(StrField)
     title = StrField
     venue = OptStringField
-    year = IntField
+    year = OptIntField
 
     @post_load
     def make(self, data: Any, **_) -> PaperRec:

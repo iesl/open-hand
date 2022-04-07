@@ -1,5 +1,6 @@
 import logging
 
+
 def setup(logname: str):
     logger = logging.getLogger(logname)
     logger.setLevel(logging.INFO)
@@ -13,6 +14,6 @@ def setup(logname: str):
 
 
 s2and_logger = logging.getLogger("s2and")
-s2and_logger.setLevel("WARN")
+s2and_logger.setLevel("INFO")
 
 logger = setup("open-coref")
