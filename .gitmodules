@@ -1,0 +1,3 @@
+[submodule "packages/s2and"]
+	path = packages/s2and
+	url = git@github.com:iesl/S2AND.git
