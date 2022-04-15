@@ -10,7 +10,6 @@ from .util.assets import bundles
 from lib.log import logger
 from pprint import pp
 
-
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=False, instance_path=str(WEB_INSTANCE_PATH.resolve()))
@@ -33,6 +32,7 @@ def create_app(test_config=None):
         os.makedirs(ASSET_CACHE_PATH, exist_ok=True)
         logger.info(f"mkdir {ASSET_BUILD_PATH}")
         os.makedirs(ASSET_BUILD_PATH, exist_ok=True)
+
     except OSError as e:
         logger.warn(f"Error mkdir: {e}")
         pass

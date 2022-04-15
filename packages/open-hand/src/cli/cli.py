@@ -2,9 +2,9 @@ import click
 
 from click.core import Context
 from marshmallow.utils import pprint
+from lib.display import displayMentions
 from lib.model import load_model
 
-from lib.predict import displayMentions
 from lib.s2and_data import preload_data
 
 from . import utils

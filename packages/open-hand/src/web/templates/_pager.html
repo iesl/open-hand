@@ -3,20 +3,31 @@
     <div>
         <span>
             <ul class="inline-ul">
-                <li> <a href="/canopies/{{ page-1 }}"> &lt;&lt;Prev </a> </li>
+                <li> <a href="{{ url_for('.show_canopies', page=page-1) }}"> &lt;&lt;Prev </a> </li>
                 <li> <span> Page {{page}} of {{ pagecount }} </span> </li>
-                <li> <a href="/canopies/{{ page+1 }}"> Next &gt;&gt; </a> </li>
+                <li> <a href="{{ url_for('.show_canopies', page=page+1) }}"> Next &gt;&gt; </a> </li>
             </ul>
         </span>
         <label for="jumptopage">Jump to page:</label>
+
+        <script type="text/javascript">
+         function navto (newpage) {
+           let xurl = "{{ url_for('.show_canopies') }}";
+           let origin = window.location.origin;
+           let to = origin + '/' + xurl + '/' + newpage;
+           window.document.location = to;
+           loc = to;
+         }
+        </script>
+
         <input
           type="number"
           id="jumptopage"
           name="jumptopage"
           min="0"
           max="{{pagecount}}"
-          onchange="window.document.location=window.location.origin + '/canopies/' + this.value"
-        >
+          onchange="navto(this.value)"
+        />
     </div>
 
 </div>

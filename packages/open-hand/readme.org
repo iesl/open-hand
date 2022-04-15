@@ -16,7 +16,7 @@ Redis
 ** Batch Processing
 *** Fetch notes into 'shadow' Mongo db
 *** Run normalizer over all shadowed notes, update db w/ cached normalized data
-*** For each canopy, load all papers/signatures from mongo w/given canopy
+** For each canopy, load all papers/signatures from mongo w/given canopy
 **** run predict() over single block
 **** Write results back to cluster collection (cluster_id, signature_id)
 
@@ -31,3 +31,5 @@ https://scikit-learn.org/stable/computing/parallelism.html
 https://github.com/jrfonseca/xdot.py
 https://github.com/jrfonseca/gprof2dot
 https://github.com/jiffyclub/snakeviz
+
+*** numba for jit compiling?

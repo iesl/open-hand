@@ -44,6 +44,7 @@ EMPTY_NAME_COUNTS: NameCountDict = {
 
 EMPTY_NAME_EQUIVS: NameEquivalenceSet = set()
 
+
 def preload_data(*, use_name_counts: bool, use_name_tuples: bool) -> DataPreloads:
     name_counts: NameCountDict = load_name_counts() if use_name_counts else EMPTY_NAME_COUNTS
     name_tuples = load_name_tuples() if use_name_tuples else EMPTY_NAME_EQUIVS

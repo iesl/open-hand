@@ -1,9 +1,10 @@
-
 class Config(object):
     DEBUG = False
 
+
 class TestConfig(Config):
     DEBUG = True
+
 
 # ENV
 # TESTING

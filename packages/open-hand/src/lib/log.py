@@ -14,6 +14,6 @@ def setup(logname: str):
 
 
 s2and_logger = logging.getLogger("s2and")
-s2and_logger.setLevel("INFO")
+# s2and_logger.setLevel("INFO")
 
 logger = setup("open-coref")

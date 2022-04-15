@@ -1,3 +1,6 @@
+from lib.display import mentions_to_displayables
+from lib.log import logger
+
 from typing import List, Optional
 from flask import (
     Blueprint,
@@ -7,9 +10,8 @@ from flask import (
     # request, url_for, flash, g, redirect,
 )
 
-from lib.data import MentionRecords, get_paper_with_signatures
-from lib.database import add_all_referenced_signatures, get_canopy, get_canopy_strs
-from lib.predict import mentions_to_displayables
+from lib.data import MentionRecords
+from lib.database import get_canopy, get_canopy_strs
 
 import math
 
@@ -21,6 +23,8 @@ from flask import render_template
 
 @bp.route("/")
 def index():
+    logger.debug(f"index:         {url_for('.index')}")
+    logger.debug(f"show_canopies: {url_for('.show_canopies')}")
     return redirect(url_for(".show_canopies"))
 
 

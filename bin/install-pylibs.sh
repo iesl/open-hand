@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_ROOT=$(pwd)
-S2AND_ROOT="packages/s2and@iesl"
+S2AND_ROOT="packages/s2and"
 OPEN_HAND_ROOT="packages/open-hand"
 
 active_python=$(which python)

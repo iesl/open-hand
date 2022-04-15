@@ -1,32 +1,24 @@
-from itertools import groupby
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from lib.log import logger
+
+from typing import List, Optional, Union
 
 from s2and.model import Clusterer
-from lib.cli_utils import dim, yellowB
 
 from lib.data import (
-    AuthorRec,
     ClusteringRecord,
     MentionRecords,
-    PaperWithSignatures,
-    SignatureRec,
-    SignatureWithFocus,
-    get_paper_with_signatures,
     papers2dict,
     signatures2dict,
 )
-from lib.database import add_all_referenced_signatures
+
 from lib.mongoconn import dbconn
-from lib.log import logger
 from lib.model import load_model
 from lib.canopies import get_canopy, get_canopy_strs
 from s2and.data import ANDData
 from lib.s2and_data import DataPreloads, preload_data
 
-import click
 
-from lib.typedefs import ClusterID, NameCountDict, NameEquivalenceSet
-
+from lib.typedefs import NameCountDict, NameEquivalenceSet
 
 def choose_canopy(n: int) -> str:
     return get_canopy_strs()[n]
@@ -49,15 +41,6 @@ def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
     return anddata
 
 
-def format_authors(authors: List[AuthorRec], fn: Callable[[AuthorRec, int], str]) -> List[str]:
-    return [fn(a, i) for i, a in enumerate(authors)]
-
-
-def format_sig(sig: SignatureWithFocus) -> str:
-    if sig.has_focus:
-        return yellowB(f"{sig.signature.author_info.fullname}")
-    return dim(f"{sig.signature.author_info.fullname}")
-
 
 def predict_all(*, commit: bool = True, profile: bool = False):
     model = load_model()
@@ -68,8 +51,6 @@ def predict_all(*, commit: bool = True, profile: bool = False):
 
 
 import cProfile, pstats
-
-
 
 def dopredict(
     canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: DataPreloads, profile: bool = False
@@ -135,46 +116,3 @@ def commit_cluster(cluster: ClusteringRecord):
 def commit_clusters(clusters: List[ClusteringRecord]):
     for c in clusters:
         commit_cluster(c)
-
-
-def mentions_to_displayables(
-    mentions_init: MentionRecords,
-) -> Tuple[MentionRecords, Dict[ClusterID, List[PaperWithSignatures]]]:
-    def keyfn(s: SignatureRec):
-        if s.cluster_id is None:
-            return "<unclustered>"
-        return s.cluster_id
-
-    cluster_groups: Dict[str, List[SignatureRec]] = dict(
-        [(k, list(grp)) for k, grp in groupby(mentions_init.signatures.values(), keyfn)]
-    )
-
-    cluster_ids = list(cluster_groups)
-
-    mentions = add_all_referenced_signatures(mentions_init)
-    cluster_tuples: List[Tuple[ClusterID, List[PaperWithSignatures]]] = []
-    for id in cluster_ids:
-        sig_zip_papers = [get_paper_with_signatures(mentions, sig) for sig in cluster_groups[id]]
-        cluster_tuples.append((ClusterID(id), sig_zip_papers))
-
-    cluster_dict = dict(cluster_tuples)
-
-    return (mentions, cluster_dict)
-
-
-def displayMentions(mentions_init: MentionRecords):
-    _, cluster_dict = mentions_to_displayables(mentions_init)
-
-    cluster_ids = list(cluster_dict)
-    for cluster_id in cluster_ids:
-        click.echo(f"Cluster is: {cluster_id}")
-        cluster = cluster_dict[cluster_id]
-        for pws in cluster:
-            paper = pws.paper
-            title = click.style(paper.title, fg="blue")
-            fmtsigs = [format_sig(sig) for sig in pws.signatures]
-            auths = ", ".join(fmtsigs)
-            click.echo(f"   {title}")
-            click.echo(f"      {auths}")
-
-        click.echo("\n")
