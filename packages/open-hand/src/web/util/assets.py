@@ -1,8 +1,8 @@
 from pathlib import Path
 from flask_assets import Bundle
 
-from lib import consts
-from lib.log import logger
+from lib.predefs import consts
+from lib.predefs.log import logger
 
 output_root = consts.ASSET_BUILD_PATH.relative_to(consts.PRJ_ROOT_PATH)
 

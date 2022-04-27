@@ -1,9 +1,7 @@
 from marshmallow import Schema, fields, EXCLUDE, post_load
 from dataclasses import dataclass, asdict
 
-from typing import Any, Dict, List, Optional, Tuple, NewType
-
-# from s2and.data import Author as S2AuthorNorm, Signature as S2SignatureNorm
+from typing import Any, Dict, List, Optional, Tuple
 
 OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)
@@ -11,7 +9,31 @@ IntField = fields.Int(allow_none=False)
 OptIntField = fields.Int(load_default=None)
 
 
-# fields.Str(validate=)
+@dataclass
+class OpenReviewConfig:
+    restApi: str
+    restUser: str
+    restPassword: str
+
+class OpenReviewSchema(Schema):
+    restApi = StrField
+    restUser = StrField
+    restPassword = StrField
+
+    @post_load
+    def make(self, data: Any, **_) -> OpenReviewConfig:
+        return OpenReviewConfig(**data)
+
+@dataclass
+class Config:
+    openreview: OpenReviewConfig
+
+class ConfigSchema(Schema):
+    openreview = fields.Nested(OpenReviewSchema)
+
+    @post_load
+    def make(self, data: Any, **_) -> Config:
+        return Config(**data)
 
 
 @dataclass

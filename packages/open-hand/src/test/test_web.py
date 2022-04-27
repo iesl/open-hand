@@ -11,7 +11,7 @@ from jinja2.environment import Environment
 # from jinja2.exceptions import UndefinedError
 from jinja2.loaders import DictLoader, FileSystemLoader
 
-from lib.data import AuthorInfoBlock, AuthorRec, MentionRecords, PaperRec, SignatureRec, get_paper_with_signatures
+from lib.predefs.data import AuthorInfoBlock, AuthorRec, MentionRecords, PaperRec, SignatureRec, get_paper_with_signatures
 
 
 @pytest.fixture

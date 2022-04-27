@@ -1,10 +1,11 @@
 import typing as t
 import click
-
 from click.core import Context
+
 from lib.db.database import get_canopy
 from lib.display import displayMentions
 from lib.model import load_model
+from lib.predefs.config import load_config, setenv
 
 from lib.predefs.s2and_data import preload_data
 from pprint import pprint
@@ -20,6 +21,17 @@ def cli(ctx: Context, remote: bool):
     ctx.ensure_object(dict)
     ctx.obj["remote"] = remote
 
+@cli.command()
+@click.option("--env", type=click.Choice(['testing', 'production']), required=True, help="Check that config is valid")
+def check_config(env: str):
+    """Ensure config is valid"""
+    print(f"Checking env {env}")
+    setenv(env)
+    config = load_config()
+    if config is None:
+        print(f"Could not find config file for env={env}")
+    else:
+        pprint(config)
 
 @cli.command()
 @click.argument("canopy", type=str)

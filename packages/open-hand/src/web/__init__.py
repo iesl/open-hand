@@ -4,10 +4,10 @@ from flask import Flask
 
 from flask_assets import Environment
 
-from lib.consts import ASSET_BUILD_PATH, ASSET_CACHE_PATH, WEB_INSTANCE_PATH
+from lib.predefs.consts import ASSET_BUILD_PATH, ASSET_CACHE_PATH, WEB_INSTANCE_PATH
 from .util.assets import bundles
 
-from lib.log import logger
+from lib.predefs.log import logger
 from pprint import pp
 
 def create_app(test_config=None):

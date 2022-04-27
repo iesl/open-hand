@@ -1,3 +1,6 @@
 [submodule "packages/s2and"]
 	path = packages/s2and
 	url = git@github.com:iesl/S2AND.git
+[submodule "packages/openreview-py"]
+	path = packages/openreview-py
+	url = git@github.com:openreview/openreview-py.git
