@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 from s2and.data import ANDData  # , NameCounts
 
 import pickle
@@ -6,7 +6,7 @@ import os
 
 # from s2and.text import name_counts
 
-from lib.typedefs import NameCountDict, NameEquivalenceSet
+from .typedefs import NameCountDict, NameEquivalenceSet
 from .log import logger
 
 from s2and.consts import PROJECT_ROOT_PATH, NAME_COUNTS_PATH

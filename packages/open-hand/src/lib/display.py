@@ -1,14 +1,16 @@
 from typing import Dict, List, Tuple
 import typing as t
-from lib.database import add_all_referenced_signatures
-from lib.typedefs import ClusterID
+
+from pprint import pprint
+from lib.db.database import add_all_referenced_signatures
+from lib.predefs.typedefs import ClusterID
 from itertools import groupby
 import click
 
 from lib.cli_utils import dim, yellowB
 
 
-from lib.data import (
+from lib.predefs.data import (
     MentionRecords,
     PaperWithSignatures,
     SignatureRec,
@@ -16,6 +18,7 @@ from lib.data import (
     SignatureWithFocus,
     AuthorRec,
 )
+
 
 def format_authors(authors: List[AuthorRec], fn: t.Callable[[AuthorRec, int], str]) -> List[str]:
     return [fn(a, i) for i, a in enumerate(authors)]
@@ -52,14 +55,19 @@ def mentions_to_displayables(
     return (mentions, cluster_dict)
 
 
-def displayMentions(mentions_init: MentionRecords):
-    _, cluster_dict = mentions_to_displayables(mentions_init)
+def displayMentions(mentions: MentionRecords):
+    _, cluster_dict = mentions_to_displayables(mentions)
 
     cluster_ids = list(cluster_dict)
     for cluster_id in cluster_ids:
         click.echo(f"Cluster is: {cluster_id}")
         cluster = cluster_dict[cluster_id]
         for pws in cluster:
+            for s in pws.signatures:
+                openId = s.signature.author_info.openId
+                fullname = s.signature.author_info.fullname
+                print(f"{fullname}  {openId}")
+
             paper = pws.paper
             title = click.style(paper.title, fg="blue")
             fmtsigs = [format_sig(sig) for sig in pws.signatures]

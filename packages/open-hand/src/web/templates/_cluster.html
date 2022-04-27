@@ -1,0 +1,11 @@
+{% macro render(cluster) %}
+
+{% import '_paperrec.html' as paperrec %}
+
+{% for member in cluster %}
+  <div class="cluster-record">
+    {{ paperrec.paper(member) }}
+  </div>
+{% endfor %}
+
+{% endmacro %}

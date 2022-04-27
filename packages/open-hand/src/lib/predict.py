@@ -1,24 +1,25 @@
-from lib.log import logger
+from lib.predefs.log import logger
 
 from typing import List, Optional, Union
 
 from s2and.model import Clusterer
 
-from lib.data import (
+from lib.predefs.data import (
     ClusteringRecord,
     MentionRecords,
     papers2dict,
     signatures2dict,
 )
 
-from lib.mongoconn import dbconn
-from lib.model import load_model
-from lib.canopies import get_canopy, get_canopy_strs
+from .db.mongoconn import dbconn
+from .model import load_model
+from .canopies import get_canopy, get_canopy_strs
 from s2and.data import ANDData
-from lib.s2and_data import DataPreloads, preload_data
+from .predefs.s2and_data import DataPreloads, preload_data
 
 
-from lib.typedefs import NameCountDict, NameEquivalenceSet
+from lib.predefs.typedefs import NameCountDict, NameEquivalenceSet
+
 
 def choose_canopy(n: int) -> str:
     return get_canopy_strs()[n]
@@ -41,7 +42,6 @@ def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
     return anddata
 
 
-
 def predict_all(*, commit: bool = True, profile: bool = False):
     model = load_model()
     pre = preload_data(use_name_counts=False, use_name_tuples=True)
@@ -51,6 +51,7 @@ def predict_all(*, commit: bool = True, profile: bool = False):
 
 
 import cProfile, pstats
+
 
 def dopredict(
     canopy: str, *, commit: bool = False, model: Optional[Clusterer] = None, pre: DataPreloads, profile: bool = False

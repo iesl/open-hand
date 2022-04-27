@@ -1,5 +1,5 @@
 from lib.display import mentions_to_displayables
-from lib.log import logger
+from lib.predefs.log import logger
 
 from typing import List, Optional
 from flask import (
@@ -10,8 +10,8 @@ from flask import (
     # request, url_for, flash, g, redirect,
 )
 
-from lib.data import MentionRecords
-from lib.database import get_canopy, get_canopy_strs
+from lib.predefs.data import MentionRecords
+from lib.db.database import get_canopy, get_canopy_strs
 
 import math
 

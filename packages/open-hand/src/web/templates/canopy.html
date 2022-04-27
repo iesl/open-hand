@@ -4,15 +4,18 @@
 {% block header %} {% endblock %}
 
 {% import '_paperrec.html' as paperrec %}
+{% import '_cluster.html' as Cluster %}
 
 {% block content %}
   <div>
     <h2> Canopy '{{ canopy }}' </h2>
   </div>
   <div class="mention-list">
+
   {% set clustered = cluster_ids | reject('==', '<unclustered>') | list %}
   {% set unclustered = cluster_ids | select('==', '<unclustered>') | list %}
   {% set all_ids = clustered + unclustered %}
+
   <div>Cluster Count = {{ clustered | length }}</div>
    {% for cluster_id in all_ids %}
      <div class="cluster-records">
@@ -21,13 +24,10 @@
        {% else %}
         <h4>Cluster <em>"{{cluster_id}}"</em></h4>
        {% endif %}
-        {% set cluster = cluster_dict[cluster_id] %}
-        {% for member in cluster %}
-        <div class="cluster-record">
-            {{ paperrec.paper(member) }}
-        </div>
-        {% endfor %}
-      </div>
+
+       {% set cluster = cluster_dict[cluster_id] %}
+       {{ Cluster.render(cluster) }}
+     </div>
    {% endfor %}
   </div>
 {% endblock %}

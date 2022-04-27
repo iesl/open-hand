@@ -1,5 +1,4 @@
-from lib.database import get_canopy, get_canopy_strs
-
+from .db.database import get_canopy, get_canopy_strs
 
 def list_canopies(offset: int):
     cstrs = get_canopy_strs()

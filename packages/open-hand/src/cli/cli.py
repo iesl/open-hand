@@ -1,16 +1,17 @@
+import typing as t
 import click
 
 from click.core import Context
-from marshmallow.utils import pprint
+from lib.db.database import get_canopy
 from lib.display import displayMentions
 from lib.model import load_model
 
-from lib.s2and_data import preload_data
+from lib.predefs.s2and_data import preload_data
+from pprint import pprint
 
 from . import utils
 
-app = utils.make_celery()
-
+app: t.Any = utils.make_celery()
 
 @click.group()
 @click.option("--remote", "-x", is_flag=True, help="run command on server")
@@ -59,7 +60,6 @@ def canopy():
 @click.argument("canopy", type=str)
 def canopy_show(canopy: str):
     """Show a canopy"""
-    from lib.canopies import get_canopy
 
     c = get_canopy(canopy)
     displayMentions(c)
@@ -82,7 +82,7 @@ def cluster():
 @cluster.command("show")
 def cluster_show():
     """Show the results of cluster prediction"""
-    from lib.database import get_cluster
+    from lib.db.database import get_cluster
 
     cluster = get_cluster("a mccallum_1")
 
