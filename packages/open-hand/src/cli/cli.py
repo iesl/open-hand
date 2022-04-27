@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import typing as t
 import click
 from click.core import Context
@@ -5,6 +6,7 @@ from click.core import Context
 from lib.db.database import get_canopy
 from lib.display import displayMentions
 from lib.model import load_model
+from lib.orx.open_exchange import get_notes_for_author
 from lib.predefs.config import load_config, setenv
 
 from lib.predefs.s2and_data import preload_data
@@ -16,8 +18,12 @@ app: t.Any = utils.make_celery()
 
 @click.group()
 @click.option("--remote", "-x", is_flag=True, help="run command on server")
+@click.option("--env", type=click.Choice(['testing', 'production']), default='testing', help="Check that config is valid")
 @click.pass_context
-def cli(ctx: Context, remote: bool):
+def cli(ctx: Context, remote: bool, env: str):
+    print(f"Env set to {env}")
+    setenv(env)
+    # config = load_config()
     ctx.ensure_object(dict)
     ctx.obj["remote"] = remote
 
@@ -105,9 +111,24 @@ def cluster_show():
         pprint(item)
 
 
+@cli.group()
+def orx():
+    """OpenReview exchange; fetch/update notes"""
+
+@orx.group()
+def get():
+    """OpenReview exchange; fetch/update notes"""
+
+@get.command("author")
+@click.argument("authorid", type=str)
+def author(authorid: str):
+    notes = get_notes_for_author(authorid)
+    for n in notes:
+        nd = n.to_json()
+        pprint(nd)
+
 def go():
     cli(obj={})
-
 
 if __name__ == "__main__":
     go()
