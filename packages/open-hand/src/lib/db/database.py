@@ -1,4 +1,6 @@
-from typing import List
+from typing import Any, Collection, List
+
+from pymongo.cursor import Cursor
 
 from .mongoconn import dbconn
 from lib.predefs.data import (
@@ -19,7 +21,10 @@ clusters_coll = dbconn.clusters
 
 
 def get_clusters_for_canopy(canopy: str) -> List[ClusteringRecord]:
-    cluster_ids = list(set([c["cluster_id"] for c in clusters_coll.find({"canopy": canopy})]))
+    cursor: Cursor = clusters_coll.find({"canopy": canopy})
+
+    cluster_ids: List[str] = [c["cluster_id"] for c in cursor]
+    cluster_ids: List[str] = list(set(cluster_ids))
     pprint.pp(cluster_ids)
     clusters = [get_cluster(c) for c in cluster_ids]
 
@@ -37,26 +42,23 @@ def add_all_referenced_signatures(mentions: MentionRecords) -> MentionRecords:
 
 
 def get_canopied_signatures(canopystr: str) -> List[SignatureRec]:
-    signatures = [
-        SignatureRecSchema().load(p)
-        for p in signature_coll.aggregate(
-            [
-                {"$match": {"author_info.block": {"$eq": canopystr}}},
-                {
-                    "$lookup": {
-                        "from": "clusters",
-                        "localField": "signature_id",
-                        "foreignField": "signature_id",
-                        "as": "clusters",
-                    }
-                },
-                {"$set": {"cluster": {"$arrayElemAt": ["$clusters", 0]}}},
-                {"$set": {"cluster_id": "$cluster.cluster_id"}},
-                {"$project": {"_id": 0, "__v": 0, "clusters": 0, "cluster": 0}},
-            ]
-        )
-    ]
-
+    coll: Collection[Any] = signature_coll.aggregate(
+        [
+            {"$match": {"author_info.block": {"$eq": canopystr}}},
+            {
+                "$lookup": {
+                    "from": "clusters",
+                    "localField": "signature_id",
+                    "foreignField": "signature_id",
+                    "as": "clusters",
+                }
+            },
+            {"$set": {"cluster": {"$arrayElemAt": ["$clusters", 0]}}},
+            {"$set": {"cluster_id": "$cluster.cluster_id"}},
+            {"$project": {"_id": 0, "__v": 0, "clusters": 0, "cluster": 0}},
+        ]
+    )
+    signatures: List[SignatureRec] = [SignatureRecSchema().load(p) for p in coll]
     return signatures
 
 
@@ -64,35 +66,34 @@ def get_canopy(canopystr: str) -> MentionRecords:
     sigs = get_canopied_signatures(canopystr)
     sig_dict = signatures2dict(sigs)
 
-    papers: List[PaperRec] = [
-        PaperRecSchema().load(p)
-        for p in signature_coll.aggregate(
-            [
-                {"$match": {"author_info.block": {"$eq": canopystr}}},
-                {"$project": {"_id": 0, "paper_id": 1}},
-                {
-                    "$lookup": {
-                        "from": "paper",
-                        "localField": "paper_id",
-                        "foreignField": "paper_id",
-                        "as": "fromItems",
+    coll: Collection[Any] = signature_coll.aggregate(
+        [
+            {"$match": {"author_info.block": {"$eq": canopystr}}},
+            {"$project": {"_id": 0, "paper_id": 1}},
+            {
+                "$lookup": {
+                    "from": "paper",
+                    "localField": "paper_id",
+                    "foreignField": "paper_id",
+                    "as": "fromItems",
+                }
+            },
+            {
+                "$replaceRoot": {
+                    "newRoot": {
+                        "$mergeObjects": [
+                            {"$arrayElemAt": ["$fromItems", 0]},
+                            "$$ROOT",
+                        ]
                     }
-                },
-                {
-                    "$replaceRoot": {
-                        "newRoot": {
-                            "$mergeObjects": [
-                                {"$arrayElemAt": ["$fromItems", 0]},
-                                "$$ROOT",
-                            ]
-                        }
-                    }
-                },
-                {"$project": {"fromItems": 0}},
-                {"$project": {"_id": 0, "__v": 0}},
-            ]
-        )
-    ]
+                }
+            },
+            {"$project": {"fromItems": 0}},
+            {"$project": {"_id": 0, "__v": 0}},
+        ]
+    )
+
+    papers: List[PaperRec] = [PaperRecSchema().load(p) for p in coll]
 
     paper_dict = papers2dict(papers)
 
@@ -106,31 +107,29 @@ def get_canopy_strs() -> List[str]:
 
 
 def get_cluster(clusterstr: str) -> ClusteringRecord:
-    final_cluster = [
-        p
-        for p in clusters_coll.aggregate(
-            [
-                {"$match": {"cluster_id": {"$eq": clusterstr}}},
-                {"$project": {"_id": 0}},
-                {
-                    "$lookup": {
-                        "from": "signatures",
-                        "localField": "signature_id",
-                        "foreignField": "signature_id",
-                        "as": "signatures",
-                    }
-                },
-                {
-                    "$lookup": {
-                        "from": "paper",
-                        "localField": "signatures.paper_id",
-                        "foreignField": "paper_id",
-                        "as": "papers",
-                    }
-                },
-            ]
-        )
-    ]
+    coll: Collection[Any] = signature_coll.aggregate(
+        [
+            {"$match": {"cluster_id": {"$eq": clusterstr}}},
+            {"$project": {"_id": 0}},
+            {
+                "$lookup": {
+                    "from": "signatures",
+                    "localField": "signature_id",
+                    "foreignField": "signature_id",
+                    "as": "signatures",
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "paper",
+                    "localField": "signatures.paper_id",
+                    "foreignField": "paper_id",
+                    "as": "papers",
+                }
+            },
+        ]
+    )
+    final_cluster = [p for p in coll]
 
     # paper_canopy_dict = dict(paper_canopy)
 

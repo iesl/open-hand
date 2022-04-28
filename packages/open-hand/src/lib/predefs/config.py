@@ -1,17 +1,50 @@
-
 import typing as t
-
-from .data import Config, ConfigSchema
-from .log import logger
-
 import os
 import json
 
+from marshmallow import Schema, fields, post_load
+from dataclasses import dataclass
+from .data import StrField
+from .log import logger
+
+
+@dataclass
+class OpenReviewConfig:
+    restApi: str
+    restUser: str
+    restPassword: str
+
+
+class OpenReviewSchema(Schema):
+    restApi = StrField
+    restUser = StrField
+    restPassword = StrField
+
+    @post_load
+    def make(self, data: t.Any, **_) -> OpenReviewConfig:
+        return OpenReviewConfig(**data)
+
+
+@dataclass
+class Config:
+    openreview: OpenReviewConfig
+
+
+class ConfigSchema(Schema):
+    openreview = fields.Nested(OpenReviewSchema)
+
+    @post_load
+    def make(self, data: t.Any, **_) -> Config:
+        return Config(**data)
+
+
 def setenv(env: str):
-    os.environ['env'] = env
+    os.environ["env"] = env
+
 
 def getenv():
-    return os.environ['env']
+    return os.environ["env"]
+
 
 def load_config() -> t.Optional[Config]:
     config: t.Optional[Config] = None
@@ -32,6 +65,5 @@ def load_config() -> t.Optional[Config]:
         workingdir = os.path.abspath(os.path.join(workingdir, os.pardir))
     else:
         logger.warn(f"Could not find config {config_filename}")
-
 
     return config

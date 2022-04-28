@@ -2,36 +2,37 @@
 {% import '_pager.html' as pager %}
 
 {% block header %}
-  <h4 class='blue'>{% block title %}All Canopies{% endblock %}</h4>
+    <h4 class='blue'>{% block title %}All Canopies{% endblock %}</h4>
 {% endblock %}
 
 {% block content %}
-  {{ pager.pager(pagecount, page) }}
-  <table>
-    <thead>
-      <tr>
-        <th class="blue"> Canopy Name </th>
-        <th> Canopy Size </th>
-        <th> Name Variations </th>
-      </tr>
-    </thead>
-    <tbody>
-
-      {% for canopynum, canopysize, canopystr, namevariants in canopies %}
+    {{ pager.pager(pagecount, page) }}
+    <table>
+        <thead>
         <tr>
-          <td> <a href="{{ url_for('.show_canopy', id=canopystr) }}">{{ canopystr }},</a> </td>
-          <td> {{ canopysize }} </td>
-          <td>
-
-            {% for v in namevariants %}
-              <ul class='inline-ul'>
-                <li>{{ v }},&nbsp;</li>
-              </ul>
-            {% endfor %}
-          </td>
+            <th class="blue"> Canopy Name</th>
+            <th> Canopy Size</th>
+            <th> Name Variations</th>
         </tr>
-      {% endfor %}
+        </thead>
+        <tbody>
 
-    </tbody>
-  </table>
+        {% for canopynum, canopysize, canopystr, namevariants in canopies %}
+            <tr>
+                <td><a href="{{ url_for('.show_canopy', id=canopystr) }}">{{ canopystr }},</a></td>
+
+                <td> {{ canopysize }} </td>
+                <td>
+
+                    {% for v in namevariants %}
+                        <ul class='inline-ul'>
+                            <li>{{ v }},&nbsp;</li>
+                        </ul>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
 {% endblock %}

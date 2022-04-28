@@ -10,36 +10,6 @@ OptIntField = fields.Int(load_default=None)
 
 
 @dataclass
-class OpenReviewConfig:
-    restApi: str
-    restUser: str
-    restPassword: str
-
-
-class OpenReviewSchema(Schema):
-    restApi = StrField
-    restUser = StrField
-    restPassword = StrField
-
-    @post_load
-    def make(self, data: Any, **_) -> OpenReviewConfig:
-        return OpenReviewConfig(**data)
-
-
-@dataclass
-class Config:
-    openreview: OpenReviewConfig
-
-
-class ConfigSchema(Schema):
-    openreview = fields.Nested(OpenReviewSchema)
-
-    @post_load
-    def make(self, data: Any, **_) -> Config:
-        return Config(**data)
-
-
-@dataclass
 class AuthorRec:
     author_name: str
     position: int
@@ -163,17 +133,24 @@ class SignatureWithFocus:
 
 
 @dataclass
-class PaperWithSignatures:
+class PaperWithPrimaryAuthor:
+    """A paper with a primary author of interest"""
     paper: PaperRec
     signatures: List[SignatureWithFocus]
 
+    def primary_signature(self) -> SignatureRec:
+        for s in self.signatures:
+            if s.has_focus: return s.signature
 
-def get_paper_with_signatures(mentions: MentionRecords, signature: SignatureRec) -> PaperWithSignatures:
-    paper = mentions.papers[signature.paper_id]
-    num_authors = len(paper.authors)
-    signature_ids = [(f"{paper.paper_id}_{i}", signature.author_info.position == i) for i in range(num_authors)]
-    signatures = [SignatureWithFocus(mentions.signatures[id], has_focus) for (id, has_focus) in signature_ids]
-    return PaperWithSignatures(paper, signatures)
+        raise Exception(f'Invalid State: No focused signature in paper {self.paper.paper_id}')
+
+    @staticmethod
+    def from_signature(mentions: MentionRecords, signature: SignatureRec):
+        paper = mentions.papers[signature.paper_id]
+        num_authors = len(paper.authors)
+        signature_ids = [(f"{paper.paper_id}_{i}", signature.author_info.position == i) for i in range(num_authors)]
+        signatures = [SignatureWithFocus(mentions.signatures[id], has_focus) for (id, has_focus) in signature_ids]
+        return PaperWithPrimaryAuthor(paper, signatures)
 
 
 @dataclass
@@ -197,58 +174,28 @@ def zip_signature_paper_pairs(mentions: MentionRecords) -> List[Tuple[SignatureR
     return [(sig, ps[sig.paper_id]) for _, sig in mentions.signatures.items()]
 
 
-@dataclass
-class NoteContent:
-    pass
-    # 'abstract'?: string;
-    # html?: string; // this is a URL
-    # venueid: string;
-    # title: string;
-    # authors: string[];
-    # authorids: string[];
-    # venue: string;
-    # _bibtex: string;
+# @dataclass
+# class NoteContent:
+#     pass
+#     # 'abstract'?: string;
+#     # html?: string; // this is a URL
+#     # venueid: string;
+#     # title: string;
+#     # authors: string[];
+#     # authorids: string[];
+#     # venue: string;
+#     # _bibtex: string;
 
 
-@dataclass
-class Note:
-    pass
-    # id: string;
-    # content: NoteContent;
+# @dataclass
+# class Note:
+#     pass
+#     # id: string;
+#     # content: NoteContent;
 
 
-@dataclass
-class Notes:
-    pass
-    # notes: Note[];
-    # count: number;
-
-
-# Note(id = 'H1xSNiRcF7',
-# original = 'HkltNFR5Ym',
-# number = 1,
-# cdate = 1538087725357,
-# mdate = None,
-# tcdate = 1538087725357,
-# tmdate = 1550884085382,
-# ddate = None,
-# content = {
-# 'title': 'Smoothing the Geometry of Probabilistic Box Embeddings',
-# 'abstract': '',
-# 'keywords': [],
-# 'authorids': ['xiangl@cs.umass.edu', 'luke@cs.umass.edu', 'dongxuzhang@cs.umass.edu', 'mboratko@math.umass.edu', 'mccallum@cs.umass.edu'],
-# 'authors': ['Xiang Li', 'Luke Vilnis', 'Dongxu Zhang', 'Michael Boratko', 'Andrew McCallum'],
-# 'TL;DR': 'Improve hierarchical embedding models using kernel smoothing',
-# 'pdf': '/pdf/30f1421b94869cfbadcc02bf5c259dcd2d51501e.pdf',
-# 'paperhash': 'li|smoothing_the_geometry_of_probabilistic_box_embeddings',
-# '_bibtex': '@inproceedings{\nli2018smoothing,\ntitle={Smoothing the Geometry of Probabilistic Box Embeddings},\nauthor={Xiang Li and Luke Vilnis and Dongxu Zhang and Michael Boratko and Andrew McCallum},\nbooktitle={International Conference on Learning Representations},\nyear={2019},\nurl={https://openreview.net/forum?id=H1xSNiRcF7},\n}'},
-# forum = 'H1xSNiRcF7',
-# referent = None,
-# invitation = 'ICLR.cc/2019/Conference/-/Blind_Submission',
-# replyto = None,
-# readers = ['everyone'],
-# nonreaders = [],
-# signatures = ['ICLR.cc/2019/Conference'],
-# writers = ['ICLR.cc/2019/Conference'],
-# details = None
-# )
+# @dataclass
+# class Notes:
+#     pass
+#     # notes: Note[];
+#     # count: number;

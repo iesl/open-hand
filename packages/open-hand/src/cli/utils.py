@@ -3,7 +3,6 @@ from celery.app.base import Celery
 from click.core import Context
 
 
-
 def run(ctx: Context, task, *args, **kwds):
     remote: bool = ctx.parent.params["remote"]
     if remote:

@@ -11,7 +11,15 @@ from jinja2.environment import Environment
 # from jinja2.exceptions import UndefinedError
 from jinja2.loaders import DictLoader, FileSystemLoader
 
-from lib.predefs.data import AuthorInfoBlock, AuthorRec, MentionRecords, PaperRec, SignatureRec, get_paper_with_signatures
+from lib.predefs.data import (
+    AuthorInfoBlock,
+    AuthorRec,
+    MentionRecords,
+    PaperRec,
+    PaperWithPrimaryAuthor,
+    SignatureRec,
+    get_paper_with_signatures,
+)
 
 
 @pytest.fixture
@@ -95,7 +103,8 @@ class TestImports:
         mentions = gen_mentions(paper)
         signatures = [mentions.signatures[k] for k in mentions.signatures.keys()]
         sig1 = signatures[1]
-        paper_with_signatures = get_paper_with_signatures(mentions, sig1)
+
+        paper_with_signatures = PaperWithPrimaryAuthor.from_signature(mentions, sig1)
 
         tmp = "{% import '_paperrec.html' as _paperrec %}" "{{ _paperrec.paper(pws) }}"
         t = fs_env.from_string(tmp)

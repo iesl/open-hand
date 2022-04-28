@@ -1,4 +1,3 @@
-from dataclasses import asdict
 import typing as t
 import click
 from click.core import Context
@@ -78,7 +77,6 @@ def canopy():
 @click.argument("canopy", type=str)
 def canopy_show(canopy: str):
     """Show a canopy"""
-
     c = get_canopy(canopy)
     displayMentions(c)
 
