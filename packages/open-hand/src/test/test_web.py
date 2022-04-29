@@ -18,7 +18,6 @@ from lib.predefs.data import (
     PaperRec,
     PaperWithPrimaryAuthor,
     SignatureRec,
-    get_paper_with_signatures,
 )
 
 

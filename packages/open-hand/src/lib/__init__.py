@@ -1,7 +1,5 @@
-
 from typing import Optional
-from lib.predefs.config import load_config
-from lib.predefs.data import Config
+from lib.predefs.config import load_config, Config
 
 app_config: Optional[Config] = None
 

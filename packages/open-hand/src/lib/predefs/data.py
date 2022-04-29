@@ -7,7 +7,7 @@ OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)
 IntField = fields.Int(allow_none=False)
 OptIntField = fields.Int(load_default=None)
-
+BoolField = fields.Bool(allow_none=False)
 
 @dataclass
 class AuthorRec:
@@ -140,9 +140,10 @@ class PaperWithPrimaryAuthor:
 
     def primary_signature(self) -> SignatureRec:
         for s in self.signatures:
-            if s.has_focus: return s.signature
+            if s.has_focus:
+                return s.signature
 
-        raise Exception(f'Invalid State: No focused signature in paper {self.paper.paper_id}')
+        raise Exception(f"Invalid State: No focused signature in paper {self.paper.paper_id}")
 
     @staticmethod
     def from_signature(mentions: MentionRecords, signature: SignatureRec):
@@ -172,30 +173,3 @@ def signatures2dict(ps: List[SignatureRec]) -> Dict[str, SignatureRec]:
 def zip_signature_paper_pairs(mentions: MentionRecords) -> List[Tuple[SignatureRec, PaperRec]]:
     ps = mentions.papers
     return [(sig, ps[sig.paper_id]) for _, sig in mentions.signatures.items()]
-
-
-# @dataclass
-# class NoteContent:
-#     pass
-#     # 'abstract'?: string;
-#     # html?: string; // this is a URL
-#     # venueid: string;
-#     # title: string;
-#     # authors: string[];
-#     # authorids: string[];
-#     # venue: string;
-#     # _bibtex: string;
-
-
-# @dataclass
-# class Note:
-#     pass
-#     # id: string;
-#     # content: NoteContent;
-
-
-# @dataclass
-# class Notes:
-#     pass
-#     # notes: Note[];
-#     # count: number;
