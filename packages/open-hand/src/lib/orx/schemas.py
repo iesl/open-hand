@@ -20,7 +20,6 @@ class NoteContent:
     # _bibtex: string;
 
 
-
 @dataclass
 class Note:
     pass
@@ -33,4 +32,3 @@ class Notes:
     pass
     # notes: Note[];
     # count: number;
-

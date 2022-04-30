@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import typing as t
 from pprint import pprint
 
@@ -5,6 +6,7 @@ import click
 from .cli_base import cli
 
 from lib.orx.open_exchange import get_notes_for_author, get_profile, get_profiles
+
 
 @cli.group()
 def orx():
@@ -25,14 +27,19 @@ def author(authorid: str):
     for n in notes:
         id = n.id
         content = n.content
-        title = content.get('title') if 'title' in content else '??'
-        authors = content.get('authors') if 'authors' in content else '??'
+        title = content.get("title") if "title" in content else "??"
+        authors = content.get("authors") if "authors" in content else "??"
         authorstr = ", ".join(authors)
         print(f"{title}  ({id})")
         print(f"  {authorstr}")
 
+
 @get.command()
-def profiles():
-    profiles = get_profiles()
-    print("Profile 0")
-    pprint(profiles[0: 3])
+@click.argument("offset", type=int)
+@click.argument("limit", type=int)
+def profiles(offset: int, limit: int):
+    profiles = get_profiles(offset, limit)
+    for p in profiles:
+        names = p.content.names
+        pprint(names)
+        print('\n')

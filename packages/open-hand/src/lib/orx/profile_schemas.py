@@ -1,22 +1,39 @@
 from pprint import pprint
-from marshmallow import fields, post_load
+from marshmallow import fields
 from dataclasses import dataclass
 
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
+
+from marshmallow.decorators import post_load, pre_load
 from lib.orx.schemas import PartialSchema
 
-from lib.predefs.data import BoolField, OptIntField, OptStringField, StrField, IntField
-StartField = fields.Raw(allow_none=True)
-EndField = fields.Raw(allow_none=True)
+from lib.predefs.data import OptBoolField, OptStringField, StrField
+
+StartField = fields.Int(allow_none=True)
+EndField = fields.Int(allow_none=True)
+
+def clean_start_end(data: Any):
+    if 'start' not in data:
+        data['start'] = None
+
+    if 'end' not in data:
+        data['end'] = None
+
+    start = data['start']
+    end = data['end']
+
+    if not isinstance(start, int):
+        data['start'] = None
+
+    if not isinstance(end, int):
+        data['end'] = None
+    return data
+
 
 @dataclass
-class StartEnd:
-    start: Optional[Union[int, str]]
-    end: Optional[Union[int, str]]
-
-
-@dataclass
-class ExpertiseTimeline(StartEnd):
+class ExpertiseTimeline:
+    start: Optional[int]
+    end: Optional[int]
     keywords: List[str]
 
 
@@ -25,9 +42,13 @@ class ExpertiseTimelineSchema(PartialSchema):
     end = EndField
     keywords = fields.List(StrField)
 
-    # @post_load
-    # def make(self, data: Any, **_) -> ExpertiseTimeline:
-    #     return ExpertiseTimeline(**data)
+    @pre_load
+    def clean(self, data: Any, many: Any, **kwargs):
+        return clean_start_end(data)
+
+    @post_load
+    def make(self, data: Any, **_) -> ExpertiseTimeline:
+        return ExpertiseTimeline(**data)
 
 
 @dataclass
@@ -40,14 +61,16 @@ class InstitutionRecSchema(PartialSchema):
     domain = StrField
     name = StrField
 
+    @post_load
+    def make(self, data: Any, **_) -> InstitutionRec:
+        return InstitutionRec(**data)
+
 
 @dataclass
 class InstitutionTimeline:
-    start = StartField
-    end = EndField
-    start = fields.Raw()
-    end = fields.Raw()
-    institution: List[InstitutionRec]
+    start: Optional[int]
+    end: Optional[int]
+    institution: InstitutionRec
     position: str
 
 
@@ -57,30 +80,51 @@ class InstitutionTimelineSchema(PartialSchema):
     institution = fields.Nested(InstitutionRecSchema)
     position = StrField
 
+    @pre_load
+    def clean(self, data: Any, many: Any, **kwargs):
+        return clean_start_end(data)
+
+    @post_load
+    def make(self, data: Any, **_) -> InstitutionTimeline:
+        return InstitutionTimeline(**data)
+
+
 
 @dataclass
 class NameEntry:
     first: Optional[str]
     last: str
     middle: Optional[str]
-    preferred: bool
-    username: str
+    preferred: Optional[bool]
+    username: Optional[str]
 
 
 class NameEntrySchema(PartialSchema):
     first = OptStringField
     last = StrField
     middle = OptStringField
-    preferred = BoolField
-    username = StrField
+    preferred = OptBoolField
+    username = OptStringField
+
+    @pre_load
+    def clean(self, data: Any, many: Any, **kwargs):
+        if 'preferred' not in data:
+            data['preferred'] = False
+        if 'usernamee' not in data:
+            data['username'] = None
+
+        return data
+    @post_load
+    def make(self, data: Any, **_) -> NameEntry:
+        return NameEntry(**data)
 
 
 @dataclass
 class PersonalRelation:
-    start = StartField
-    end = EndField
+    start: Optional[int]
+    end: Optional[int]
     email: Optional[str]
-    name: str
+    name: Optional[str]
     relation: str
 
 
@@ -88,47 +132,67 @@ class PersonalRelationSchema(PartialSchema):
     start = StartField
     end = EndField
     email = OptStringField
-    name = StrField
+    name = OptStringField
     relation = StrField
 
+    @pre_load
+    def clean(self, data: Any, many: Any, **kwargs):
+        return clean_start_end(data)
+
+    @post_load
+    def make(self, data: Any, **_) -> PersonalRelation:
+        return PersonalRelation(**data)
 
 @dataclass
 class ProfileContent:
-    dblp: str
+    dblp: Optional[str]
     emails: List[str]
     emailsConfirmed: List[str]
     expertise: List[ExpertiseTimeline]
-    gender: str
-    gscholar: str
-    history: List[InstitutionTimeline]
+    gender: Optional[str]
+    gscholar: Optional[str]
+    # history: List[InstitutionTimeline]
     homepage: str
-    linkedin: str
+    linkedin:Optional[str]
     names: List[NameEntry]
-    preferredEmail: str
-    # relations: List[PersonalRelation]
-    wikipedia: str
+    preferredEmail: Optional[str]
+    relations: List[PersonalRelation]
+    wikipedia: Optional[str]
 
 
 class ProfileContentSchema(PartialSchema):
-    dblp = StrField
+    dblp = OptStringField
     emails = fields.List(StrField)
     emailsConfirmed = fields.List(StrField)
     expertise = fields.List(fields.Nested(ExpertiseTimelineSchema))
-    gender = StrField
-    gscholar = StrField
-    history = fields.List(fields.Nested(InstitutionTimelineSchema))
-    homepage = StrField
-    linkedin = StrField
+    gender = OptStringField
+    gscholar = OptStringField
+    # history = fields.List(fields.Nested(InstitutionTimelineSchema))
+    homepage = OptStringField
+    linkedin = OptStringField
     names = fields.List(fields.Nested(NameEntrySchema))
-    preferredEmail = StrField
+    preferredEmail = OptStringField
     relations = fields.List(fields.Nested(PersonalRelationSchema))
-    wikipedia = StrField
+    wikipedia = OptStringField
+
+    @pre_load
+    def clean_expertise(self, data: Any, many: Any, **kwargs):
+        if 'expertise' not in data:
+            data['expertise'] = []
+        if 'preferredEmail' not in data:
+            data['preferredEmail'] = None
+
+        return data
+
+    @post_load
+    def make(self, data: Any, **_) -> ProfileContent:
+        return ProfileContent(**data)
 
 
 @dataclass
 class Profile:
-    content: ProfileContent
     id: str
+    content: ProfileContent
     # active: bool
     # ddate: None
     # tauthor: OpenReview.net
@@ -147,12 +211,17 @@ class ProfileSchema(PartialSchema):
     id = StrField
     content = fields.Nested(ProfileContentSchema)
 
+    @post_load
+    def make(self, data: Any, **_) -> Profile:
+        return Profile(**data)
 
 def load_profile(data: Any) -> Profile:
     try:
         p: Profile = ProfileSchema().load(data)
         return p
-    except:
-        print("Error loading data")
+    except Exception as inst:
+        print(type(inst))    # the exception instance
+        print(inst.args)     # arguments stored in .args
+        print(inst)          # __str__ allows args to be printed directly,
         pprint(data)
         raise

@@ -6,7 +6,7 @@ from .cli_base import cli
 
 from lib.predefs.config import load_config, setenv
 from lib.db.database import get_canopy
-from lib.display import displayMentions
+from lib.display import displayMentionsInClusters
 from lib.canopies import list_canopies_counted
 
 
@@ -47,7 +47,7 @@ def config(env: str):
 def canopy_show(canopy: str):
     """Show a canopy"""
     c = get_canopy(canopy)
-    displayMentions(c)
+    displayMentionsInClusters(c)
 
 
 @show.command("canopies")

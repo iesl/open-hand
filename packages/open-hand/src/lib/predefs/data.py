@@ -3,11 +3,15 @@ from dataclasses import dataclass, asdict
 
 from typing import Any, Dict, List, Optional, Tuple
 
+from lib.predefs.typedefs import ClusterID
+
 OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)
 IntField = fields.Int(allow_none=False)
 OptIntField = fields.Int(load_default=None)
 BoolField = fields.Bool(allow_none=False)
+OptBoolField = fields.Bool()
+
 
 @dataclass
 class AuthorRec:
@@ -135,6 +139,7 @@ class SignatureWithFocus:
 @dataclass
 class PaperWithPrimaryAuthor:
     """A paper with a primary author of interest"""
+
     paper: PaperRec
     signatures: List[SignatureWithFocus]
 
@@ -160,6 +165,18 @@ class ClusteringRecord:
     prediction_group: str
     cluster_id: str
     canopy: str
+
+
+@dataclass
+class MentionClustering:
+    mentions: MentionRecords
+    clustering: Dict[ClusterID, List[PaperWithPrimaryAuthor]]
+
+    def cluster_ids(self) -> List[ClusterID]:
+        return list(self.clustering)
+
+    def cluster(self, id: ClusterID) -> List[PaperWithPrimaryAuthor]:
+        return self.clustering[id]
 
 
 def papers2dict(ps: List[PaperRec]) -> Dict[str, PaperRec]:

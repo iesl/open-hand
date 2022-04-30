@@ -1,7 +1,7 @@
 import click
 from .cli_base import cli
 
-from lib.display import displayMentions
+from lib.display import displayMentionsInClusters
 from lib.model import load_model
 from lib.predefs.s2and_data import preload_data
 
@@ -22,7 +22,7 @@ def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
 
     for cluster in clusters:
         print(f"Mentions for cluster {cluster.cluster_id}")
-        displayMentions(cluster.mentions)
+        displayMentionsInClusters(cluster.mentions)
         print("")
 
 

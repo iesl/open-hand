@@ -62,7 +62,7 @@ def dopredict(
     if profile:
         profiler.enable()
 
-    mentions = get_canopy(canopy)
+    mentions: MentionRecords = get_canopy(canopy)
     pcount = len(mentions.papers)
     scount = len(mentions.signatures)
     logger.info(f"Mention counts papers={pcount} / signatures={scount}")

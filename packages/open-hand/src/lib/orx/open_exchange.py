@@ -2,6 +2,7 @@ from pprint import pprint
 from typing import Dict, Iterator, Union, List
 import openreview
 from openreview import Client, Note
+
 # from openreview.openreview import Profile as ORProfile
 from openreview.tools import iterget_notes
 import requests
@@ -32,26 +33,30 @@ def get_notes_for_dblp_rec_invitation():
 def get_notes_for_author(authorid: str) -> Iterator[Note]:
     return get_notes(content={"authorids": authorid})
 
+
 def get_profile(user_id: str) -> Profile:
     client = get_client()
     pjson = client.get_profile(user_id).to_json()
     profile = load_profile(pjson)
     print(f"Profile for {user_id}")
-    pprint(pjson)
+    # pprint(pjson)
     return profile
+
 
 def get_profiles_url() -> str:
     config = get_config()
     baseurl = config.openreview.restApi
     return f"{baseurl}/profiles"
 
-def get_profiles() -> List[Profile]:
+
+def get_profiles(offset: int, limit: int) -> List[Profile]:
     client = get_client()
-    response = requests.get(
-        get_profiles_url(), params={'invitation': '~/-/profiles'}, headers=client.headers
-    )
+    params = {
+        "offset": offset,
+        "limit": limit,
+        "invitation": "~/-/profiles"
+    }
+    response = requests.get(get_profiles_url(), params=params, headers=client.headers)
     # handled = client.__handle_response(response)
     profiles = [load_profile(p) for p in response.json()["profiles"]]
     return profiles
-
-    # pprint(profiles[0: 4])

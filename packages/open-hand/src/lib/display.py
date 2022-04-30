@@ -5,9 +5,11 @@ from pprint import pprint
 
 from openreview.openreview import Note
 from lib.db.database import add_all_referenced_signatures
-from lib.orx.open_exchange import get_notes_for_author, get_profiles
+from lib.orx.open_exchange import get_notes_for_author
+from lib.orx.profile_store import ProfileStore
+from lib.orx.utils import is_tildeid
 from lib.predefs.alignment import Alignment, Left, OneOrBoth, Right, Both
-from lib.predefs.typedefs import ClusterID
+from lib.predefs.typedefs import ClusterID, TildeID
 from itertools import groupby
 import click
 
@@ -15,6 +17,7 @@ from lib.cli_utils import dim, yellowB
 
 
 from lib.predefs.data import (
+    MentionClustering,
     MentionRecords,
     PaperWithPrimaryAuthor,
     SignatureRec,
@@ -33,21 +36,17 @@ def format_sig(sig: SignatureWithFocus) -> str:
     return dim(f"{sig.signature.author_info.fullname}")
 
 
-def mentions_to_displayables(
-    mentions_init: MentionRecords,
-) -> Tuple[MentionRecords, Dict[ClusterID, List[PaperWithPrimaryAuthor]]]:
-    def keyfn(s: SignatureRec):
-        if s.cluster_id is None:
-            return "<unclustered>"
-        return s.cluster_id
+def get_mention_clustering(init: MentionRecords) -> MentionClustering:
+    def by_cluster(s: SignatureRec):
+        return s.cluster_id if s.cluster_id is not None else "<unclustered>"
 
-    cluster_groups: Dict[str, List[SignatureRec]] = dict(
-        [(k, list(grp)) for k, grp in groupby(mentions_init.signatures.values(), keyfn)]
-    )
+    grouped = groupby(init.signatures.values(), by_cluster)
+
+    cluster_groups: Dict[str, List[SignatureRec]] = dict([(id, list(grp)) for id, grp in grouped])
 
     cluster_ids = list(cluster_groups)
 
-    mentions = add_all_referenced_signatures(mentions_init)
+    mentions = add_all_referenced_signatures(init)
     cluster_tuples: List[Tuple[ClusterID, List[PaperWithPrimaryAuthor]]] = []
 
     for id in cluster_ids:
@@ -56,16 +55,7 @@ def mentions_to_displayables(
 
     cluster_dict = dict(cluster_tuples)
 
-    return (mentions, cluster_dict)
-
-
-import re
-
-TILDE_ID_RE = re.compile("^~.+\\d$")
-
-
-def is_tildeid(id: str) -> bool:
-    return TILDE_ID_RE.match(id) is not None
+    return MentionClustering(mentions, clustering=cluster_dict)
 
 
 def get_primary_tildeids(papersWithSignatures: List[PaperWithPrimaryAuthor]) -> Set[str]:
@@ -76,8 +66,7 @@ def get_primary_tildeids(papersWithSignatures: List[PaperWithPrimaryAuthor]) -> 
             if s.has_focus and is_tildeid(openId):
                 results.append(openId)
 
-    uniq = set(results)
-    return uniq
+    return set(results)
 
 
 def get_primary_name_variants(papersWithSignatures: List[PaperWithPrimaryAuthor]) -> Set[str]:
@@ -100,6 +89,7 @@ def diff_cluster_with_known_papers(cluster: List[PaperWithPrimaryAuthor]):
             title = note.content.title
             noteId = note.id
 
+
 def align_cluster(cluster: List[PaperWithPrimaryAuthor]) -> Dict[str, Alignment[str]]:
     tildeids = get_primary_tildeids(cluster)
     alignments: Dict[str, Alignment[str]] = dict()
@@ -107,6 +97,7 @@ def align_cluster(cluster: List[PaperWithPrimaryAuthor]) -> Dict[str, Alignment[
         a = align_cluster_to_user(cluster, id)
         alignments[id] = a
     return alignments
+
 
 def align_cluster_to_user(cluster: List[PaperWithPrimaryAuthor], user_id: str) -> Alignment[str]:
     author_notes = get_notes_for_author(user_id)
@@ -127,16 +118,38 @@ def align_cluster_to_user(cluster: List[PaperWithPrimaryAuthor], user_id: str) -
 
     return Alignment(values=aligned)
 
-def displayMentions(mentions: MentionRecords):
 
-    _, cluster_dict = mentions_to_displayables(mentions)
+def populate_profile_store(mentions: MentionRecords) -> ProfileStore:
+    ps = ProfileStore()
 
-    cluster_ids = list(cluster_dict)
-    for cluster_id in cluster_ids:
-        cluster = cluster_dict[cluster_id]
+    for _, sig in mentions.signatures.items():
+        openId = sig.author_info.openId
+        if is_tildeid(openId):
+            ps.add_profile(openId)
+
+    print('Itersets')
+    for s in ps.ds.itersets(with_canonical_elements=True):
+        pprint(s)
+
+    print('/Itersets')
+
+    return ps
+
+
+def displayMentionsInClusters(mentions: MentionRecords):
+
+    clustering = get_mention_clustering(mentions)
+    print("Clustering")
+    # pprint(clustering)
+
+    profile_store = populate_profile_store(clustering.mentions)
+
+    for cluster_id in clustering.cluster_ids():
+        cluster = clustering.cluster(cluster_id)
+        tildeids = get_primary_tildeids(cluster)
+        canonical_ids = profile_store.canonicalize_ids(list(tildeids))
 
         names = get_primary_name_variants(cluster)
-        tildeids = get_primary_tildeids(cluster)
         tildeidsstr = ", ".join(tildeids)
         namestr = ", ".join(names)
         click.echo(f"Cluster for {namestr}")
