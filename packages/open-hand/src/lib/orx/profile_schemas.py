@@ -12,21 +12,22 @@ from lib.predefs.data import OptBoolField, OptStringField, StrField
 StartField = fields.Int(allow_none=True)
 EndField = fields.Int(allow_none=True)
 
+
 def clean_start_end(data: Any):
-    if 'start' not in data:
-        data['start'] = None
+    if "start" not in data:
+        data["start"] = None
 
-    if 'end' not in data:
-        data['end'] = None
+    if "end" not in data:
+        data["end"] = None
 
-    start = data['start']
-    end = data['end']
+    start = data["start"]
+    end = data["end"]
 
     if not isinstance(start, int):
-        data['start'] = None
+        data["start"] = None
 
     if not isinstance(end, int):
-        data['end'] = None
+        data["end"] = None
     return data
 
 
@@ -53,12 +54,12 @@ class ExpertiseTimelineSchema(PartialSchema):
 
 @dataclass
 class InstitutionRec:
-    domain: str
+    domain: Optional[str]
     name: str
 
 
 class InstitutionRecSchema(PartialSchema):
-    domain = StrField
+    domain = OptStringField
     name = StrField
 
     @post_load
@@ -71,14 +72,14 @@ class InstitutionTimeline:
     start: Optional[int]
     end: Optional[int]
     institution: InstitutionRec
-    position: str
+    position: Optional[str]
 
 
 class InstitutionTimelineSchema(PartialSchema):
     start = StartField
     end = EndField
     institution = fields.Nested(InstitutionRecSchema)
-    position = StrField
+    position = OptStringField
 
     @pre_load
     def clean(self, data: Any, many: Any, **kwargs):
@@ -87,7 +88,6 @@ class InstitutionTimelineSchema(PartialSchema):
     @post_load
     def make(self, data: Any, **_) -> InstitutionTimeline:
         return InstitutionTimeline(**data)
-
 
 
 @dataclass
@@ -108,12 +108,13 @@ class NameEntrySchema(PartialSchema):
 
     @pre_load
     def clean(self, data: Any, many: Any, **kwargs):
-        if 'preferred' not in data:
-            data['preferred'] = False
-        if 'usernamee' not in data:
-            data['username'] = None
+        if "preferred" not in data:
+            data["preferred"] = False
+        if "username" not in data:
+            data["username"] = None
 
         return data
+
     @post_load
     def make(self, data: Any, **_) -> NameEntry:
         return NameEntry(**data)
@@ -143,6 +144,7 @@ class PersonalRelationSchema(PartialSchema):
     def make(self, data: Any, **_) -> PersonalRelation:
         return PersonalRelation(**data)
 
+
 @dataclass
 class ProfileContent:
     dblp: Optional[str]
@@ -151,9 +153,9 @@ class ProfileContent:
     expertise: List[ExpertiseTimeline]
     gender: Optional[str]
     gscholar: Optional[str]
-    # history: List[InstitutionTimeline]
+    history: List[InstitutionTimeline]
     homepage: str
-    linkedin:Optional[str]
+    linkedin: Optional[str]
     names: List[NameEntry]
     preferredEmail: Optional[str]
     relations: List[PersonalRelation]
@@ -167,7 +169,7 @@ class ProfileContentSchema(PartialSchema):
     expertise = fields.List(fields.Nested(ExpertiseTimelineSchema))
     gender = OptStringField
     gscholar = OptStringField
-    # history = fields.List(fields.Nested(InstitutionTimelineSchema))
+    history = fields.List(fields.Nested(InstitutionTimelineSchema))
     homepage = OptStringField
     linkedin = OptStringField
     names = fields.List(fields.Nested(NameEntrySchema))
@@ -177,10 +179,12 @@ class ProfileContentSchema(PartialSchema):
 
     @pre_load
     def clean_expertise(self, data: Any, many: Any, **kwargs):
-        if 'expertise' not in data:
-            data['expertise'] = []
-        if 'preferredEmail' not in data:
-            data['preferredEmail'] = None
+        if "expertise" not in data:
+            data["expertise"] = []
+        if "history" not in data:
+            data["history"] = []
+        if "preferredEmail" not in data:
+            data["preferredEmail"] = None
 
         return data
 
@@ -215,13 +219,14 @@ class ProfileSchema(PartialSchema):
     def make(self, data: Any, **_) -> Profile:
         return Profile(**data)
 
+
 def load_profile(data: Any) -> Profile:
     try:
         p: Profile = ProfileSchema().load(data)
         return p
     except Exception as inst:
-        print(type(inst))    # the exception instance
-        print(inst.args)     # arguments stored in .args
-        print(inst)          # __str__ allows args to be printed directly,
+        print(type(inst))  # the exception instance
+        print(inst.args)  # arguments stored in .args
+        print(inst)  # __str__ allows args to be printed directly,
         pprint(data)
         raise

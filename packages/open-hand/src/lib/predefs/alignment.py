@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import List, TypeVar, Generic
+from typing import Any, List, NoReturn, TypeVar, Generic
 from dataclasses import dataclass
 
 T = TypeVar("T")
@@ -39,6 +39,29 @@ class Both(OneOrBoth[T]):
 @dataclass
 class Alignment(Generic[T]):
     values: List[OneOrBoth[T]]
+
+
+def isLeft(oob: OneOrBoth[Any]) -> bool:
+    return isinstance(oob, Left)
+
+
+def isRight(oob: OneOrBoth[Any]) -> bool:
+    return isinstance(oob, Right)
+
+
+def assert_never(x: Any) -> NoReturn:
+    raise AssertionError("Unhandled type: {}".format(type(x).__name__))
+
+
+def fold(oob: OneOrBoth[Any]):
+    if isinstance(oob, Left):
+        return
+    elif isinstance(oob, Right):
+        return
+    elif isinstance(oob, Both):
+        return
+    else:
+        assert_never(oob)
 
 
 if __name__ == "__main__":

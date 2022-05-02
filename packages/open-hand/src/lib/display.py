@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from typing import Dict, List, Tuple, Set, cast
 import typing as t
 
@@ -5,11 +6,11 @@ from pprint import pprint
 
 from openreview.openreview import Note
 from lib.db.database import add_all_referenced_signatures
-from lib.orx.open_exchange import get_notes_for_author
+from lib.orx.open_exchange import get_notes_for_author, mention_records_from_note, mention_records_from_notes
 from lib.orx.profile_store import ProfileStore
 from lib.orx.utils import is_tildeid
 from lib.predefs.alignment import Alignment, Left, OneOrBoth, Right, Both
-from lib.predefs.typedefs import ClusterID, TildeID
+from lib.predefs.typedefs import ClusterID
 from itertools import groupby
 import click
 
@@ -19,10 +20,12 @@ from lib.cli_utils import dim, yellowB
 from lib.predefs.data import (
     MentionClustering,
     MentionRecords,
+    PaperRec,
     PaperWithPrimaryAuthor,
     SignatureRec,
     SignatureWithFocus,
     AuthorRec,
+    mergeMentions,
 )
 
 
@@ -90,17 +93,19 @@ def diff_cluster_with_known_papers(cluster: List[PaperWithPrimaryAuthor]):
             noteId = note.id
 
 
-def align_cluster(cluster: List[PaperWithPrimaryAuthor]) -> Dict[str, Alignment[str]]:
+def align_cluster(profile_store: ProfileStore, cluster: List[PaperWithPrimaryAuthor]) -> Dict[str, Alignment[str]]:
     tildeids = get_primary_tildeids(cluster)
+    canonical_ids = profile_store.canonicalize_ids(list(tildeids))
     alignments: Dict[str, Alignment[str]] = dict()
-    for id in tildeids:
+    for id in canonical_ids:
         a = align_cluster_to_user(cluster, id)
         alignments[id] = a
     return alignments
 
 
 def align_cluster_to_user(cluster: List[PaperWithPrimaryAuthor], user_id: str) -> Alignment[str]:
-    author_notes = get_notes_for_author(user_id)
+    author_notes = list(get_notes_for_author(user_id))
+    print(f"Aligning {user_id} w/{len(author_notes)} papers to cluster w/{len(cluster)} papers")
     aligned: List[OneOrBoth[str]] = []
     note_dict: Dict[str, Note] = dict([(cast(str, n.id), n) for n in author_notes])
     cluster_dict = dict([(c.paper.paper_id, c) for c in cluster])
@@ -127,22 +132,37 @@ def populate_profile_store(mentions: MentionRecords) -> ProfileStore:
         if is_tildeid(openId):
             ps.add_profile(openId)
 
-    print('Itersets')
-    for s in ps.ds.itersets(with_canonical_elements=True):
-        pprint(s)
-
-    print('/Itersets')
-
+    ps.show_profile_sets()
     return ps
 
 
-def displayMentionsInClusters(mentions: MentionRecords):
+def render_paper(paper: PaperRec):
+    title = click.style(paper.title, fg="blue")
+    names = [a.author_name for a in paper.authors]
+    namestr = ", ".join(names)
+    click.echo(f"   {title}")
+    click.echo(f"      {namestr}")
 
+
+def displayMentionsInClusters(mentions: MentionRecords):
     clustering = get_mention_clustering(mentions)
     print("Clustering")
-    # pprint(clustering)
 
     profile_store = populate_profile_store(clustering.mentions)
+
+    # Add all referenced mention in profile store to MentionRecords
+
+    print(f"Profile Notes")
+    profile_ids = profile_store.get_all_ids()
+    ubermentions = clustering.mentions
+
+    for profile_id in profile_ids:
+        author_notes = get_notes_for_author(profile_id)
+        notelist = list(author_notes)
+        m2s = mention_records_from_notes(notelist)
+        ubermentions = mergeMentions(ubermentions, m2s)
+
+    print(f"End/ Profile Notes")
 
     for cluster_id in clustering.cluster_ids():
         cluster = clustering.cluster(cluster_id)
@@ -161,10 +181,26 @@ def displayMentionsInClusters(mentions: MentionRecords):
             click.echo(f"   {title}")
             click.echo(f"      {auths}")
 
-        alignments = align_cluster(cluster)
+        alignments = align_cluster(profile_store, cluster)
         click.echo("Alignments")
         for userid, aligned in alignments.items():
             pprint(userid)
             pprint(aligned)
+            for align in aligned.values:
+                if isinstance(align, Left):
+                    paper_only_in_cluster = align.value
+                    paper_rec = ubermentions.papers[paper_only_in_cluster]
+                    print("Left: Only In Cluster")
+                    render_paper(paper_rec)
+                elif isinstance(align, Right):
+                    paper_only_in_profile = align.value
+                    paper_rec = ubermentions.papers[paper_only_in_profile]
+                    print("Right: Only In Profile")
+                    render_paper(paper_rec)
+                elif isinstance(align, Both):
+                    paper_in_both = align.value
+                    paper_rec = ubermentions.papers[paper_in_both]
+                    print("Both: In Profile and Cluster")
+                    render_paper(paper_rec)
 
         click.echo("\n")

@@ -3,6 +3,7 @@ import click
 from click.core import Context
 from lib.predefs.config import setenv
 
+
 @click.group()
 @click.option("--remote", "-x", is_flag=True, help="run command on server")
 @click.option(

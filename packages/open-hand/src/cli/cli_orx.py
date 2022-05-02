@@ -5,7 +5,7 @@ from pprint import pprint
 import click
 from .cli_base import cli
 
-from lib.orx.open_exchange import get_notes_for_author, get_profile, get_profiles
+from lib.orx.open_exchange import get_notes_for_author, get_profile, get_profiles, mention_records_from_notes
 
 
 @cli.group()
@@ -23,7 +23,12 @@ def get():
 def author(authorid: str):
     notes = list(get_notes_for_author(authorid))
     print(f"{authorid} note count: {len(notes)}")
-    get_profile(authorid)
+    profile = get_profile(authorid)
+    d = asdict(profile)
+    pprint(d)
+
+    mentionRecords = mention_records_from_notes(notes)
+
     for n in notes:
         id = n.id
         content = n.content
@@ -41,5 +46,4 @@ def profiles(offset: int, limit: int):
     profiles = get_profiles(offset, limit)
     for p in profiles:
         names = p.content.names
-        pprint(names)
-        print('\n')
+        print(f"Profile: {names}")

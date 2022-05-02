@@ -12,6 +12,16 @@ def setup(logname: str):
     logger.addHandler(ch)
     return logger
 
+def createlogger(name: str):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("[%(name)s:%(levelname)s] %(message)s")
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+    ch.setLevel(logging.INFO)
+    logger.addHandler(ch)
+    return logger
+
 s2and_logger = logging.getLogger("s2and")
 s2and_logger.setLevel("INFO")
 s2and_logger.disabled = True

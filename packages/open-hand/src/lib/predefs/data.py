@@ -130,6 +130,12 @@ class MentionRecords:
         return dict([(id, asdict(v)) for id, v in self.signatures.items()])
 
 
+def mergeMentions(m1: MentionRecords, m2: MentionRecords) -> MentionRecords:
+    p12 = { **m1.papers,  **m2.papers }
+    s12 = { **m1.signatures,  **m2.signatures }
+    return MentionRecords(papers=p12, signatures=s12)
+
+
 @dataclass
 class SignatureWithFocus:
     signature: SignatureRec

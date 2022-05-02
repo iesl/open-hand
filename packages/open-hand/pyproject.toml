@@ -19,8 +19,9 @@ exclude = [
 ignore = []
 
 # stubPath = "src/stubs"
-# venv = "env367"
 
+venvPath = "../../.local/envs"
+venv = "open-hand-env"
 useLibraryCodeForTypes = true
 typeCheckingMode = "strict" # vs strict/none
 
