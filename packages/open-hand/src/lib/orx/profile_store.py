@@ -2,8 +2,9 @@ from logging import Logger
 from typing import Dict, List, Set
 
 from lib.orx.profile_schemas import Profile
+from lib.predefs.data import MentionRecords, PaperRec, mergeMentions
 from lib.predefs.typedefs import TildeID
-from lib.orx.open_exchange import get_profile
+from lib.orx.open_exchange import get_notes_for_author, get_profile,  mention_records_from_notes
 
 from lib.predefs.log import createlogger
 
@@ -11,13 +12,17 @@ from disjoint_set import DisjointSet
 
 
 class ProfileStore:
-    profiles: Dict[str, Profile]
+    profiles: Dict[TildeID, Profile]
+    userMentions: Dict[TildeID, MentionRecords]
+    allMentions: MentionRecords
     ds: DisjointSet[TildeID]
     log: Logger
 
     def __init__(self) -> None:
         self.profiles = dict()
         self.ds = DisjointSet()
+        self.userMentions = dict()
+        self.allMentions = MentionRecords(dict(), dict())
         self.log = createlogger("ProfileStore")
 
     def add_profile(self, id: TildeID) -> TildeID:
@@ -53,3 +58,13 @@ class ProfileStore:
         for s in self.ds.itersets(with_canonical_elements=True):
             id, eqivs = s
             self.log.info(f"{id}: {eqivs}")
+
+    def fetch_papers(self, id: TildeID) -> List[PaperRec]:
+        if id not in self.userMentions:
+            notes = get_notes_for_author(id)
+            notelist = list(notes)
+            mentionRecs = mention_records_from_notes(notelist)
+            self.userMentions[id] = mentionRecs
+            self.allMentions = mergeMentions(self.allMentions, mentionRecs)
+
+        return [p for _, p in self.userMentions[id].papers.items()]
