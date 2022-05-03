@@ -6,7 +6,7 @@ from lib.db.database import add_all_referenced_signatures
 from lib.orx.profile_store import ProfileStore
 from lib.orx.utils import is_tildeid
 from lib.predefs.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
-from lib.predefs.typedefs import ClusterID
+from lib.predefs.typedefs import ClusterID, SignatureID, TildeID
 from itertools import groupby
 import click
 
@@ -29,9 +29,10 @@ def format_authors(authors: List[AuthorRec], fn: t.Callable[[AuthorRec, int], st
 
 
 def format_sig(sig: SignatureWithFocus) -> str:
+    ts = "~" if is_tildeid(sig.signature.author_info.openId) else ""
     if sig.has_focus:
-        return yellowB(f"{sig.signature.author_info.fullname}")
-    return dim(f"{sig.signature.author_info.fullname}")
+        return yellowB(f"{ts}{sig.signature.author_info.fullname}")
+    return dim(f"{ts}{sig.signature.author_info.fullname}")
 
 
 def get_mention_clustering(init: MentionRecords) -> MentionClustering:
@@ -79,32 +80,43 @@ def get_primary_name_variants(papersWithSignatures: List[PaperWithPrimaryAuthor]
     return uniq
 
 
-def align_cluster(profile_store: ProfileStore, cluster: List[PaperWithPrimaryAuthor]) -> Dict[str, Alignment[str]]:
+def align_cluster(
+    profile_store: ProfileStore, cluster: List[PaperWithPrimaryAuthor]
+) -> Dict[TildeID, Alignment[SignatureID]]:
     tildeids = get_primary_tildeids(cluster)
     canonical_ids = profile_store.canonicalize_ids(list(tildeids))
-    alignments: Dict[str, Alignment[str]] = dict()
-    for id in canonical_ids:
-        a = align_cluster_to_user(profile_store, cluster, id)
-        alignments[id] = a
+    alignments: Dict[TildeID, Alignment[SignatureID]] = dict()
+    for tid in canonical_ids:
+        a = align_cluster_to_user(profile_store, cluster, tid)
+        alignments[tid] = a
     return alignments
 
 
-def align_cluster_to_user(profile_store: ProfileStore, cluster: List[PaperWithPrimaryAuthor], user_id: str) -> Alignment[str]:
-    user_papers = profile_store.fetch_papers(user_id)
-    print(f"Aligning {user_id} w/{len(user_papers)} papers to cluster w/{len(cluster)} papers")
-    aligned: List[OneOrBoth[str]] = []
-    paper_dict: Dict[str, PaperRec] = dict([(n.paper_id, n) for n in user_papers])
-    cluster_dict = dict([(c.paper.paper_id, c) for c in cluster])
-    for c in cluster:
-        paper_id = c.paper.paper_id
-        if paper_id in paper_dict:
-            aligned.append(Both.of(paper_id))
-        else:
-            aligned.append(Left.of(paper_id))
+def align_cluster_to_user(
+    profile_store: ProfileStore, cluster: List[PaperWithPrimaryAuthor], user_id: TildeID
+) -> Alignment[SignatureID]:
+    papersWithPrimaryAuthor = profile_store.fetch_signatures_as_pwpa(user_id)
+    pwpas = papersWithPrimaryAuthor
 
-    for p in user_papers:
-        if p.paper_id not in cluster_dict:
-            aligned.append(Right.of(p.paper_id))
+    print(f"Aligning {user_id} w/{len(pwpas)} papers to cluster w/{len(cluster)} papers")
+    aligned: List[OneOrBoth[SignatureID]] = []
+    primary_sigs: List[SignatureRec] = [p.primary_signature() for p in pwpas]
+    primary_sigs_ids: List[SignatureID] = [s.signature_id for s in primary_sigs]
+    sig_set: Set[SignatureID] = set(primary_sigs_ids)
+
+    cluster_dict: Dict[SignatureID, PaperWithPrimaryAuthor] = dict(
+        [(c.primary_signature().signature_id, c) for c in cluster]
+    )
+
+    for sig_id in cluster_dict:
+        if sig_id in sig_set:
+            aligned.append(Both.of(sig_id))
+        else:
+            aligned.append(Left.of(sig_id))
+
+    for sig_id in sig_set:
+        if sig_id not in cluster_dict:
+            aligned.append(Right.of(sig_id))
 
     return Alignment(values=aligned)
 
@@ -129,12 +141,21 @@ def render_paper(paper: PaperRec):
     click.echo(f"      {namestr}")
 
 
+def render_pwpa(pwpa: PaperWithPrimaryAuthor):
+    title = click.style(pwpa.paper.title, fg="blue")
+    sid = pwpa.primary_signature().signature_id
+    fmtsigs = [format_sig(sig) for sig in pwpa.signatures]
+    auths = ", ".join(fmtsigs)
+    click.echo(f"   {title} ({sid})")
+    click.echo(f"      {auths}")
+
+
 def displayMentionsInClusters(mentions: MentionRecords):
     print("Clustering Display")
 
     clustering = get_mention_clustering(mentions)
 
-    profile_store = populate_profile_store(clustering.mentions)
+    profile_store = ProfileStore()
 
     for cluster_id in clustering.cluster_ids():
         cluster = clustering.cluster(cluster_id)
@@ -144,32 +165,38 @@ def displayMentionsInClusters(mentions: MentionRecords):
 
         click.echo(f"Cluster for {namestr}")
 
-        for pws in cluster:
-            title = click.style(pws.paper.title, fg="blue")
-            fmtsigs = [format_sig(sig) for sig in pws.signatures]
-            auths = ", ".join(fmtsigs)
-            click.echo(f"   {title}")
-            click.echo(f"      {auths}")
-
         alignments = align_cluster(profile_store, cluster)
-        click.echo("Alignments")
+        displayed_sigs: Set[SignatureID] = set()
         ubermentions = profile_store.allMentions
+
         for _, aligned in alignments.items():
             ls, rs, bs = separateOOBs(aligned.values)
 
             print("Papers Only In Cluster")
-            for id in ls.value:
-                paper_rec = ubermentions.papers[id]
-                render_paper(paper_rec)
+            for sig_id in ls.value:
+                sig = ubermentions.signatures[sig_id]
+                displayed_sigs.add(sig_id)
+                pwpa = PaperWithPrimaryAuthor.from_signature(ubermentions, sig)
+                render_pwpa(pwpa)
 
             print("Papers in Both Profile and Cluster")
-            for id in bs.value:
-                paper_rec = ubermentions.papers[id]
-                render_paper(paper_rec)
+            for sig_id in bs.value:
+                sig = ubermentions.signatures[sig_id]
+                displayed_sigs.add(sig_id)
+                pwpa = PaperWithPrimaryAuthor.from_signature(ubermentions, sig)
+                render_pwpa(pwpa)
 
             print("Papers Only In Profile")
-            for id in rs.value:
-                paper_rec = ubermentions.papers[id]
-                render_paper(paper_rec)
+            for sig_id in rs.value:
+                sig = ubermentions.signatures[sig_id]
+                displayed_sigs.add(sig_id)
+                pwpa = PaperWithPrimaryAuthor.from_signature(ubermentions, sig)
+                render_pwpa(pwpa)
+
+        print("Unaligned Papers")
+        for pws in cluster:
+            if pws.primary_signature().signature_id not in displayed_sigs:
+                render_pwpa(pws)
+
 
         click.echo("\n")

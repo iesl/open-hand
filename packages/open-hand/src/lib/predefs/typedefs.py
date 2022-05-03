@@ -3,7 +3,8 @@ from typing import Set, Dict, Tuple, NewType
 ClusterID = NewType("ClusterID", str)
 # TildeID = NewType("TildeID", str)
 TildeID = str
-SignatureID = NewType("SignatureID", str)
+# SignatureID = NewType("SignatureID", str)
+SignatureID = str
 
 StringCountDict = Dict[str, int]
 NameCountDict = Dict[str, StringCountDict]

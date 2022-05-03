@@ -2,9 +2,9 @@ from logging import Logger
 from typing import Dict, List, Set
 
 from lib.orx.profile_schemas import Profile
-from lib.predefs.data import MentionRecords, PaperRec, mergeMentions
+from lib.predefs.data import MentionRecords, PaperRec, PaperWithPrimaryAuthor, SignatureRec, mergeMentions
 from lib.predefs.typedefs import TildeID
-from lib.orx.open_exchange import get_notes_for_author, get_profile,  mention_records_from_notes
+from lib.orx.open_exchange import get_notes_for_author, get_profile, mention_records_from_notes
 
 from lib.predefs.log import createlogger
 
@@ -59,12 +59,25 @@ class ProfileStore:
             id, eqivs = s
             self.log.info(f"{id}: {eqivs}")
 
-    def fetch_papers(self, id: TildeID) -> List[PaperRec]:
+    def fetch_user_mentions(self, id: TildeID) -> MentionRecords:
+        self.add_profile(id)
         if id not in self.userMentions:
             notes = get_notes_for_author(id)
             notelist = list(notes)
             mentionRecs = mention_records_from_notes(notelist)
             self.userMentions[id] = mentionRecs
             self.allMentions = mergeMentions(self.allMentions, mentionRecs)
+        return self.userMentions[id]
 
-        return [p for _, p in self.userMentions[id].papers.items()]
+    def fetch_papers(self, id: TildeID) -> List[PaperRec]:
+        userMentions = self.fetch_user_mentions(id)
+        return [p for _, p in userMentions.papers.items()]
+
+    def fetch_signatures(self, id: TildeID) -> List[SignatureRec]:
+        userMentions = self.fetch_user_mentions(id)
+        return [s for _, s in userMentions.signatures.items() if s.author_info.openId == id]
+
+    def fetch_signatures_as_pwpa(self, id: TildeID) -> List[PaperWithPrimaryAuthor]:
+        sigs = self.fetch_signatures(id)
+        pwpas = [PaperWithPrimaryAuthor.from_signature(self.allMentions, s) for s in sigs]
+        return pwpas
