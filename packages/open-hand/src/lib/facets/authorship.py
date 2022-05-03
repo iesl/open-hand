@@ -21,18 +21,6 @@ from lib.predefs.data import (
     AuthorRec,
 )
 
-
-def format_authors(authors: List[AuthorRec], fn: t.Callable[[AuthorRec, int], str]) -> List[str]:
-    return [fn(a, i) for i, a in enumerate(authors)]
-
-
-def format_sig(sig: SignatureWithFocus) -> str:
-    ts = "~" if is_tildeid(sig.signature.author_info.openId) else ""
-    if sig.has_focus:
-        return yellowB(f"{ts}{sig.signature.author_info.fullname}")
-    return dim(f"{ts}{sig.signature.author_info.fullname}")
-
-
 def get_mention_clustering(init: MentionRecords) -> MentionClustering:
     def by_cluster(s: SignatureRec):
         return s.cluster_id if s.cluster_id is not None else "<unclustered>"
@@ -129,6 +117,17 @@ def populate_profile_store(mentions: MentionRecords) -> ProfileStore:
 
     ps.show_profile_sets()
     return ps
+
+
+def format_authors(authors: List[AuthorRec], fn: t.Callable[[AuthorRec, int], str]) -> List[str]:
+    return [fn(a, i) for i, a in enumerate(authors)]
+
+
+def format_sig(sig: SignatureWithFocus) -> str:
+    ts = "~" if is_tildeid(sig.signature.author_info.openId) else ""
+    if sig.has_focus:
+        return yellowB(f"{ts}{sig.signature.author_info.fullname}")
+    return dim(f"{ts}{sig.signature.author_info.fullname}")
 
 
 def render_paper(paper: PaperRec):
