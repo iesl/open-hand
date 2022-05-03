@@ -6,8 +6,8 @@ from .cli_base import cli
 
 from lib.predefs.config import load_config, setenv
 from lib.db.database import get_canopy
-from lib.display import displayMentionsInClusters
-from lib.canopies import list_canopies_counted
+from lib.console.display import displayMentionsInClusters
+from lib.console.canopies import list_canopies_counted
 
 
 @cli.group()

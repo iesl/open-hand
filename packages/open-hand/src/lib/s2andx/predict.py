@@ -11,11 +11,11 @@ from lib.predefs.data import (
     signatures2dict,
 )
 
-from .db.mongoconn import dbconn
+from lib.db.mongoconn import dbconn
 from .model import load_model
-from .canopies import get_canopy, get_canopy_strs
+from lib.console.canopies import get_canopy, get_canopy_strs
 from s2and.data import ANDData
-from .predefs.s2and_data import DataPreloads, preload_data
+from lib.predefs.s2and_data import DataPreloads, preload_data
 
 
 from lib.predefs.typedefs import NameCountDict, NameEquivalenceSet

@@ -1,4 +1,3 @@
-from lib.display import mentions_to_displayables
 from lib.predefs.log import logger
 
 from typing import List, Optional
@@ -68,10 +67,11 @@ def show_canopies(page: Optional[int] = None):
 @bp.route("/canopy/<string:id>")
 def show_canopy(id: str):
     mentions = get_canopy(id)
-    _, cluster_dict = mentions_to_displayables(mentions)
-    cluster_ids = list(cluster_dict)
+    # _, cluster_dict = mentions_to_displayables(mentions)
+    # cluster_ids = list(cluster_dict)
 
-    return render_template("canopy.html", canopy=id, cluster_ids=cluster_ids, cluster_dict=cluster_dict)
+    # return render_template("canopy.html", canopy=id, cluster_ids=cluster_ids, cluster_dict=cluster_dict)
+    return render_template("canopy.html")
 
 
 @bp.route("/clusters")

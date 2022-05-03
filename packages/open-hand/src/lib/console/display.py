@@ -1,7 +1,6 @@
 from typing import Dict, List, Tuple, Set
 import typing as t
 
-
 from lib.db.database import add_all_referenced_signatures
 from lib.orx.profile_store import ProfileStore
 from lib.orx.utils import is_tildeid
@@ -10,8 +9,7 @@ from lib.predefs.typedefs import ClusterID, SignatureID, TildeID
 from itertools import groupby
 import click
 
-from lib.cli_utils import dim, yellowB
-
+from lib.predefs.colors import dim, yellowB
 
 from lib.predefs.data import (
     MentionClustering,
@@ -197,6 +195,5 @@ def displayMentionsInClusters(mentions: MentionRecords):
         for pws in cluster:
             if pws.primary_signature().signature_id not in displayed_sigs:
                 render_pwpa(pws)
-
 
         click.echo("\n")

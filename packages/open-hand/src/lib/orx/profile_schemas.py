@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 from marshmallow.decorators import post_load, pre_load
-from lib.orx.schemas import PartialSchema
+from lib.predefs.schemas import PartialSchema
 
 from lib.predefs.data import OptBoolField, OptStringField, StrField
 
@@ -44,7 +44,7 @@ class ExpertiseTimelineSchema(PartialSchema):
     keywords = fields.List(StrField)
 
     @pre_load
-    def clean(self, data: Any, many: Any, **kwargs):
+    def clean(self, data: Any, _: Any, **__):
         return clean_start_end(data)
 
     @post_load
@@ -82,7 +82,7 @@ class InstitutionTimelineSchema(PartialSchema):
     position = OptStringField
 
     @pre_load
-    def clean(self, data: Any, many: Any, **kwargs):
+    def clean(self, data: Any, _: Any, **kwargs):
         return clean_start_end(data)
 
     @post_load
@@ -107,7 +107,7 @@ class NameEntrySchema(PartialSchema):
     username = OptStringField
 
     @pre_load
-    def clean(self, data: Any, many: Any, **kwargs):
+    def clean(self, data: Any, _: Any, **kwargs):
         if "preferred" not in data:
             data["preferred"] = False
         if "username" not in data:
@@ -137,7 +137,7 @@ class PersonalRelationSchema(PartialSchema):
     relation = StrField
 
     @pre_load
-    def clean(self, data: Any, many: Any, **kwargs):
+    def clean(self, data: Any, _: Any, **kwargs):
         return clean_start_end(data)
 
     @post_load
@@ -178,7 +178,7 @@ class ProfileContentSchema(PartialSchema):
     wikipedia = OptStringField
 
     @pre_load
-    def clean_expertise(self, data: Any, many: Any, **kwargs):
+    def clean_expertise(self, data: Any, _: Any, **kwargs):
         if "expertise" not in data:
             data["expertise"] = []
         if "history" not in data:

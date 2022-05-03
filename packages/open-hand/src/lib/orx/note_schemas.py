@@ -1,11 +1,4 @@
-from marshmallow import Schema, EXCLUDE
 from dataclasses import dataclass
-
-
-class PartialSchema(Schema):
-    class Meta(Schema.Meta):
-        unknown = EXCLUDE
-
 
 @dataclass
 class NoteContent:

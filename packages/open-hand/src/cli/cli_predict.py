@@ -1,8 +1,9 @@
 import click
 from .cli_base import cli
 
-from lib.display import displayMentionsInClusters
-from lib.model import load_model
+from lib.console.display import displayMentionsInClusters
+from lib.s2andx.model import load_model
+from lib.s2andx.predict import dopredict, predict_all
 from lib.predefs.s2and_data import preload_data
 
 @cli.command()
@@ -14,11 +15,10 @@ def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
     """Run prediction on canopy"""
 
     click.echo(f"canopy={canopy}")
-    from lib import predict
 
     pre = preload_data(use_name_counts=use_name_dicts, use_name_tuples=True)
     model = load_model()
-    clusters = predict.dopredict(canopy, commit=commit, pre=pre, profile=profile, model=model)
+    clusters = dopredict(canopy, commit=commit, pre=pre, profile=profile, model=model)
 
     for cluster in clusters:
         print(f"Mentions for cluster {cluster.cluster_id}")
@@ -30,6 +30,5 @@ def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
 @click.option("--profile", is_flag=True, help="profile program execution")
 def predict_all(profile: bool):
     """Run prediction on all canopies"""
-    from lib import predict
 
-    predict.predict_all(profile=profile)
+    predict_all(profile=profile)
