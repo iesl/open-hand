@@ -10,15 +10,9 @@ from jinja2.environment import Environment
 # from jinja2.exceptions import TemplateSyntaxError
 # from jinja2.exceptions import UndefinedError
 from jinja2.loaders import DictLoader, FileSystemLoader
+from lib.shadowdb.data import MentionRecords, PaperWithPrimaryAuthor
 
-from lib.predefs.data import (
-    AuthorInfoBlock,
-    AuthorRec,
-    MentionRecords,
-    PaperRec,
-    PaperWithPrimaryAuthor,
-    SignatureRec,
-)
+from lib.shadowdb.shadowdb_schemas import AuthorInfoBlock, AuthorRec, PaperRec, SignatureRec
 
 
 @pytest.fixture

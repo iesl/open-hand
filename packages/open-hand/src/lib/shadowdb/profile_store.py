@@ -2,15 +2,16 @@ from logging import Logger
 from pprint import pprint
 from typing import Dict, List, Optional, Set
 
-from lib.orx.profile_schemas import Profile
-from lib.predefs.data import MentionRecords, PaperRec, PaperWithPrimaryAuthor, SignatureRec, mergeMentions
-from lib.predefs.typedefs import TildeID
-from lib.orx.open_exchange import get_notes_for_author, get_profile, mention_records_from_notes
-
-from lib.predefs.log import createlogger
-
 from disjoint_set import DisjointSet
 
+from lib.open_exchange.profile_schemas import Profile
+from lib.open_exchange.open_exchange import get_notes_for_author, get_profile
+
+from lib.predef.typedefs import TildeID
+from lib.predef.log import createlogger
+
+from .data import MentionRecords, mention_records_from_notes, mergeMentions, PaperWithPrimaryAuthor
+from .shadowdb_schemas import PaperRec, SignatureRec
 
 class ProfileStore:
     profiles: Dict[TildeID, Profile]
@@ -35,7 +36,7 @@ class ProfileStore:
                 return
             self.ds.find(p.id)  # implicitly adds id to disjoint set
             if id != p.id:
-                self.ds.union(id, p.id) # id might have been an email, p.id will likely be a tildeId
+                self.ds.union(id, p.id)  # id might have been an email, p.id will likely be a tildeId
                 self.log.debug(f"{id} == {p.id}")
 
             self.profiles[id] = p

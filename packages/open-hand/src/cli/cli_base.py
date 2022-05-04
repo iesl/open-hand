@@ -1,7 +1,7 @@
 from click.core import Context
 import click
 from click.core import Context
-from lib.predefs.config import setenv
+from lib.predef.config import setenv
 
 
 @click.group()

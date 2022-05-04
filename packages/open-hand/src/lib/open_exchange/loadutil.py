@@ -1,6 +1,7 @@
 from typing import Any, Optional, List
 from bibtexparser.bibdatabase import BibDatabase
 
+
 def opt_entry(key: str, content: Any, bibdb: Optional[BibDatabase]) -> Optional[Any]:
     if key in content:
         return content[key]

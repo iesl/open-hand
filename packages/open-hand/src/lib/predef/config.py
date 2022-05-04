@@ -1,10 +1,12 @@
 import typing as t
+from typing import Optional
 import os
 import json
 
 from marshmallow import Schema, fields, post_load
 from dataclasses import dataclass
-from .data import StrField
+
+from .schemas import StrField
 from .log import logger
 
 
@@ -67,3 +69,14 @@ def load_config() -> t.Optional[Config]:
         logger.warn(f"Could not find config {config_filename}")
 
     return config
+
+global_app_config: Optional[Config] = None
+
+def get_config() -> Config:
+    global global_app_config
+    if global_app_config is None:
+        global_app_config = load_config()
+    if global_app_config is None:
+        raise Exception("Config file could not be loaded")
+
+    return global_app_config

@@ -1,11 +1,13 @@
 from dataclasses import asdict
-import typing as t
 from pprint import pprint
 
 import click
-from .cli_base import cli
 
-from lib.orx.open_exchange import get_notes_for_author, get_profile, get_profiles, mention_records_from_notes
+from lib.open_exchange.open_exchange import get_notes_for_author, get_profile, get_profiles
+
+from lib.shadowdb.data import mention_records_from_notes
+
+from .cli_base import cli
 
 
 @cli.group()

@@ -1,5 +1,3 @@
-
-
 def load_shadowdb():
     # Get all profiles
     # for profile in profiles

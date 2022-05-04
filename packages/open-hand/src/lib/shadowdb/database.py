@@ -2,13 +2,15 @@ from typing import Any, Collection, List
 
 from pymongo.cursor import Cursor
 
+from .data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
+
 from .mongoconn import dbconn
-from lib.predefs.data import (
-    ClusteringRecord,
-    MentionRecords,
-    papers2dict,
-    signatures2dict,
-)
+
+# from lib.predef.data import (
+#     MentionRecords,
+#     papers2dict,
+#     signatures2dict,
+# )
 
 from .shadowdb_schemas import (
     PaperRec,

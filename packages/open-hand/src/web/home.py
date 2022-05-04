@@ -1,4 +1,4 @@
-from lib.predefs.log import logger
+from lib.predef.log import logger
 
 from typing import List, Optional
 from flask import (
@@ -8,9 +8,9 @@ from flask import (
     url_for,
     # request, url_for, flash, g, redirect,
 )
+from lib.shadowdb.data import MentionRecords
 
-from lib.predefs.data import MentionRecords
-from lib.db.database import get_canopy, get_canopy_strs
+from lib.shadowdb.database import get_canopy, get_canopy_strs
 
 import math
 

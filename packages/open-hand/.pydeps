@@ -1,0 +1,16 @@
+[pydeps]
+max_bacon = 2
+no_show = False
+verbose = 0
+pylib = False
+include_missing = False
+exclude =
+    os
+    re
+    sys
+    requests
+    pymongo
+    bibtexparser
+    collections
+    __future__
+    marshmallow

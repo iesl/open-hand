@@ -1,16 +1,10 @@
-
 from marshmallow import Schema, fields, EXCLUDE, post_load
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
-# TODO move these defs:
-OptStringField = fields.Str(load_default=None)
-StrField = fields.Str(allow_none=False)
-IntField = fields.Int(allow_none=False)
-OptIntField = fields.Int(load_default=None)
-BoolField = fields.Bool(allow_none=False)
-OptBoolField = fields.Bool()
+from lib.predef.schemas import OptStringField, StrField, OptIntField, IntField
+
 
 @dataclass
 class AuthorRec:
@@ -115,5 +109,3 @@ class SignatureRecSchema(Schema):
     @post_load
     def make(self, data: Any, **_) -> SignatureRec:
         return SignatureRec(**data)
-
-

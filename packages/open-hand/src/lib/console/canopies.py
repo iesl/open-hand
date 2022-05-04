@@ -1,4 +1,4 @@
-from lib.db.database import get_canopy, get_canopy_strs
+from lib.shadowdb.database import get_canopy, get_canopy_strs
 
 
 def list_canopies(offset: int):

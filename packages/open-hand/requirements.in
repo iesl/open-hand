@@ -13,9 +13,10 @@ email-validator==1.2.1
 celery[redis]
 
 ## Dependecy version inspections utils:
-johnnydep
-luddite
+johnnydep==1.11
+luddite==1.0.2
+ppydeps==1.10.17
 
 black==22.3.0
 pytest==7.1.1
-pytest-cov==3.0.0
+ytest-cov==3.0.0

@@ -1,3 +1,3 @@
-from lib.predefs.log import logger as l
+from lib.predef.log import logger as l
 
 logger = l

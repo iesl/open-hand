@@ -2,7 +2,7 @@ import pickle
 from os.path import join
 
 from s2and.model import Clusterer
-from lib.predefs.log import logger
+from lib.predef.log import logger
 
 from s2and.consts import CONFIG
 

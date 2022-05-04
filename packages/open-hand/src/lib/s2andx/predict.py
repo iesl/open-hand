@@ -1,24 +1,18 @@
-from lib.predefs.log import logger
+from lib.predef.log import logger
 
 from typing import List, Optional, Union
 
 from s2and.model import Clusterer
+from lib.shadowdb.data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
 
-from lib.predefs.data import (
-    ClusteringRecord,
-    MentionRecords,
-    papers2dict,
-    signatures2dict,
-)
-
-from lib.db.mongoconn import dbconn
+from lib.shadowdb.mongoconn import dbconn
 from .model import load_model
 from lib.console.canopies import get_canopy, get_canopy_strs
 from s2and.data import ANDData
-from lib.predefs.s2and_data import DataPreloads, preload_data
+from lib.predef.s2and_data import DataPreloads, preload_data
 
 
-from lib.predefs.typedefs import NameCountDict, NameEquivalenceSet
+from lib.predef.typedefs import NameCountDict, NameEquivalenceSet
 
 
 def choose_canopy(n: int) -> str:

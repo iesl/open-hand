@@ -1,18 +1,20 @@
 from typing import Dict, List, Optional, Tuple, Set
 
-from lib.db.database import add_all_referenced_signatures
-from lib.orx.profile_store import ProfileStore
-from lib.orx.utils import is_tildeid
-from lib.predefs.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
-from lib.predefs.typedefs import ClusterID, SignatureID, TildeID
 from itertools import groupby
 import click
-
-from lib.predefs.colors import dim, yellowB
-
 from email_validator import validate_email, EmailNotValidError
 
-from lib.predefs.data import (
+from lib.predef.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
+from lib.predef.typedefs import ClusterID, SignatureID, TildeID
+from lib.predef.colors import dim, yellowB
+from lib.predef.utils import nextnums
+
+from lib.open_exchange.utils import is_tildeid
+
+from lib.shadowdb.database import add_all_referenced_signatures
+from lib.shadowdb.profile_store import ProfileStore
+
+from lib.shadowdb.data import (
     MentionClustering,
     MentionRecords,
     PaperRec,
@@ -20,7 +22,6 @@ from lib.predefs.data import (
     SignatureRec,
     SignatureWithFocus,
 )
-from lib.predefs.utils import nextnums
 
 
 def get_mention_clustering(init: MentionRecords) -> MentionClustering:
@@ -57,7 +58,6 @@ def valid_email(s: str) -> bool:
         return False
 
 
-
 def get_tildeid(profile_store: ProfileStore, openId: str) -> Optional[TildeID]:
     if is_tildeid(openId):
         return openId
@@ -70,6 +70,7 @@ def get_tildeid(profile_store: ProfileStore, openId: str) -> Optional[TildeID]:
         return
 
     return maybeProfileId
+
 
 def get_primary_tildeids(profile_store: ProfileStore, papersWithSignatures: List[PaperWithPrimaryAuthor]) -> Set[str]:
     results: List[str] = []
@@ -150,6 +151,7 @@ def format_sig(sig: SignatureWithFocus) -> str:
         return yellowB(f"{ts}{sig.signature.author_info.fullname}")
     return dim(f"{ts}{sig.signature.author_info.fullname}")
 
+
 def render_paper(paper: PaperRec):
     title = click.style(paper.title, fg="blue")
     author_names = [f"{p.author_name}" for p in paper.authors]
@@ -162,6 +164,7 @@ def render_paper(paper: PaperRec):
 def render_papers(papers: List[PaperRec]):
     for p in papers:
         render_paper(p)
+
 
 def render_pwpa(pwpa: PaperWithPrimaryAuthor, n: int):
     title = click.style(pwpa.paper.title, fg="blue")

@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 from marshmallow.decorators import post_load, pre_load
-from lib.predefs.schemas import PartialSchema
+from lib.predef.schemas import PartialSchema
 
-from lib.predefs.data import OptBoolField, OptStringField, StrField
+from lib.predef.schemas import OptBoolField, OptStringField, StrField
 
 StartField = fields.Int(allow_none=True)
 EndField = fields.Int(allow_none=True)
