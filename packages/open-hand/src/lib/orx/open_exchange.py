@@ -5,6 +5,7 @@ from bibtexparser.bibdatabase import BibDatabase
 from openreview import Note
 
 import bibtexparser
+from openreview.openreview import OpenReviewException
 import requests
 
 from lib.orx.profile_schemas import load_profile, Profile
@@ -105,15 +106,14 @@ def mention_records_from_notes(notes: List[Note]) -> MentionRecords:
 
     return recs
 
-
-def get_profile(user_id: str) -> Profile:
+def get_profile(user_id: str) -> Optional[Profile]:
     client = get_client()
-    pjson = client.get_profile(user_id).to_json()
-    profile = load_profile(pjson)
-    print(f"Profile for {user_id}")
-    return profile
-
-
+    try:
+        pjson = client.get_profile(user_id).to_json()
+        profile = load_profile(pjson)
+        return profile
+    except OpenReviewException:
+        return None
 
 
 def get_profiles(offset: int, limit: int) -> List[Profile]:

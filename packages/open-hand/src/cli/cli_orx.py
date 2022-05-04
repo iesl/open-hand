@@ -21,21 +21,30 @@ def get():
 @get.command("author")
 @click.argument("authorid", type=str)
 def author(authorid: str):
+
     notes = list(get_notes_for_author(authorid))
     print(f"{authorid} note count: {len(notes)}")
+
     profile = get_profile(authorid)
-    d = asdict(profile)
-    pprint(d)
+    if profile is None:
+        print(f"No Profile for {authorid}")
+    else:
+        d = asdict(profile)
+        pprint(d)
+
+    sortedNotes = sorted(notes, key=lambda n: n.id)
 
     mentionRecords = mention_records_from_notes(notes)
 
-    for n in notes:
+    print(f"{authorid} mention count: paper={len(mentionRecords.papers)}, signatures={len(mentionRecords.signatures)}")
+
+    for idx, n in enumerate(sortedNotes):
         id = n.id
         content = n.content
         title = content.get("title") if "title" in content else "??"
         authors = content.get("authors") if "authors" in content else "??"
         authorstr = ", ".join(authors)
-        print(f"{title}  ({id})")
+        print(f"{idx+1} {title}  ({id})")
         print(f"  {authorstr}")
 
 

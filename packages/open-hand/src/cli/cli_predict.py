@@ -1,7 +1,7 @@
 import click
 from .cli_base import cli
 
-from lib.console.display import displayMentionsInClusters
+from lib.facets.authorship import displayMentionsInClusters
 from lib.s2andx.model import load_model
 from lib.s2andx.predict import dopredict, predict_all
 from lib.predefs.s2and_data import preload_data

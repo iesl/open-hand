@@ -44,7 +44,7 @@ class ExpertiseTimelineSchema(PartialSchema):
     keywords = fields.List(StrField)
 
     @pre_load
-    def clean(self, data: Any, _: Any, **__):
+    def clean(self, data: Any, many: Any, **kwargs):
         return clean_start_end(data)
 
     @post_load
@@ -63,7 +63,7 @@ class InstitutionRecSchema(PartialSchema):
     name = StrField
 
     @post_load
-    def make(self, data: Any, **_) -> InstitutionRec:
+    def make(self, data: Any, **kwarg) -> InstitutionRec:
         return InstitutionRec(**data)
 
 
@@ -82,7 +82,7 @@ class InstitutionTimelineSchema(PartialSchema):
     position = OptStringField
 
     @pre_load
-    def clean(self, data: Any, _: Any, **kwargs):
+    def clean(self, data: Any, many: Any, **kwargs):
         return clean_start_end(data)
 
     @post_load
@@ -107,7 +107,7 @@ class NameEntrySchema(PartialSchema):
     username = OptStringField
 
     @pre_load
-    def clean(self, data: Any, _: Any, **kwargs):
+    def clean(self, data: Any, many: Any, **kwargs):
         if "preferred" not in data:
             data["preferred"] = False
         if "username" not in data:
@@ -116,7 +116,7 @@ class NameEntrySchema(PartialSchema):
         return data
 
     @post_load
-    def make(self, data: Any, **_) -> NameEntry:
+    def make(self, data: Any, **kwargs) -> NameEntry:
         return NameEntry(**data)
 
 
@@ -137,11 +137,11 @@ class PersonalRelationSchema(PartialSchema):
     relation = StrField
 
     @pre_load
-    def clean(self, data: Any, _: Any, **kwargs):
+    def clean(self, data: Any, many: Any, **kwargs):
         return clean_start_end(data)
 
     @post_load
-    def make(self, data: Any, **_) -> PersonalRelation:
+    def make(self, data: Any, **kwargs) -> PersonalRelation:
         return PersonalRelation(**data)
 
 
@@ -178,7 +178,7 @@ class ProfileContentSchema(PartialSchema):
     wikipedia = OptStringField
 
     @pre_load
-    def clean_expertise(self, data: Any, _: Any, **kwargs):
+    def clean_expertise(self, data: Any, many: Any, **kwargs):
         if "expertise" not in data:
             data["expertise"] = []
         if "history" not in data:
@@ -189,7 +189,7 @@ class ProfileContentSchema(PartialSchema):
         return data
 
     @post_load
-    def make(self, data: Any, **_) -> ProfileContent:
+    def make(self, data: Any, **kwargs) -> ProfileContent:
         return ProfileContent(**data)
 
 
@@ -216,7 +216,7 @@ class ProfileSchema(PartialSchema):
     content = fields.Nested(ProfileContentSchema)
 
     @post_load
-    def make(self, data: Any, **_) -> Profile:
+    def make(self, data: Any, **kwargs) -> Profile:
         return Profile(**data)
 
 

@@ -6,27 +6,13 @@ from .cli_base import cli
 
 from lib.predefs.config import load_config, setenv
 from lib.db.database import get_canopy
-from lib.console.display import displayMentionsInClusters
+from lib.facets.authorship import displayMentionsInClusters, displayMentionsSorted
 from lib.console.canopies import list_canopies_counted
 
 
 @cli.group()
 def show():
     """Display canopies, cluster, configs, ..."""
-
-
-@show.command("cluster")
-def cluster_show():
-    """Show the results of cluster prediction"""
-    from lib.db.database import get_cluster
-
-    cluster = get_cluster("a mccallum_1")
-
-    for item in cluster.mentions.signatures.values():
-        pprint(item)
-
-    for item in cluster.mentions.papers.values():
-        pprint(item)
 
 
 @show.command()
@@ -48,6 +34,21 @@ def canopy_show(canopy: str):
     """Show a canopy"""
     c = get_canopy(canopy)
     displayMentionsInClusters(c)
+
+
+@show.command("cluster")
+@click.argument("cluster", type=str)
+def cluster_show():
+    """Show the results of cluster prediction"""
+    from lib.db.database import get_cluster
+
+    cluster = get_cluster("a mccallum_1")
+
+    for item in cluster.mentions.signatures.values():
+        pprint(item)
+
+    for item in cluster.mentions.papers.values():
+        pprint(item)
 
 
 @show.command("canopies")

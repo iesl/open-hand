@@ -1,5 +1,6 @@
 from logging import Logger
-from typing import Dict, List, Set
+from pprint import pprint
+from typing import Dict, List, Optional, Set
 
 from lib.orx.profile_schemas import Profile
 from lib.predefs.data import MentionRecords, PaperRec, PaperWithPrimaryAuthor, SignatureRec, mergeMentions
@@ -25,19 +26,27 @@ class ProfileStore:
         self.allMentions = MentionRecords(dict(), dict())
         self.log = createlogger("ProfileStore")
 
-    def add_profile(self, id: TildeID) -> TildeID:
+    def add_profile(self, id: TildeID) -> Optional[TildeID]:
         if id not in self.ds:
-            self.log.info(f"add_profile({id}): retrieving...")
+            self.log.debug(f"add_profile({id}): retrieving...")
             p = get_profile(id)
-            self.ds.find(id)  # implicitly adds id to disjoint set
+            if p is None:
+                self.log.warn(f"No such profile: {id}")
+                return
+            self.ds.find(p.id)  # implicitly adds id to disjoint set
+            if id != p.id:
+                self.ds.union(id, p.id) # id might have been an email, p.id will likely be a tildeId
+                self.log.debug(f"{id} == {p.id}")
+
             self.profiles[id] = p
+
             for name in p.content.names:
                 ## Putting id as 2nd param to ds.union() guarantees that it will
                 ##   always be the canonical version for connected elements
-                username = name.username
-                if username is not None and username != id:
-                    self.ds.union(username, id)
-                    self.log.info(f"{username} == {id}")
+                user = name.username
+                if user is not None and user != p.id:
+                    self.ds.union(user, p.id)
+                    self.log.debug(f"{user} == {p.id}")
 
         else:
             self.log.debug(f"add_profile({id}): already in store")
@@ -45,6 +54,7 @@ class ProfileStore:
         return self.ds.find(id)
 
     def canonical_id(self, id: TildeID) -> TildeID:
+        self.add_profile(id)
         return self.ds.find(id)
 
     def canonicalize_ids(self, ids: List[TildeID]) -> Set[TildeID]:
@@ -54,17 +64,33 @@ class ProfileStore:
         return [id for id, _ in self.ds.itersets(with_canonical_elements=True)]
 
     def show_profile_sets(self):
-        self.log.info("Profile ID Equivalencies")
+        print("Profile ID Equivalencies")
         for s in self.ds.itersets(with_canonical_elements=True):
             id, eqivs = s
-            self.log.info(f"{id}: {eqivs}")
+            print(f"{id}: {eqivs}")
+        else:
+            print(f"No Equivalents")
+
+    def get_equivalent_ids(self, id: TildeID) -> Set[TildeID]:
+        for idset in self.ds.itersets(with_canonical_elements=False):
+            if isinstance(idset, set) and id in idset:
+                return idset
+            if isinstance(idset, tuple):
+                _, ids = idset
+                if id in ids:
+                    return ids
+        return set([id])
 
     def fetch_user_mentions(self, id: TildeID) -> MentionRecords:
+        self.log.info(f"fetch_user_mentions({id})...")
         self.add_profile(id)
         if id not in self.userMentions:
-            notes = get_notes_for_author(id)
-            notelist = list(notes)
-            mentionRecs = mention_records_from_notes(notelist)
+            notes = list(get_notes_for_author(id))
+            self.log.info(f"    ({id}) note count = {len(notes)}")
+            mentionRecs = mention_records_from_notes(notes)
+            mpapers = [p for _, p in mentionRecs.papers.items()]
+            self.log.info(f"    ({id}) mention paper = {len(mpapers)}")
+            pprint([n.to_json() for n in notes])
             self.userMentions[id] = mentionRecs
             self.allMentions = mergeMentions(self.allMentions, mentionRecs)
         return self.userMentions[id]
@@ -73,11 +99,37 @@ class ProfileStore:
         userMentions = self.fetch_user_mentions(id)
         return [p for _, p in userMentions.papers.items()]
 
-    def fetch_signatures(self, id: TildeID) -> List[SignatureRec]:
+    def fetch_signatures(self, id: TildeID, printlogs: bool = True) -> List[SignatureRec]:
         userMentions = self.fetch_user_mentions(id)
-        return [s for _, s in userMentions.signatures.items() if s.author_info.openId == id]
+        equivs = self.get_equivalent_ids(id)
+        if printlogs:
+            print(f"fetch_signatures({id}) == {equivs}")
+            for _, sig in userMentions.signatures.items():
+                openId = sig.author_info.openId
+                hasId = openId in equivs
+                paper = self.allMentions.papers[sig.paper_id]
+                if hasId:
+                    print(f"Include: {openId} in {equivs}")
+                    print(f"  {paper.paper_id}: {paper.title}")
+                else:
+                    print(f"     skip: {openId} NOT in {equivs}")
+                    print(f"       {paper.paper_id}: {paper.title}")
+
+        return [s for _, s in userMentions.signatures.items() if s.author_info.openId in equivs]
 
     def fetch_signatures_as_pwpa(self, id: TildeID) -> List[PaperWithPrimaryAuthor]:
         sigs = self.fetch_signatures(id)
         pwpas = [PaperWithPrimaryAuthor.from_signature(self.allMentions, s) for s in sigs]
         return pwpas
+
+
+_pnum = 0
+
+
+def pnum(start: Optional[int] = None) -> int:
+    global _pnum
+    if start is not None:
+        _pnum = start
+    curr = _pnum
+    _pnum = _pnum + 1
+    return curr
