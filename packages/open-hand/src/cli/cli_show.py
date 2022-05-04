@@ -2,12 +2,12 @@ import click
 
 from pprint import pprint
 
-from .cli_base import cli
-
 from lib.predef.config import load_config, setenv
-from lib.shadowdb.queries import get_canopy
-from lib.facets.authorship import displayMentionsInClusters, displayMentionsSorted
-from lib.console.canopies import list_canopies_counted
+from lib.shadowdb.queries import get_canopy, get_cluster
+from lib.facets.authorship import displayMentionsInClusters
+from lib.consoleio.canopies import list_canopies_counted
+
+from .cli_base import cli
 
 
 @cli.group()
@@ -40,7 +40,6 @@ def canopy_show(canopy: str):
 @click.argument("cluster", type=str)
 def cluster_show():
     """Show the results of cluster prediction"""
-    from lib.shadowdb.queries import get_cluster
 
     cluster = get_cluster("a mccallum_1")
 
