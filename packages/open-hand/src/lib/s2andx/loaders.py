@@ -1,13 +1,17 @@
-from typing import NamedTuple
-from s2and.data import ANDData  # , NameCounts
+from typing import NamedTuple, Set, Dict, Tuple
+from s2and.data import ANDData
 
 import pickle
 import os
 
-# from s2and.text import name_counts
+StringCountDict = Dict[str, int]
+NameCountDict = Dict[str, StringCountDict]
 
-from .typedefs import NameCountDict, NameEquivalenceSet
-from .log import logger
+# e.g., {  ("abi", "abigail"), ("abbie", "abigail") ... }
+# TODO this can be a much more efficient bimap implementation
+NameEquivalenceSet = Set[Tuple[str, str]]
+
+from lib.predef.log import logger
 
 from s2and.consts import PROJECT_ROOT_PATH, NAME_COUNTS_PATH
 

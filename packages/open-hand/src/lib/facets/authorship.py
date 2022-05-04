@@ -11,8 +11,8 @@ from lib.predef.utils import nextnums
 
 from lib.open_exchange.utils import is_tildeid
 
-from lib.shadowdb.database import add_all_referenced_signatures
-from lib.shadowdb.profile_store import ProfileStore
+from lib.shadowdb.queries import add_all_referenced_signatures
+from lib.shadowdb.profiles import ProfileStore
 
 from lib.shadowdb.data import (
     MentionClustering,

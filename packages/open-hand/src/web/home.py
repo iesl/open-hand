@@ -10,7 +10,7 @@ from flask import (
 )
 from lib.shadowdb.data import MentionRecords
 
-from lib.shadowdb.database import get_canopy, get_canopy_strs
+from lib.shadowdb.queries import get_canopy, get_canopy_strs
 
 import math
 

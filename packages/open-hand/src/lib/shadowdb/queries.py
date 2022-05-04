@@ -1,16 +1,11 @@
 from typing import Any, Collection, List
+import pprint
 
 from pymongo.cursor import Cursor
 
 from .data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
 
 from .mongoconn import dbconn
-
-# from lib.predef.data import (
-#     MentionRecords,
-#     papers2dict,
-#     signatures2dict,
-# )
 
 from .shadowdb_schemas import (
     PaperRec,
@@ -19,7 +14,6 @@ from .shadowdb_schemas import (
     SignatureRecSchema,
 )
 
-import pprint
 
 signature_coll = dbconn.signatures
 clusters_coll = dbconn.clusters

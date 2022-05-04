@@ -13,6 +13,7 @@ from lib.predef.log import createlogger
 from .data import MentionRecords, mention_records_from_notes, mergeMentions, PaperWithPrimaryAuthor
 from .shadowdb_schemas import PaperRec, SignatureRec
 
+
 class ProfileStore:
     profiles: Dict[TildeID, Profile]
     userMentions: Dict[TildeID, MentionRecords]

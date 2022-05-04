@@ -70,7 +70,9 @@ def load_config() -> t.Optional[Config]:
 
     return config
 
+
 global_app_config: Optional[Config] = None
+
 
 def get_config() -> Config:
     global global_app_config
