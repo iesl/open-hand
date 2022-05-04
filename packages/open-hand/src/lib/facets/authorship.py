@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Set
 
 from lib.db.database import add_all_referenced_signatures
-from lib.orx.open_exchange import get_profile
 from lib.orx.profile_store import ProfileStore
 from lib.orx.utils import is_tildeid
 from lib.predefs.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs

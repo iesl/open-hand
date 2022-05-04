@@ -1,4 +1,9 @@
+# Schemas for data fetched from OpenReview via REST Endpoints
+# Fetched data is generally loaded and then immediately transformed
+#    into formats for local storage and use in the inference engine
+
 from dataclasses import dataclass
+
 
 @dataclass
 class NoteContent:

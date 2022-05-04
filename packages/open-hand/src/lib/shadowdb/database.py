@@ -6,12 +6,15 @@ from .mongoconn import dbconn
 from lib.predefs.data import (
     ClusteringRecord,
     MentionRecords,
+    papers2dict,
+    signatures2dict,
+)
+
+from .shadowdb_schemas import (
     PaperRec,
     PaperRecSchema,
     SignatureRec,
     SignatureRecSchema,
-    papers2dict,
-    signatures2dict,
 )
 
 import pprint
