@@ -35,76 +35,15 @@ https://github.com/jiffyclub/snakeviz
 *** numba for jit compiling?
 
 
-Profile for ~Yuguang_Wang1
-{'active': True,
- 'content': {'dblp': 'https://dblp.org/pid/03/10023-1',
-             'emails': ['****@unsw.edu.au',
-                        '****@mis.mpg.de',
-                        '****@gmail.com',
-                        '****@sjtu.edu.cn'],
-             'emailsConfirmed': ['****@unsw.edu.au',
-                                 '****@mis.mpg.de',
-                                 '****@gmail.com',
-                                 '****@sjtu.edu.cn'],
-             'expertise': [{'end': None,
-                            'keywords': ['Bayesian statistics'],
-                            'start': 2018},
-                           {'end': None,
-                            'keywords': ['Deep learning',
-                                         'graph neural networks',
-                                         'geometric deep learning'],
-                            'start': 2015},
-                           {'end': None,
-                            'keywords': ['Applied harmonic analysis',
-                                         'approximation theory'],
-                            'start': 2009}],
-             'gscholar': 'https://scholar.google.com/citations?user=cMSEByAAAAAJ&hl=en',
-             'history': [{'end': None,
-                          'institution': {'domain': 'sjtu.edu.cn',
-                                          'name': 'Shanghai Jiao Tong '
-                                                  'University'},
-                          'position': 'Associate Professor',
-                          'start': 2021},
-                         {'end': 2021,
-                          'institution': {'domain': 'mis.mpg.de',
-                                          'name': 'Max Planck Institute for '
-                                                  'Mathematics in the '
-                                                  'Sciences, Max-Planck '
-                                                  'Institute'},
-                          'position': 'Research Scientist',
-                          'start': 2020}],
-             'homepage': 'https://yuguangwang.github.io/',
-             'names': [{'first': 'Yu Guang',
-                        'last': 'Wang',
-                        'middle': '',
-                        'preferred': True,
-                        'username': '~Yu_Guang_Wang1'},
-                       {'first': 'Yuguang',
-                        'last': 'Wang',
-                        'middle': '',
-                        'preferred': False,
-                        'username': '~Yuguang_Wang1'}],
-             'preferredEmail': '****@gmail.com',
-             'relations': []},
- 'id': '~Yu_Guang_Wang1',
- 'metaContent': {'dblp': {'signatures': ['~Yu_Guang_Wang1']},
-                 'emails': [{'signatures': ['~Yu_Guang_Wang1']},
-                            {'signatures': ['~Yu_Guang_Wang1']},
-                            {'signatures': ['~Yu_Guang_Wang1']},
-                            {'signatures': ['~Yu_Guang_Wang1']}],
-                 'expertise': [{'signatures': ['~Yu_Guang_Wang1']},
-                               {'signatures': ['~Yu_Guang_Wang1']},
-                               {'signatures': ['~Yu_Guang_Wang1']}],
-                 'gscholar': {'signatures': ['~Yu_Guang_Wang1']},
-                 'history': [{'signatures': ['~Yu_Guang_Wang1']},
-                             {'signatures': ['~Yu_Guang_Wang1']}],
-                 'homepage': {'signatures': ['~Yu_Guang_Wang1']},
-                 'names': [{'signatures': ['~Yu_Guang_Wang1']},
-                           {'signatures': ['~Yu_Guang_Wang1']}],
-                 'preferredEmail': {'signatures': ['~Yu_Guang_Wang1']}},
- 'signatures': ['~Yu_Guang_Wang1'],
- 'writers': ['OpenReview.net']}
+** Issues in OpenReview data/code
+*** Profile fetch by tilde id vs email yields different results
+Fetch by tildeid gives one of possibly many Profiles
+- then need to fetch other versions of Profiles (as listed in content.names[].username )
+
+*** Data is inconsistent
+Profile.content.dblp is string or None or empty string
+history/expertise/relation start/end is number or string or None
+many fields are interchangeable missing or empty string
 
 
- id for Note that has only email as author identifier
-'id': 'BJleph4KvS',
+*** tools.py does double-fetch on iterget_notes

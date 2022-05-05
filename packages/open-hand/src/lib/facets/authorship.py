@@ -5,7 +5,7 @@ import click
 
 from lib.predef.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
 from lib.predef.typedefs import ClusterID, SignatureID, TildeID
-from lib.predef.colors import dim, yellowB
+from lib.predef.output import dim, yellowB
 from lib.predef.utils import is_valid_email, nextnums
 
 from lib.open_exchange.utils import is_tildeid

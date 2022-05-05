@@ -4,7 +4,7 @@ from typing import Optional
 
 import click
 
-from lib.shadowdb.loader import populate_shadowdb, shadow_paper
+from lib.shadowdb.loader import populate_shadowdb, shadow_paper_by_id, shadow_profile_by_id
 
 from .utils import validate_slice
 
@@ -94,7 +94,13 @@ def shadowdb():
 @shadowdb.command("paper")
 @click.argument("id", type=str)
 def paper(id: str):
-    shadow_paper(id)
+    shadow_paper_by_id(id)
+
+
+@shadowdb.command("profile")
+@click.argument("id", type=str)
+def shadowdb_profile(id: str):
+    shadow_profile_by_id(id)
 
 @shadowdb.command("update")
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)

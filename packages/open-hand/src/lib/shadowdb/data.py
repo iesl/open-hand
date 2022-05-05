@@ -9,7 +9,7 @@ from bibtexparser.bibdatabase import BibDatabase
 from pprint import pprint
 import re
 
-from lib.open_exchange import loadutil as ld
+from lib.open_exchange import utils as ld
 
 from .shadowdb_schemas import AuthorRec, PaperRec, AuthorInfoBlock, SignatureRec
 

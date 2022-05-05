@@ -5,7 +5,7 @@ from pprint import pprint
 from lib.predef.config import load_config, setenv
 from lib.shadowdb.queries import get_canopy, get_cluster
 from lib.facets.authorship import displayMentionsInClusters
-from lib.consoleio.canopies import list_canopies_counted
+from lib.termio.canopies import list_canopies_counted
 
 from .cli_base import cli
 

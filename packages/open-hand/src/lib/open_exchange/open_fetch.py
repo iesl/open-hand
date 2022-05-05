@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from pprint import pprint
 from typing import Any, Iterator, Tuple, TypeVar
 from typing import Optional, List
@@ -57,7 +58,9 @@ def list_to_optional(ts: List[T]) -> Optional[T]:
     if len(ts) == 0:
         return None
     if len(ts) > 1:
-        logger.warn(f"More than one Note returned when fetching Note {id}")
+        logger.warn(f"Expected 0 or 1 items, got {len(ts)}")
+        for t in ts: pprint(asdict(t))
+
     return ts[0]
 
 
