@@ -24,6 +24,7 @@ class NoteContent:
     _bibtex: Optional[str]
     paperhash: str
 
+
 class NoteContentSchema(PartialSchema):
     title = StrField
     authors = fields.List(StrField)
@@ -35,10 +36,10 @@ class NoteContentSchema(PartialSchema):
     _bibtex = OptStringField
     paperhash = StrField
 
-
     @post_load
     def make(self, data: Any, **kwargs) -> NoteContent:
         return NoteContent(**data)
+
 
 @dataclass
 class Note:
@@ -60,6 +61,7 @@ class Note:
     # tmdate: 1617109693871
     # writers: ['dblp.org']}
 
+
 class NoteSchema(PartialSchema):
     id = StrField
     content = fields.Nested(NoteContentSchema)
@@ -68,15 +70,16 @@ class NoteSchema(PartialSchema):
     number = IntField
     signatures = fields.List(StrField)
 
-
     @post_load
     def make(self, data: Any, **kwargs) -> Note:
         return Note(**data)
+
 
 @dataclass
 class Notes:
     notes: List[Note]
     count: int
+
 
 class NotesSchema(PartialSchema):
     notes = fields.List(fields.Nested(NoteSchema))
@@ -86,13 +89,14 @@ class NotesSchema(PartialSchema):
     def make(self, data: Any, **kwargs) -> Notes:
         return Notes(**data)
 
+
 def load_notes(data: Any) -> Notes:
     try:
         notes: Notes = NotesSchema().load(data)
         return notes
     except Exception as inst:
         print(type(inst))  # the exception instance
-        print('args', inst.args)  # arguments stored in .args
+        print("args", inst.args)  # arguments stored in .args
         print(inst)  # __str__ allows args to be printed directly,
         print("data:")
         pprint(data)

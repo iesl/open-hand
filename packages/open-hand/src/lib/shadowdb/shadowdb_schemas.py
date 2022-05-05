@@ -8,13 +8,15 @@ from lib.predef.schemas import OptStringField, StrField, OptIntField, IntField
 
 @dataclass
 class AuthorRec:
-    author_name: str
+    name: str
+    id: Optional[str]
     position: int
 
 
 class AuthorRecSchema(Schema):
-    author_name = fields.Str()
-    position = fields.Int()
+    name = StrField
+    id = OptStringField
+    position = IntField
 
     @post_load
     def make(self, data: Any, **_) -> AuthorRec:
@@ -26,7 +28,7 @@ class PaperRec:
     abstract: Optional[str]
     authors: List[AuthorRec]
     journal_name: Optional[str]
-    paper_id: str
+    id: str
     references: List[str]
     title: str
     venue: Optional[str]
@@ -40,7 +42,7 @@ class PaperRecSchema(Schema):
     abstract = OptStringField
     authors = fields.List(fields.Nested(AuthorRecSchema))
     journal_name = OptStringField
-    paper_id = StrField
+    id = StrField
     references = fields.List(StrField)
     title = StrField
     venue = OptStringField
@@ -61,7 +63,7 @@ class AuthorInfoBlock:
     given_block: str
     last: Optional[str]
     middle: Optional[str]
-    openId: str
+    openId: Optional[str]
     position: int
     suffix: Optional[str]
 

@@ -4,6 +4,8 @@ from typing import Optional
 
 import click
 
+from lib.shadowdb.loader import populate_shadowdb, shadow_paper
+
 from .utils import validate_slice
 
 from lib.open_exchange.open_fetch import (
@@ -60,16 +62,12 @@ def author(authorid: str):
 
 
 @get.command()
-@click.argument("offset", type=int)
-@click.argument("limit", type=int)
 @click.option("--slice", type=(int, int), callback=validate_slice)
 def profiles(slice: Slice):
-    profiles = get_profiles(slice.start, slice.length)
+    profiles = get_profiles(slice=slice)
     for p in profiles:
         names = p.content.names
         print(f"Profile: {names}")
-
-
 
 
 @get.command()
@@ -87,3 +85,18 @@ def notes(brief: bool, slice: Optional[Slice]):
             print(f"{note.id} #{note.number}: {note.content.title}")
         else:
             pprint(asdict(note))
+
+@orx.group()
+def shadowdb():
+    """Create/Update shadow database for OpenReview notes/profiles"""
+
+
+@shadowdb.command("paper")
+@click.argument("id", type=str)
+def paper(id: str):
+    shadow_paper(id)
+
+@shadowdb.command("update")
+@click.option("--slice", type=(int, int), default=None, callback=validate_slice)
+def shadowdb_populate(slice: Optional[Slice]):
+    populate_shadowdb(slice)

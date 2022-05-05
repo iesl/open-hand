@@ -2,12 +2,11 @@ from typing import Dict, List, Optional, Tuple, Set
 
 from itertools import groupby
 import click
-from email_validator import validate_email, EmailNotValidError
 
 from lib.predef.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
 from lib.predef.typedefs import ClusterID, SignatureID, TildeID
 from lib.predef.colors import dim, yellowB
-from lib.predef.utils import nextnums
+from lib.predef.utils import is_valid_email, nextnums
 
 from lib.open_exchange.utils import is_tildeid
 
@@ -50,19 +49,11 @@ def get_mention_clustering(init: MentionRecords) -> MentionClustering:
     return MentionClustering(mentions, clustering=cluster_dict)
 
 
-def valid_email(s: str) -> bool:
-    try:
-        validate_email(s).email
-        return True
-    except EmailNotValidError:
-        return False
-
-
 def get_tildeid(profile_store: ProfileStore, openId: str) -> Optional[TildeID]:
     if is_tildeid(openId):
         return openId
 
-    if not valid_email(openId):
+    if not is_valid_email(openId):
         return
 
     maybeProfileId = profile_store.add_profile(openId)
@@ -77,7 +68,7 @@ def get_primary_tildeids(profile_store: ProfileStore, papersWithSignatures: List
     for pws in papersWithSignatures:
         for s in pws.signatures:
             openId = s.signature.author_info.openId
-            if s.has_focus:
+            if s.has_focus and openId is not None:
                 maybeTildeId = get_tildeid(profile_store, openId)
                 print(f"CheckID: {openId} -> {maybeTildeId}")
                 if maybeTildeId is not None:
@@ -146,7 +137,10 @@ def align_cluster_to_user(
 
 
 def format_sig(sig: SignatureWithFocus) -> str:
-    ts = "~" if is_tildeid(sig.signature.author_info.openId) else ""
+    openId = sig.signature.author_info.openId
+    ts = ""
+    if openId is not None and is_tildeid(openId):
+        ts = "~"
     if sig.has_focus:
         return yellowB(f"{ts}{sig.signature.author_info.fullname}")
     return dim(f"{ts}{sig.signature.author_info.fullname}")
@@ -154,9 +148,9 @@ def format_sig(sig: SignatureWithFocus) -> str:
 
 def render_paper(paper: PaperRec):
     title = click.style(paper.title, fg="blue")
-    author_names = [f"{p.author_name}" for p in paper.authors]
+    author_names = [f"{p.name}" for p in paper.authors]
     auths = ", ".join(author_names)
-    id = paper.paper_id
+    id = paper.id
     click.echo(f"{title} ({id})")
     click.echo(f"      {auths}")
 

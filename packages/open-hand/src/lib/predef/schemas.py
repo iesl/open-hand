@@ -1,8 +1,10 @@
 from marshmallow import Schema, EXCLUDE, fields
 
+
 class PartialSchema(Schema):
     class Meta(Schema.Meta):
         unknown = EXCLUDE
+
 
 OptStringField = fields.Str(load_default=None)
 StrField = fields.Str(allow_none=False)

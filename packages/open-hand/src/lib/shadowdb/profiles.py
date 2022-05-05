@@ -113,10 +113,10 @@ class ProfileStore:
                 paper = self.allMentions.papers[sig.paper_id]
                 if hasId:
                     print(f"Include: {openId} in {equivs}")
-                    print(f"  {paper.paper_id}: {paper.title}")
+                    print(f"  {paper.id}: {paper.title}")
                 else:
                     print(f"     skip: {openId} NOT in {equivs}")
-                    print(f"       {paper.paper_id}: {paper.title}")
+                    print(f"       {paper.id}: {paper.title}")
 
         return [s for _, s in userMentions.signatures.items() if s.author_info.openId in equivs]
 
@@ -124,15 +124,3 @@ class ProfileStore:
         sigs = self.fetch_signatures(id)
         pwpas = [PaperWithPrimaryAuthor.from_signature(self.allMentions, s) for s in sigs]
         return pwpas
-
-
-_pnum = 0
-
-
-def pnum(start: Optional[int] = None) -> int:
-    global _pnum
-    if start is not None:
-        _pnum = start
-    curr = _pnum
-    _pnum = _pnum + 1
-    return curr

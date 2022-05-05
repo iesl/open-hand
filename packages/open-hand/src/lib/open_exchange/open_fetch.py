@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Any, Iterator, Tuple
+from typing import Any, Iterator, Tuple, TypeVar
 from typing import Optional, List
 
 import requests
@@ -9,6 +9,7 @@ import openreview as op
 
 from lib.predef.config import get_config
 from lib.predef.iterget import IterGet
+from lib.predef.utils import is_valid_email
 
 from . import logger
 
@@ -49,17 +50,32 @@ def _handle_response(response: Response) -> Response:
         raise
 
 
+T = TypeVar("T")
+
+
+def list_to_optional(ts: List[T]) -> Optional[T]:
+    if len(ts) == 0:
+        return None
+    if len(ts) > 1:
+        logger.warn(f"More than one Note returned when fetching Note {id}")
+    return ts[0]
+
+
 QueryParms = Any
+
+
+def note_getter(client: op.Client, **params: QueryParms) -> List[Note]:
+    rawresponse = requests.get(notes_url(), params=params, headers=client.headers)
+    response = _handle_response(rawresponse)
+    notes = load_notes(response.json())
+    return notes.notes
 
 
 def get_notes(*, slice: Optional[Tuple[int, int]], **initparams: QueryParms) -> Iterator[Note]:
     client = get_client()
 
     def _getter(**params: QueryParms) -> List[Note]:
-        rawresponse = requests.get(notes_url(), params=params, headers=client.headers)
-        response = _handle_response(rawresponse)
-        notes = load_notes(response.json())
-        return notes.notes
+        return note_getter(client, **params)
 
     params = {**initparams}
     params["sort"] = initparams["sort"] if "sort" in initparams else "number:desc"
@@ -71,39 +87,43 @@ def get_notes(*, slice: Optional[Tuple[int, int]], **initparams: QueryParms) -> 
 
 
 def get_note(id: str) -> Optional[Note]:
-    notes = list(get_notes(slice=None, id=id))
-    if len(notes) == 0:
-        return None
-    if len(notes) > 1:
-        logger.warn(f"More than one Note returned when fetching Note {id}")
-    return notes[0]
+    client = get_client()
+    notes = note_getter(client, id=id)
+    return list_to_optional(notes)
 
 
-def get_notes_for_dblp_rec_invitation(*, slice: Optional[Tuple[int, int]], **kwds: QueryParms) -> Iterator[Note]:
-    return get_notes(slice=slice, invitation="dblp.org/-/record", **kwds)
+def get_notes_for_dblp_rec_invitation(*, slice: Optional[Tuple[int, int]]) -> Iterator[Note]:
+    return get_notes(slice=slice, invitation="dblp.org/-/record")
 
 
 def get_notes_for_author(authorid: str) -> Iterator[Note]:
-    return get_notes(slice=None, content={"authorids": authorid})
+    return get_notes(slice=None, **{"content.authorids": authorid})
 
 
-def get_profile(user_id: str) -> Optional[Profile]:
-    client = get_client()
-    try:
-        pjson = client.get_profile(user_id).to_json()
-        profile = load_profile(pjson)
-        return profile
-    except op.OpenReviewException:
-        return None
-
-
-def get_profiles(offset: int, limit: int) -> List[Profile]:
-    client = get_client()
-    ## TODO use IterGet/slice rather than query params
-    params = {"offset": offset, "limit": limit, "invitation": "~/-/profiles"}
-    print("Params")
-    pprint(params)
+def profile_getter(client: op.Client, **params: QueryParms) -> List[Profile]:
     rawresponse = requests.get(profiles_url(), params=params, headers=client.headers)
     response = _handle_response(rawresponse)
     profiles = [load_profile(p) for p in response.json()["profiles"]]
     return profiles
+
+
+def get_profile(user_id: str) -> Optional[Profile]:
+    client = get_client()
+    if is_valid_email(user_id):
+        return list_to_optional(profile_getter(client, emails=user_id))
+
+    return list_to_optional(profile_getter(client, id=user_id))
+
+
+def get_profiles(*, slice: Optional[Tuple[int, int]]) -> Iterator[Profile]:
+    client = get_client()
+
+    def _getter(**params: QueryParms) -> List[Profile]:
+        return profile_getter(client, **params)
+
+    params = {"invitation": "~/-/profiles"}
+    iter = IterGet(_getter, **params)
+    if slice:
+        iter = iter.withSlice(slice[0], slice[1])
+
+    return iter

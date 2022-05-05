@@ -135,7 +135,7 @@ def get_cluster(clusterstr: str) -> ClusteringRecord:
     # pprint.pprint(final_cluster)
     papers = [PaperRecSchema().load(rec["papers"][0]) for rec in final_cluster]
     signatures = [SignatureRecSchema().load(rec["signatures"][0]) for rec in final_cluster]
-    paperdict = dict([(p.paper_id, p) for p in papers])
+    paperdict = dict([(p.id, p) for p in papers])
     sigdict = dict([(s.signature_id, s) for s in signatures])
     mentions = MentionRecords(papers=paperdict, signatures=sigdict)
 
