@@ -10,3 +10,7 @@ def load_shadowdb():
     #            fetch profile for email
     #            create union between fetched profile.id and email (if different)
     pass
+
+
+def load_paper(id: str):
+    pass

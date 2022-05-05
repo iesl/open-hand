@@ -104,3 +104,7 @@ Profile for ~Yuguang_Wang1
                  'preferredEmail': {'signatures': ['~Yu_Guang_Wang1']}},
  'signatures': ['~Yu_Guang_Wang1'],
  'writers': ['OpenReview.net']}
+
+
+ id for Note that has only email as author identifier
+'id': 'BJleph4KvS',

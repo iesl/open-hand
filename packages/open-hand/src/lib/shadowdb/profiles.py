@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from logging import Logger
 from pprint import pprint
 from typing import Dict, List, Optional, Set
@@ -5,7 +6,7 @@ from typing import Dict, List, Optional, Set
 from disjoint_set import DisjointSet
 
 from lib.open_exchange.profile_schemas import Profile
-from lib.open_exchange.open_exchange import get_notes_for_author, get_profile
+from lib.open_exchange.open_fetch import get_notes_for_author, get_profile
 
 from lib.predef.typedefs import TildeID
 from lib.predef.log import createlogger
@@ -92,7 +93,7 @@ class ProfileStore:
             mentionRecs = mention_records_from_notes(notes)
             mpapers = [p for _, p in mentionRecs.papers.items()]
             self.log.info(f"    ({id}) mention paper = {len(mpapers)}")
-            pprint([n.to_json() for n in notes])
+            pprint([asdict(n) for n in notes])
             self.userMentions[id] = mentionRecs
             self.allMentions = mergeMentions(self.allMentions, mentionRecs)
         return self.userMentions[id]

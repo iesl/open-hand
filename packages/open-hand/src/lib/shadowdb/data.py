@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Tuple
 from typing import Any, Optional, List
 from dataclasses import dataclass, asdict
+from lib.open_exchange.note_schemas import Note
 from lib.predef.typedefs import ClusterID
 
 import bibtexparser
@@ -8,11 +9,8 @@ from bibtexparser.bibdatabase import BibDatabase
 from pprint import pprint
 import re
 
-from openreview import Note
-
 from lib.open_exchange import loadutil as ld
 
-from .data import mergeMentions, MentionRecords
 from .shadowdb_schemas import AuthorRec, PaperRec, AuthorInfoBlock, SignatureRec
 
 
@@ -34,6 +32,7 @@ class ClusteringRecord:
     prediction_group: str
     cluster_id: str
     canopy: str
+
 
 @dataclass
 class SignatureWithFocus:
@@ -171,7 +170,7 @@ def mention_records_from_note(note: Note) -> MentionRecords:
         print(type(inst))  # the exception instance
         print(inst.args)  # arguments stored in .args
         print(inst)  # __str__ allows args to be printed directly,
-        js: Any = note.to_json()
+        js = asdict(note)
         pprint(js)
 
     return recs

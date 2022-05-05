@@ -1,7 +1,9 @@
-from typing import Union
+from typing import Union, Optional, Tuple
 from celery.app.base import Celery
 from click.core import Context
 
+import click
+from lib.predef.typedefs import Slice
 
 def run(ctx: Context, task, *args, **kwds):
     remote: bool = ctx.parent.params["remote"]
@@ -41,3 +43,9 @@ class MTask(Task):
         # self.app is the Celery app instance
         with self.app.flask_app.app_context():
             Task.__call__(self, *args, **kwargs)
+
+
+def validate_slice(ctx: click.Context, param: click.Parameter, value: Optional[Tuple[int, int]]) -> Optional[Slice]:
+    if value is None:
+        return None
+    return Slice(start=value[0], length=value[1])

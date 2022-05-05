@@ -1,9 +1,18 @@
 from dataclasses import asdict
 from pprint import pprint
+from typing import Optional
 
 import click
 
-from lib.open_exchange.open_exchange import get_notes_for_author, get_profile, get_profiles
+from .utils import validate_slice
+
+from lib.open_exchange.open_fetch import (
+    get_notes_for_author,
+    get_notes_for_dblp_rec_invitation,
+    get_profile,
+    get_profiles,
+)
+from lib.predef.typedefs import Slice
 
 from lib.shadowdb.data import mention_records_from_notes
 
@@ -12,12 +21,12 @@ from .cli_base import cli
 
 @cli.group()
 def orx():
-    """OpenReview exchange; fetch/update notes"""
+    """OpenReview exchange; interact with REST API"""
 
 
 @orx.group()
 def get():
-    """OpenReview exchange; fetch/update notes"""
+    """OpenReview exchange; fetch notes"""
 
 
 @get.command("author")
@@ -43,8 +52,8 @@ def author(authorid: str):
     for idx, n in enumerate(sortedNotes):
         id = n.id
         content = n.content
-        title = content.get("title") if "title" in content else "??"
-        authors = content.get("authors") if "authors" in content else "??"
+        title = content.title
+        authors = content.authors
         authorstr = ", ".join(authors)
         print(f"{idx+1} {title}  ({id})")
         print(f"  {authorstr}")
@@ -53,8 +62,28 @@ def author(authorid: str):
 @get.command()
 @click.argument("offset", type=int)
 @click.argument("limit", type=int)
-def profiles(offset: int, limit: int):
-    profiles = get_profiles(offset, limit)
+@click.option("--slice", type=(int, int), callback=validate_slice)
+def profiles(slice: Slice):
+    profiles = get_profiles(slice.start, slice.length)
     for p in profiles:
         names = p.content.names
         print(f"Profile: {names}")
+
+
+
+
+@get.command()
+@click.option("--brief", is_flag=True)
+@click.option("--slice", type=(int, int), default=None, callback=validate_slice)
+def notes(brief: bool, slice: Optional[Slice]):
+    if slice:
+        print(f"Fetching Notes {slice}")
+    else:
+        print(f"Fetching All Notes")
+
+    notes = get_notes_for_dblp_rec_invitation(slice=slice)
+    for note in notes:
+        if brief:
+            print(f"{note.id} #{note.number}: {note.content.title}")
+        else:
+            pprint(asdict(note))
