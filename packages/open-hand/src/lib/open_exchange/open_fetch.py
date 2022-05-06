@@ -59,7 +59,8 @@ def list_to_optional(ts: List[T]) -> Optional[T]:
         return None
     if len(ts) > 1:
         logger.warn(f"Expected 0 or 1 items, got {len(ts)}")
-        for t in ts: pprint(asdict(t))
+        for t in ts:
+            pprint(asdict(t))
 
     return ts[0]
 

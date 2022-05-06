@@ -86,6 +86,7 @@ def notes(brief: bool, slice: Optional[Slice]):
         else:
             pprint(asdict(note))
 
+
 @orx.group()
 def shadowdb():
     """Create/Update shadow database for OpenReview notes/profiles"""
@@ -101,6 +102,7 @@ def paper(id: str):
 @click.argument("id", type=str)
 def shadowdb_profile(id: str):
     shadow_profile_by_id(id)
+
 
 @shadowdb.command("update")
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)

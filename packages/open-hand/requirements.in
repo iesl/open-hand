@@ -1,10 +1,10 @@
-pymongo==4.0.2
-celery==5.2.3
-Flask==2.0.3
+pymongo==4.1.1
+celery==5.2.6
+Flask==2.1.2
 Flask-Assets==2.0
 libsass==0.21.0
 marshmallow==3.15.0
-ipython==8.2.0
+ipython==8.3.0
 gunicorn==20.1.0
 disjoint-set==0.7.3
 bibtexparser==1.2.0
@@ -13,10 +13,10 @@ email-validator==1.2.1
 celery[redis]
 
 ## Dependecy version inspections utils:
-johnnydep==1.11
+johnnydep==1.13
 luddite==1.0.2
-ppydeps==1.10.17
+pydeps==1.10.18
 
 black==22.3.0
-pytest==7.1.1
-ytest-cov==3.0.0
+pytest==7.1.2
+pytest-cov==3.0.0

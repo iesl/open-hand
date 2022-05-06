@@ -37,11 +37,11 @@ def canopy_show(canopy: str):
 
 
 @show.command("cluster")
-@click.argument("cluster", type=str)
-def cluster_show():
+@click.argument("cluster_name", type=str)
+def cluster_show(cluster_name: str):
     """Show the results of cluster prediction"""
 
-    cluster = get_cluster("a mccallum_1")
+    cluster = get_cluster(cluster_name)
 
     for item in cluster.mentions.signatures.values():
         pprint(item)

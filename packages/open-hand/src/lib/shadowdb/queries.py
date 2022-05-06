@@ -15,6 +15,7 @@ from .shadowdb_schemas import (
 )
 
 
+papers_coll = dbconn.papers
 signature_coll = dbconn.signatures
 clusters_coll = dbconn.clusters
 
