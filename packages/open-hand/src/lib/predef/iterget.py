@@ -82,4 +82,3 @@ class IterGet(Generic[T]):
             else:
                 self.batch_index += 1
             return next_obj
-

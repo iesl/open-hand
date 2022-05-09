@@ -3,7 +3,7 @@ import click
 from pprint import pprint
 
 from lib.predef.config import load_config, setenv
-from lib.shadowdb.queries import get_canopy, get_cluster
+from lib.shadowdb.queries import getQueryAPI
 from lib.facets.authorship import displayMentionsInClusters
 from lib.termio.canopies import list_canopies_counted
 
@@ -16,7 +16,7 @@ def show():
 
 
 @show.command()
-@click.option("--env", type=click.Choice(["testing", "production"]), required=True, help="Check that config is valid")
+@click.option("--env", type=click.Choice(["test", "env", "prod"]), required=True, help="Check that config is valid")
 def config(env: str):
     """Ensure config is valid"""
     print(f"Checking env {env}")
@@ -32,7 +32,7 @@ def config(env: str):
 @click.argument("canopy", type=str)
 def canopy_show(canopy: str):
     """Show a canopy"""
-    c = get_canopy(canopy)
+    c = getQueryAPI().get_canopy(canopy)
     displayMentionsInClusters(c)
 
 
@@ -41,7 +41,7 @@ def canopy_show(canopy: str):
 def cluster_show(cluster_name: str):
     """Show the results of cluster prediction"""
 
-    cluster = get_cluster(cluster_name)
+    cluster = getQueryAPI().get_cluster(cluster_name)
 
     for item in cluster.mentions.signatures.values():
         pprint(item)

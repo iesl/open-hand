@@ -4,7 +4,8 @@ from typing import Optional
 
 import click
 
-from lib.shadowdb.loader import populate_shadowdb, shadow_paper_by_id, shadow_profile_by_id
+from lib.shadowdb.loader import shadow_paper_by_id, shadow_profile_by_id, populate_shadowdb_from_notes, populate_shadowdb_from_profiles
+from lib.shadowdb.queries import getQueryAPI
 
 from .utils import validate_slice
 
@@ -107,4 +108,9 @@ def shadowdb_profile(id: str):
 @shadowdb.command("update")
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)
 def shadowdb_populate(slice: Optional[Slice]):
-    populate_shadowdb(slice)
+    populate_shadowdb_from_profiles(slice)
+
+
+@shadowdb.command("reset")
+def shadowdb_reset():
+    getQueryAPI().db.reset_db()

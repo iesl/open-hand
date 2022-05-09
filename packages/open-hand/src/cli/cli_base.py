@@ -7,7 +7,7 @@ from lib.predef.config import setenv
 @click.group()
 @click.option("--remote", "-x", is_flag=True, help="run command on server")
 @click.option(
-    "--env", type=click.Choice(["testing", "production"]), default="testing", help="Check that config is valid"
+    "--env", type=click.Choice(["test", "dev", "prod"]), default="dev", help="Check that config is valid"
 )
 @click.pass_context
 def cli(ctx: Context, remote: bool, env: str):

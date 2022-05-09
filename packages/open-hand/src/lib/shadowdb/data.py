@@ -19,6 +19,12 @@ class MentionRecords:
     papers: Dict[str, PaperRec]
     signatures: Dict[str, SignatureRec]
 
+    def get_papers(self) -> List[PaperRec]:
+        return [p for _, p in self.papers.items()]
+
+    def get_signatures(self) -> List[SignatureRec]:
+        return [s for _, s in self.signatures.items()]
+
     def paper_dict(self) -> Dict[str, Any]:
         return dict([(id, asdict(v)) for id, v in self.papers.items()])
 
@@ -117,14 +123,7 @@ def paperrec_from_note(note: Note) -> PaperRec:
             authorRecs.append(AuthorRec(name=name, id=id, position=idx))
 
         prec = PaperRec(
-            id=paper_id,
-            title=title,
-            abstract=abstract,
-            authors=authorRecs,
-            journal_name=None,
-            year=year,
-            venue=venue,
-            references=[],
+            id=paper_id, title=title, abstract=abstract, authors=authorRecs, journal_name=None, year=year, venue=venue
         )
         return prec
     except Exception as inst:

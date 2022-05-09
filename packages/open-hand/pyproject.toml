@@ -8,6 +8,7 @@ testpaths = [
     "src/test",
 ]
 
+
 [tool.pyright]
 
 include = ["src"]
@@ -21,7 +22,7 @@ ignore = []
 # stubPath = "src/stubs"
 
 venvPath = "../../.local/envs"
-venv = "open-hand-env"
+venv = "env367"
 useLibraryCodeForTypes = true
 typeCheckingMode = "strict" # vs strict/none
 

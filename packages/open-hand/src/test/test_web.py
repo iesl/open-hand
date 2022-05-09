@@ -51,7 +51,6 @@ def gen_paperrec() -> PaperRec:
         authors=gen_authorrecs(4),
         journal_name=None,
         id="p#1",
-        references=[],
         title="Some Paper Title",
         venue=None,
         year=1999,

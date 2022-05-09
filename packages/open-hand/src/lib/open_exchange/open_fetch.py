@@ -81,9 +81,8 @@ def get_notes(*, slice: Optional[Tuple[int, int]], **initparams: QueryParms) -> 
     def _getter(**params: QueryParms) -> List[Note]:
         return note_getter(client, **params)
 
-    params = {**initparams}
-    params["sort"] = initparams["sort"] if "sort" in initparams else "number:desc"
-    iter = IterGet(_getter, **params)
+    iter = IterGet(_getter, **initparams)
+
     if slice:
         iter = iter.withSlice(slice[0], slice[1])
 
@@ -97,7 +96,7 @@ def get_note(id: str) -> Optional[Note]:
 
 
 def get_notes_for_dblp_rec_invitation(*, slice: Optional[Tuple[int, int]]) -> Iterator[Note]:
-    return get_notes(slice=slice, invitation="dblp.org/-/record")
+    return get_notes(slice=slice, invitation="dblp.org/-/record", sort="number:desc")
 
 
 def get_notes_for_author(authorid: str) -> Iterator[Note]:

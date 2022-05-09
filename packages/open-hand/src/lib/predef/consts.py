@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 
-SRC_ROOT_PATH = (Path(__file__) / os.pardir / os.pardir).resolve()
+SRC_ROOT_PATH = (Path(__file__) / os.pardir / os.pardir / os.pardir).resolve()
 PRJ_ROOT_PATH = (SRC_ROOT_PATH / os.pardir).resolve()
 
 WEB_ROOT_PATH = (SRC_ROOT_PATH / "web").resolve()

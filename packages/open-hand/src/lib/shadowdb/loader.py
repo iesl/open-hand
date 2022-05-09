@@ -5,10 +5,11 @@ from lib.predef.typedefs import Slice
 from lib.predef.utils import is_valid_email
 
 from lib.open_exchange.note_schemas import Note
-from lib.open_exchange.open_fetch import get_note, get_notes_for_author, get_profile, get_profiles
+from lib.open_exchange.open_fetch import get_note, get_notes, get_notes_for_author, get_profile, get_profiles
 from lib.open_exchange.profile_schemas import Profile
 
-from .data import paperrec_from_note
+from .queries import getQueryAPI
+from .data import mention_records_from_note, paperrec_from_note
 
 
 def putstr(s: str, level: int):
@@ -16,13 +17,19 @@ def putstr(s: str, level: int):
     print(indented)
 
 
-def populate_shadowdb(slice: Optional[Slice]):
+def populate_shadowdb_from_notes(slice: Optional[Slice]):
+    for note in get_notes(slice=slice):
+        shadow_note(note, level=0)
+
+
+def populate_shadowdb_from_profiles(slice: Optional[Slice]):
     print(f"Populating shadow DB; range = {slice}")
     for profile in get_profiles(slice=slice):
         shadow_profile(profile, level=0)
 
 
 def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int):
+    queryAPI = getQueryAPI()
     if alias is None:
         putstr(f"+ Profile {profile.id}", level)
     else:
@@ -36,6 +43,7 @@ def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int)
     putstr(f"  usernames = {', '.join(usernames)}", level)
     # TODO Store uniq usernames as equivalency set
 
+    queryAPI.create_equivalence(usernames)
     if alias is not None:
         # if alias is set, just record username/id/email equivalency
         return
@@ -49,9 +57,15 @@ def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int)
 
 def shadow_note(note: Note, *, level: int):
     """Shadow an openreview note as a PaperRec"""
+
+    queryAPI = getQueryAPI()
     putstr(f"+ Note: {note.id}, authors: {note.content.authors}", level)
     paperRec = paperrec_from_note(note)
-    # Save paperRec to mongo
+    mentions = mention_records_from_note(note)
+
+    queryAPI.insert_papers(mentions.get_papers())
+    queryAPI.insert_signatures(mentions.get_signatures())
+
     for author in paperRec.authors:
         putstr(f"  - {author.name}; {author.id}", level)
         if author.id is None:

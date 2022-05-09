@@ -1,9 +1,9 @@
 from marshmallow import Schema, fields, EXCLUDE, post_load
 from dataclasses import dataclass
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Set
 
-from lib.predef.schemas import OptStringField, StrField, OptIntField, IntField
+from lib.predef.schemas import OptBoolField, OptStringField, PartialSchema, StrField, OptIntField, IntField
 
 
 @dataclass
@@ -25,11 +25,10 @@ class AuthorRecSchema(Schema):
 
 @dataclass
 class PaperRec:
+    id: str
     abstract: Optional[str]
     authors: List[AuthorRec]
     journal_name: Optional[str]
-    id: str
-    references: List[str]
     title: str
     venue: Optional[str]
     year: Optional[int]
@@ -43,7 +42,6 @@ class PaperRecSchema(Schema):
     authors = fields.List(fields.Nested(AuthorRecSchema))
     journal_name = OptStringField
     id = StrField
-    references = fields.List(StrField)
     title = StrField
     venue = OptStringField
     year = OptIntField
@@ -111,3 +109,99 @@ class SignatureRecSchema(Schema):
     @post_load
     def make(self, data: Any, **_) -> SignatureRec:
         return SignatureRec(**data)
+
+
+@dataclass
+class Cluster:
+    cluster_id: str
+    signature_id: str
+    canopy: str
+
+
+class ClusterSchema(Schema):
+    cluster_id = StrField
+    signature_id = StrField
+    canopy = StrField
+
+    @post_load
+    def make(self, data: Any, **_) -> Cluster:
+        return Cluster(**data)
+
+
+@dataclass
+class NameEntry:
+    first: Optional[str]
+    last: str
+    middle: Optional[str]
+    preferred: Optional[bool]
+    username: Optional[str]
+
+
+class NameEntrySchema(Schema):
+    first = OptStringField
+    last = StrField
+    middle = OptStringField
+    preferred = OptBoolField
+    username = OptStringField
+
+    @post_load
+    def make(self, data: Any, **kwargs) -> NameEntry:
+        return NameEntry(**data)
+
+
+@dataclass
+class ProfileContent:
+    names: List[NameEntry]
+
+
+class ProfileContentSchema(Schema):
+    names = fields.List(fields.Nested(NameEntrySchema))
+
+    @post_load
+    def make(self, data: Any, **kwargs) -> ProfileContent:
+        return ProfileContent(**data)
+
+
+@dataclass
+class Profile:
+    id: str
+    content: ProfileContent
+
+
+class ProfileSchema(Schema):
+    id = StrField
+    content = fields.Nested(ProfileContentSchema)
+
+    @post_load
+    def make(self, data: Any, **kwargs) -> Profile:
+        return Profile(**data)
+
+
+@dataclass
+class Equivalence:
+    ids: List[str]
+
+    @classmethod
+    def of(cls, ids: List[str]) -> "Equivalence":
+        return cls(ids)
+
+
+class EquivalenceSchema(PartialSchema):
+    ids = fields.List(StrField)
+
+    @post_load
+    def make(self, data: Any, **kwargs) -> Equivalence:
+        return Equivalence(**data)
+
+
+import lib.open_exchange.profile_schemas as oschemas
+
+
+def convert_profile(oprof: oschemas.Profile) -> Profile:
+    content_names: List[NameEntry] = [
+        NameEntry(
+            first=name.first, middle=name.middle, last=name.last, username=name.username, preferred=name.preferred
+        )
+        for name in oprof.content.names
+    ]
+    return Profile(oprof.id, content=ProfileContent(names=content_names))

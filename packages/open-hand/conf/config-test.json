@@ -1,0 +1,11 @@
+{
+    "openreview": {
+        "restApi": "",
+        "restUser": "",
+        "restPassword": ""
+    },
+    "mongodb": {
+        "connectionUrl": "mongodb://localhost:27017/",
+        "dbName": "openhand-test"
+    }
+}

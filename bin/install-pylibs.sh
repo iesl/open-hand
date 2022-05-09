@@ -3,7 +3,7 @@
 PROJECT_ROOT=$(pwd)
 S2AND_ROOT="packages/s2and"
 OPEN_HAND_ROOT="packages/open-hand"
-OPENREVIEW_PY_ROOT="packages/openreview_py"
+OPENREVIEW_PY_ROOT="packages/openreview-py"
 
 active_python=$(which python)
 
