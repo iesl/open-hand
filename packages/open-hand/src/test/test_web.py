@@ -50,7 +50,7 @@ def gen_paperrec() -> PaperRec:
         abstract=None,
         authors=gen_authorrecs(4),
         journal_name=None,
-        id="p#1",
+        paper_id="p#1",
         title="Some Paper Title",
         venue=None,
         year=1999,
@@ -60,12 +60,12 @@ def gen_paperrec() -> PaperRec:
 
 def gen_mentions(paper: PaperRec) -> MentionRecords:
     num_authors = len(paper.authors)
-    signature_ids = [(f"{paper.id}_{i}", i) for i in range(num_authors)]
+    signature_ids = [(f"{paper.paper_id}_{i}", i) for i in range(num_authors)]
     signatures = [
         SignatureRec(
             author_id=id,
             signature_id=id,
-            paper_id=paper.id,
+            paper_id=paper.paper_id,
             cluster_id=None,
             author_info=AuthorInfoBlock(
                 affiliations=[],
@@ -84,7 +84,7 @@ def gen_mentions(paper: PaperRec) -> MentionRecords:
         for (id, i) in signature_ids
     ]
     signature_dict = dict([(s.signature_id, s) for s in signatures])
-    paper_dict = dict([(paper.id, paper)])
+    paper_dict = dict([(paper.paper_id, paper)])
     return MentionRecords(papers=paper_dict, signatures=signature_dict)
 
 

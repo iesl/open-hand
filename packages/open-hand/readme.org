@@ -47,3 +47,7 @@ many fields are interchangeable missing or empty string
 
 
 *** tools.py does double-fetch on iterget_notes
+
+
+* Shadow Database
+** Creating a complete shadow for a given author

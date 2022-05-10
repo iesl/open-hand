@@ -8,13 +8,13 @@ from lib.predef.schemas import OptBoolField, OptStringField, PartialSchema, StrF
 
 @dataclass
 class AuthorRec:
-    name: str
+    author_name: str  # this field name is tied to the name used in the s2and package
     id: Optional[str]
     position: int
 
 
 class AuthorRecSchema(Schema):
-    name = StrField
+    author_name = StrField
     id = OptStringField
     position = IntField
 
@@ -25,7 +25,9 @@ class AuthorRecSchema(Schema):
 
 @dataclass
 class PaperRec:
-    id: str
+    # this field name is tied to the name used in the s2and package
+    # TODO possibly use @property def paper_id() to just use 'id'
+    paper_id: str
     abstract: Optional[str]
     authors: List[AuthorRec]
     journal_name: Optional[str]
@@ -41,7 +43,7 @@ class PaperRecSchema(Schema):
     abstract = OptStringField
     authors = fields.List(fields.Nested(AuthorRecSchema))
     journal_name = OptStringField
-    id = StrField
+    paper_id = StrField
     title = StrField
     venue = OptStringField
     year = OptIntField
@@ -78,7 +80,7 @@ class AuthorInfoBlockSchema(Schema):
     given_block = StrField
     last = OptStringField
     middle = OptStringField
-    openId = StrField
+    openId = OptStringField
     position = IntField
     suffix = OptStringField
 
@@ -94,6 +96,10 @@ class SignatureRec:
     signature_id: str
     author_info: AuthorInfoBlock
     cluster_id: Optional[str]
+
+    @property
+    def foo(self):
+        pass
 
 
 class SignatureRecSchema(Schema):

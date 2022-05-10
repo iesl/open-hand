@@ -28,9 +28,8 @@ def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
         print("")
 
 
-@cli.command()
+@cli.command("predict-all")
 @click.option("--profile", is_flag=True, help="profile program execution")
-def predict_all(profile: bool):
+def predict_all_cli(profile: bool):
     """Run prediction on all canopies"""
-
     predict_all(profile=profile)

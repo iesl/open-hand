@@ -90,35 +90,22 @@ class ProfileStore:
         if id not in self.userMentions:
             notes = list(get_notes_for_author(id))
             self.log.info(f"    ({id}) note count = {len(notes)}")
-            mentionRecs = mention_records_from_notes(notes)
-            mpapers = [p for _, p in mentionRecs.papers.items()]
-            self.log.info(f"    ({id}) mention paper = {len(mpapers)}")
-            pprint([asdict(n) for n in notes])
-            self.userMentions[id] = mentionRecs
-            self.allMentions = mergeMentions(self.allMentions, mentionRecs)
+            mentions = mention_records_from_notes(notes)
+            self.log.info(f"    ({id}) paper mention count = {len(mentions.get_papers())}")
+            self.userMentions[id] = mentions
+            self.allMentions = mergeMentions(self.allMentions, mentions)
         return self.userMentions[id]
 
     def fetch_papers(self, id: TildeID) -> List[PaperRec]:
         userMentions = self.fetch_user_mentions(id)
-        return [p for _, p in userMentions.papers.items()]
+        return userMentions.get_papers()
 
-    def fetch_signatures(self, id: TildeID, printlogs: bool = True) -> List[SignatureRec]:
+    def fetch_signatures(self, id: TildeID) -> List[SignatureRec]:
         userMentions = self.fetch_user_mentions(id)
         equivs = self.get_equivalent_ids(id)
-        if printlogs:
-            print(f"fetch_signatures({id}) == {equivs}")
-            for _, sig in userMentions.signatures.items():
-                openId = sig.author_info.openId
-                hasId = openId in equivs
-                paper = self.allMentions.papers[sig.paper_id]
-                if hasId:
-                    print(f"Include: {openId} in {equivs}")
-                    print(f"  {paper.id}: {paper.title}")
-                else:
-                    print(f"     skip: {openId} NOT in {equivs}")
-                    print(f"       {paper.id}: {paper.title}")
+        signatures_for_author = [s for s in userMentions.get_signatures() if s.author_info.openId in equivs]
 
-        return [s for _, s in userMentions.signatures.items() if s.author_info.openId in equivs]
+        return signatures_for_author
 
     def fetch_signatures_as_pwpa(self, id: TildeID) -> List[PaperWithPrimaryAuthor]:
         sigs = self.fetch_signatures(id)

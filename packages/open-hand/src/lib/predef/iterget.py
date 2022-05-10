@@ -1,9 +1,10 @@
-from typing import Any, Callable, Dict, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
+
+from lib.predef.typedefs import Slice
 
 T = TypeVar("T")
 
 Getter = Callable[[], List[T]]
-
 
 class IterGet(Generic[T]):
     """Create an Iterator[T] given a getter function
@@ -17,8 +18,7 @@ class IterGet(Generic[T]):
     offset: int
     limit: int
 
-    # slice: (begin, len)
-    slice: Optional[Tuple[int, int]]
+    slice: Optional[Slice]
 
     current_batch: List[T]
     batch_index: int
@@ -40,8 +40,8 @@ class IterGet(Generic[T]):
 
         self.get_function = get_function
 
-    def withSlice(self, sbegin: int, slen: int) -> "IterGet[T]":
-        self.slice = (sbegin, slen)
+    def withSlice(self, slice: Slice) -> "IterGet[T]":
+        self.slice = slice
         return self
 
     def _advanceOffset(self):

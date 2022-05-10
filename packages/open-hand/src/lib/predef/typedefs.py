@@ -14,7 +14,6 @@ class Slice(NamedTuple):
     def end(self) -> int:
         return self.start + self.length
 
-
     def __str__(self) -> str:
         return f"slice({self.start}-{self.end()})"
 

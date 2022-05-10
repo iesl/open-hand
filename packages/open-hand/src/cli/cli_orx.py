@@ -108,7 +108,7 @@ def shadowdb_profile(id: str):
 @shadowdb.command("update")
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)
 def shadowdb_populate(slice: Optional[Slice]):
-    populate_shadowdb_from_profiles(slice)
+    populate_shadowdb_from_notes(slice)
 
 
 @shadowdb.command("reset")

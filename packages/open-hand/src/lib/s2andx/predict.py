@@ -71,7 +71,6 @@ def dopredict(
         papers = [mentions.papers[sig.paper_id] for sig in sigs]
         rec = ClusteringRecord(
             cluster_id=cluster_id,
-            prediction_group="p.1",
             canopy=canopy,
             mentions=MentionRecords(signatures=signatures2dict(sigs), papers=papers2dict(papers)),
         )
@@ -92,21 +91,7 @@ def dopredict(
     return cluster_records
 
 
-def commit_cluster(cluster: ClusteringRecord):
-    cluster_members = [
-        dict(
-            prediction_group=cluster.prediction_group,
-            cluster_id=cluster.cluster_id,
-            signature_id=sigid,
-            canopy=cluster.canopy,
-        )
-        for sigid, _ in cluster.mentions.signatures.items()
-    ]
-
-    ## TODO
-    # dbconn.clusters.insert_many(cluster_members)
-
-
 def commit_clusters(clusters: List[ClusteringRecord]):
+    queryAPI = getQueryAPI()
     for c in clusters:
-        commit_cluster(c)
+        queryAPI.commit_cluster(c)

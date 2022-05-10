@@ -35,15 +35,14 @@ class MentionRecords:
 @dataclass
 class ClusteringRecord:
     mentions: MentionRecords
-    prediction_group: str
     cluster_id: str
     canopy: str
 
 
-@dataclass
-class SignatureWithFocus:
-    signature: SignatureRec
-    has_focus: bool
+# @dataclass
+# class SignatureWithFocus:
+#     signature: SignatureRec
+#     has_focus: bool
 
 
 @dataclass
@@ -51,22 +50,21 @@ class PaperWithPrimaryAuthor:
     """A paper with a primary author of interest"""
 
     paper: PaperRec
-    signatures: List[SignatureWithFocus]
+    # signatures: List[SignatureWithFocus]
+    signatures: List[SignatureRec]
+    focal_signature: int
 
     def primary_signature(self) -> SignatureRec:
-        for s in self.signatures:
-            if s.has_focus:
-                return s.signature
-
-        raise Exception(f"Invalid State: No focused signature in paper {self.paper.id}")
+        return self.signatures[self.focal_signature]
 
     @staticmethod
-    def from_signature(mentions: MentionRecords, signature: SignatureRec):
+    def from_signature(mentions: MentionRecords, signature: SignatureRec) -> "PaperWithPrimaryAuthor":
         paper = mentions.papers[signature.paper_id]
         num_authors = len(paper.authors)
-        signature_ids = [(f"{paper.id}_{i}", signature.author_info.position == i) for i in range(num_authors)]
-        signatures = [SignatureWithFocus(mentions.signatures[id], has_focus) for (id, has_focus) in signature_ids]
-        return PaperWithPrimaryAuthor(paper, signatures)
+        focal_signature = signature.author_info.position
+        signature_ids = [f"{paper.paper_id}_{i}"  for i in range(num_authors)]
+        signatures = [mentions.signatures[id] for id in signature_ids]
+        return PaperWithPrimaryAuthor(paper=paper, signatures=signatures, focal_signature=focal_signature)
 
 
 @dataclass
@@ -82,7 +80,7 @@ class MentionClustering:
 
 
 def papers2dict(ps: List[PaperRec]) -> Dict[str, PaperRec]:
-    return dict([(p.id, p) for p in ps])
+    return dict([(p.paper_id, p) for p in ps])
 
 
 def signatures2dict(ps: List[SignatureRec]) -> Dict[str, SignatureRec]:
@@ -120,10 +118,16 @@ def paperrec_from_note(note: Note) -> PaperRec:
         authorRecs: List[AuthorRec] = []
 
         for idx, (id, name) in enumerate(zip(author_ids, authors)):
-            authorRecs.append(AuthorRec(name=name, id=id, position=idx))
+            authorRecs.append(AuthorRec(author_name=name, id=id, position=idx))
 
         prec = PaperRec(
-            id=paper_id, title=title, abstract=abstract, authors=authorRecs, journal_name=None, year=year, venue=venue
+            paper_id=paper_id,
+            title=title,
+            abstract=abstract,
+            authors=authorRecs,
+            journal_name=None,
+            year=year,
+            venue=venue,
         )
         return prec
     except Exception as inst:
@@ -141,16 +145,16 @@ def mention_records_from_note(note: Note) -> MentionRecords:
     try:
         prec = paperrec_from_note(note)
 
-        recs.papers[prec.id] = prec
+        recs.papers[prec.paper_id] = prec
 
         authorRecs = prec.authors
         # author_ids = prec.authors
 
-        paper_id = prec.id
+        paper_id = prec.paper_id
 
         for position, authorRec in enumerate(authorRecs):
             ws = re.compile("[ ]+")
-            nameParts = ws.split(authorRec.name)
+            nameParts = ws.split(authorRec.author_name)
             firstName = nameParts[0]
             lastName = nameParts[-1]
             firstInitial = firstName[0]
@@ -174,7 +178,7 @@ def mention_records_from_note(note: Note) -> MentionRecords:
                 suffix=None,
                 affiliations=[],
                 email=None,
-                fullname=authorRec.name,
+                fullname=authorRec.author_name,
             )
             sigRec = SignatureRec(
                 paper_id=paper_id, author_id=signature_id, signature_id=signature_id, author_info=aib, cluster_id=None

@@ -1,6 +1,6 @@
 #!/bin/env bash
 
-export SCRIPT_NAME='/service'
+# export SCRIPT_NAME='/service'
 export FLASK_APP=src/web
 export FLASK_ENV=development
 export FLASK_RUN_PORT=8000

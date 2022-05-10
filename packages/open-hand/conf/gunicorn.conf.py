@@ -1,7 +1,8 @@
 from os import environ
 
 
-environ["SCRIPT_NAME"] = "/service"
+environ["env"] = "dev"
+# environ["SCRIPT_NAME"] = "/service"
 chdir = "src"
 wsgi_app = "web:create_app()"
 bind = "0.0.0.0:8000"

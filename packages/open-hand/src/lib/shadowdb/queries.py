@@ -1,4 +1,3 @@
-from functools import reduce
 import pprint
 from typing import Any, List, Optional, Set
 
@@ -27,13 +26,29 @@ equiv_schema = EquivalenceSchema()
 
 
 def load_signature(enc: Any) -> SignatureRec:
-    dec: SignatureRec = signature_schema.load(enc)
-    return dec
+    try:
+        dec: SignatureRec = signature_schema.load(enc)
+        return dec
+    except Exception as inst:
+        print(type(inst))  # the exception instance
+        print("args", inst.args)  # arguments stored in .args
+        print(inst)  # __str__ allows args to be printed directly,
+        print("data:")
+        pprint.pprint(enc)
+        raise
 
 
 def load_paper(enc: Any) -> PaperRec:
-    dec: PaperRec = paper_schema.load(enc)
-    return dec
+    try:
+        dec: PaperRec = paper_schema.load(enc)
+        return dec
+    except Exception as inst:
+        print(type(inst))  # the exception instance
+        print("args", inst.args)  # arguments stored in .args
+        print(inst)  # __str__ allows args to be printed directly,
+        print("data:")
+        pprint.pprint(enc)
+        raise
 
 
 def load_cluster(enc: Any) -> Cluster:
@@ -152,7 +167,7 @@ class QueryAPI:
                 {"$project": {"_id": 0, "paper_id": 1}},
                 {
                     "$lookup": {
-                        "from": "paper",
+                        "from": "papers",
                         "localField": "paper_id",
                         "foreignField": "paper_id",
                         "as": "fromItems",
@@ -199,9 +214,9 @@ class QueryAPI:
                 },
                 {
                     "$lookup": {
-                        "from": "paper",
+                        "from": "papers",
                         "localField": "signatures.paper_id",
-                        "foreignField": "paper_id",
+                        "foreignField": "id",
                         "as": "papers",
                     }
                 },
@@ -215,18 +230,28 @@ class QueryAPI:
         # pprint.pprint(final_cluster)
         papers = [load_paper(rec["papers"][0]) for rec in final_cluster]
         signatures = [load_signature(rec["signatures"][0]) for rec in final_cluster]
-        paperdict = dict([(p.id, p) for p in papers])
+        paperdict = dict([(p.paper_id, p) for p in papers])
         sigdict = dict([(s.signature_id, s) for s in signatures])
         mentions = MentionRecords(papers=paperdict, signatures=sigdict)
 
         c0 = final_cluster[0]
         cluster_id = c0["cluster_id"]
-        prediction_group = c0["id"]
         canopystr = c0["canopy"]
 
         return ClusteringRecord(
-            mentions=mentions, prediction_group=prediction_group, cluster_id=cluster_id, canopy=canopystr
+            mentions=mentions, cluster_id=cluster_id, canopy=canopystr
         )
+
+    def commit_cluster(self, cluster: ClusteringRecord):
+        cluster_members = [
+            dict(
+                cluster_id=cluster.cluster_id,
+                signature_id=sigid,
+                canopy=cluster.canopy,
+            )
+            for sigid, _ in cluster.mentions.signatures.items()
+        ]
+        self.clusters.insert_many(cluster_members)
 
 
 _query_api: Optional[QueryAPI] = None

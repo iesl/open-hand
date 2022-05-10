@@ -2,10 +2,10 @@ from typing import Optional
 from lib.predef.typedefs import Slice
 
 
-from lib.predef.utils import is_valid_email
+from lib.predef.utils import ListOps, is_valid_email
 
 from lib.open_exchange.note_schemas import Note
-from lib.open_exchange.open_fetch import get_note, get_notes, get_notes_for_author, get_profile, get_profiles
+from lib.open_exchange.open_fetch import get_note, get_notes_for_author, get_notes_for_dblp_rec_invitation, get_profile, get_profiles
 from lib.open_exchange.profile_schemas import Profile
 
 from .queries import getQueryAPI
@@ -18,7 +18,7 @@ def putstr(s: str, level: int):
 
 
 def populate_shadowdb_from_notes(slice: Optional[Slice]):
-    for note in get_notes(slice=slice):
+    for note in get_notes_for_dblp_rec_invitation(slice=slice):
         shadow_note(note, level=0)
 
 
@@ -39,11 +39,11 @@ def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int)
     usernames.append(profile.id)
     if alias is not None:
         usernames.append(alias)
-    usernames = list(set(usernames))
+    usernames = ListOps.uniq(usernames)
     putstr(f"  usernames = {', '.join(usernames)}", level)
-    # TODO Store uniq usernames as equivalency set
 
     queryAPI.create_equivalence(usernames)
+
     if alias is not None:
         # if alias is set, just record username/id/email equivalency
         return
@@ -60,26 +60,27 @@ def shadow_note(note: Note, *, level: int):
 
     queryAPI = getQueryAPI()
     putstr(f"+ Note: {note.id}, authors: {note.content.authors}", level)
-    paperRec = paperrec_from_note(note)
+
     mentions = mention_records_from_note(note)
 
     queryAPI.insert_papers(mentions.get_papers())
     queryAPI.insert_signatures(mentions.get_signatures())
 
-    for author in paperRec.authors:
-        putstr(f"  - {author.name}; {author.id}", level)
-        if author.id is None:
-            continue
+    for paperRec in mentions.get_papers():
+        for author in paperRec.authors:
+            putstr(f"  - {author.author_name}; {author.id}", level)
+            if author.id is None:
+                continue
 
-        if not is_valid_email(author.id):
-            continue
+            if not is_valid_email(author.id):
+                continue
 
-        profile = get_profile(author.id)
+            profile = get_profile(author.id)
 
-        if profile is None:
-            continue
+            if profile is None:
+                continue
 
-        shadow_profile(profile, alias=author.id, level=level + 1)
+            shadow_profile(profile, alias=author.id, level=level + 1)
 
 
 def shadow_paper_by_id(id: str):

@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from pprint import pprint
-from typing import Any, Iterator, Tuple, TypeVar
+from typing import Any, Iterator, TypeVar
 from typing import Optional, List
 
 import requests
@@ -10,7 +10,8 @@ import openreview as op
 
 from lib.predef.config import get_config
 from lib.predef.iterget import IterGet
-from lib.predef.utils import is_valid_email
+from lib.predef.typedefs import Slice
+from lib.predef.utils import ListOps, is_valid_email
 
 from . import logger
 
@@ -53,54 +54,51 @@ def _handle_response(response: Response) -> Response:
 
 T = TypeVar("T")
 
-
 def list_to_optional(ts: List[T]) -> Optional[T]:
-    if len(ts) == 0:
-        return None
-    if len(ts) > 1:
+    head, tail = ListOps.headopt_strict(ts)
+    if tail is not None:
         logger.warn(f"Expected 0 or 1 items, got {len(ts)}")
         for t in ts:
             pprint(asdict(t))
 
-    return ts[0]
-
+    return head
 
 QueryParms = Any
 
 
-def note_getter(client: op.Client, **params: QueryParms) -> List[Note]:
+def _note_getter(client: op.Client, **params: QueryParms) -> List[Note]:
     rawresponse = requests.get(notes_url(), params=params, headers=client.headers)
     response = _handle_response(rawresponse)
     notes = load_notes(response.json())
     return notes.notes
 
 
-def get_notes(*, slice: Optional[Tuple[int, int]], **initparams: QueryParms) -> Iterator[Note]:
+def _get_notes(*, slice: Optional[Slice], **initparams: QueryParms) -> Iterator[Note]:
     client = get_client()
 
     def _getter(**params: QueryParms) -> List[Note]:
-        return note_getter(client, **params)
+        return _note_getter(client, **params)
 
     iter = IterGet(_getter, **initparams)
 
     if slice:
-        iter = iter.withSlice(slice[0], slice[1])
+        iter = iter.withSlice(slice)
 
     return iter
 
 
 def get_note(id: str) -> Optional[Note]:
     client = get_client()
-    notes = note_getter(client, id=id)
+    notes = _note_getter(client, id=id)
     return list_to_optional(notes)
 
 
-def get_notes_for_dblp_rec_invitation(*, slice: Optional[Tuple[int, int]]) -> Iterator[Note]:
-    return get_notes(slice=slice, invitation="dblp.org/-/record", sort="number:desc")
+def get_notes_for_dblp_rec_invitation(*, slice: Optional[Slice]) -> Iterator[Note]:
+    return _get_notes(slice=slice, invitation="dblp.org/-/record", sort="number:desc")
 
 
 def get_notes_for_author(authorid: str) -> Iterator[Note]:
-    return get_notes(slice=None, **{"content.authorids": authorid})
+    return _get_notes(slice=None, **{"content.authorids": authorid})
 
 
 def profile_getter(client: op.Client, **params: QueryParms) -> List[Profile]:
@@ -118,7 +116,7 @@ def get_profile(user_id: str) -> Optional[Profile]:
     return list_to_optional(profile_getter(client, id=user_id))
 
 
-def get_profiles(*, slice: Optional[Tuple[int, int]]) -> Iterator[Profile]:
+def get_profiles(*, slice: Optional[Slice]) -> Iterator[Profile]:
     client = get_client()
 
     def _getter(**params: QueryParms) -> List[Profile]:
@@ -127,6 +125,6 @@ def get_profiles(*, slice: Optional[Tuple[int, int]]) -> Iterator[Profile]:
     params = {"invitation": "~/-/profiles"}
     iter = IterGet(_getter, **params)
     if slice:
-        iter = iter.withSlice(slice[0], slice[1])
+        iter = iter.withSlice(slice)
 
     return iter

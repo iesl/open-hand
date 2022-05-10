@@ -34,7 +34,7 @@ def author_name_variants(canopy: MentionRecords) -> List[str]:
         paper = canopy.papers[sig.paper_id]
         for author in paper.authors:
             if author.position == sig.author_info.position:
-                variants.append(author.name)
+                variants.append(author.author_name)
 
     return list(set(variants))
 
