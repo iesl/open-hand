@@ -10,8 +10,9 @@ import openreview as op
 
 from lib.predef.config import get_config
 from lib.predef.iterget import IterGet
+from lib.predef.listops import ListOps
 from lib.predef.typedefs import Slice
-from lib.predef.utils import ListOps, is_valid_email
+from lib.predef.utils import is_valid_email
 
 from . import logger
 

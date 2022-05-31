@@ -10,7 +10,7 @@ from jinja2.environment import Environment
 # from jinja2.exceptions import TemplateSyntaxError
 # from jinja2.exceptions import UndefinedError
 from jinja2.loaders import DictLoader, FileSystemLoader
-from lib.shadowdb.data import MentionRecords, PaperWithPrimaryAuthor
+from lib.shadowdb.data import MentionRecords, SignedPaper
 
 from lib.shadowdb.shadowdb_schemas import AuthorInfoBlock, AuthorRec, PaperRec, SignatureRec
 
@@ -96,7 +96,7 @@ class TestImports:
         signatures = [mentions.signatures[k] for k in mentions.signatures.keys()]
         sig1 = signatures[1]
 
-        paper_with_signatures = PaperWithPrimaryAuthor.from_signature(mentions, sig1)
+        paper_with_signatures = SignedPaper.from_signature(mentions, sig1)
 
         tmp = "{% import '_paperrec.html' as _paperrec %}" "{{ _paperrec.paper(pws) }}"
         t = fs_env.from_string(tmp)

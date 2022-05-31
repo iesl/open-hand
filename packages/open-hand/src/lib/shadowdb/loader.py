@@ -1,15 +1,16 @@
 from typing import Optional
+from lib.predef.listops import ListOps
 from lib.predef.typedefs import Slice
 
 
-from lib.predef.utils import ListOps, is_valid_email
+from lib.predef.utils import is_valid_email
 
 from lib.open_exchange.note_schemas import Note
 from lib.open_exchange.open_fetch import get_note, get_notes_for_author, get_notes_for_dblp_rec_invitation, get_profile, get_profiles
 from lib.open_exchange.profile_schemas import Profile
 
 from .queries import getQueryAPI
-from .data import mention_records_from_note, paperrec_from_note
+from .data import mention_records_from_note
 
 
 def putstr(s: str, level: int):

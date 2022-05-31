@@ -1,6 +1,4 @@
-from dataclasses import asdict
 from logging import Logger
-from pprint import pprint
 from typing import Dict, List, Optional, Set
 
 from disjoint_set import DisjointSet
@@ -11,7 +9,7 @@ from lib.open_exchange.open_fetch import get_notes_for_author, get_profile
 from lib.predef.typedefs import TildeID
 from lib.predef.log import createlogger
 
-from .data import MentionRecords, mention_records_from_notes, mergeMentions, PaperWithPrimaryAuthor
+from .data import MentionRecords, mention_records_from_notes, SignedPaper
 from .shadowdb_schemas import PaperRec, SignatureRec
 
 
@@ -93,7 +91,8 @@ class ProfileStore:
             mentions = mention_records_from_notes(notes)
             self.log.info(f"    ({id}) paper mention count = {len(mentions.get_papers())}")
             self.userMentions[id] = mentions
-            self.allMentions = mergeMentions(self.allMentions, mentions)
+            self.allMentions = self.allMentions.merge(mentions)
+
         return self.userMentions[id]
 
     def fetch_papers(self, id: TildeID) -> List[PaperRec]:
@@ -107,7 +106,7 @@ class ProfileStore:
 
         return signatures_for_author
 
-    def fetch_signatures_as_pwpa(self, id: TildeID) -> List[PaperWithPrimaryAuthor]:
+    def fetch_signatures_as_pwpa(self, id: TildeID) -> List[SignedPaper]:
         sigs = self.fetch_signatures(id)
-        pwpas = [PaperWithPrimaryAuthor.from_signature(self.allMentions, s) for s in sigs]
+        pwpas = [SignedPaper.from_signature(self.allMentions, s) for s in sigs]
         return pwpas
