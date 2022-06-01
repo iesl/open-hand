@@ -1,5 +1,5 @@
 import typing as t
-from typing import Optional
+from typing import Optional, cast
 import os
 import json
 
@@ -71,7 +71,7 @@ def read_config(config_path: str) -> t.Optional[Config]:
         logger.info(f"Loading config '{config_path}'")
         with open(config_path) as f:
             jsonContent = json.load(f)
-            loaded: Config = ConfigSchema().load(jsonContent)
+            loaded: Config = cast(Config, ConfigSchema().load(jsonContent))
             config = loaded
 
     return config

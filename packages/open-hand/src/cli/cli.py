@@ -1,8 +1,11 @@
 from .cli_base import cli
 
-from . import cli_orx, cli_predict, cli_show
+# pyright: reportUnusedImport=false
+# pyright: reportUnusedExpression=false
 
-cli_orx  # suppress warnings
+from . import cli_fetch, cli_predict, cli_show
+
+cli_fetch  # suppress warnings
 cli_predict  # suppress warnings
 cli_show  # suppress warnings
 

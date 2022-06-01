@@ -22,7 +22,7 @@ ignore = []
 # stubPath = "src/stubs"
 
 venvPath = "../../.local/envs"
-venv = "env367"
+venv = "open-hand-env"
 useLibraryCodeForTypes = true
 typeCheckingMode = "strict" # vs strict/none
 

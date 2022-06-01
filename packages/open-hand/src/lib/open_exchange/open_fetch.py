@@ -55,6 +55,7 @@ def _handle_response(response: Response) -> Response:
 
 T = TypeVar("T")
 
+
 def list_to_optional(ts: List[T]) -> Optional[T]:
     head, tail = ListOps.headopt_strict(ts)
     if tail is not None:
@@ -64,23 +65,24 @@ def list_to_optional(ts: List[T]) -> Optional[T]:
 
     return head
 
+
 QueryParms = Any
 
 
-def _note_getter(client: op.Client, **params: QueryParms) -> List[Note]:
+def _note_fetcher(client: op.Client, **params: QueryParms) -> List[Note]:
     rawresponse = requests.get(notes_url(), params=params, headers=client.headers)
     response = _handle_response(rawresponse)
     notes = load_notes(response.json())
     return notes.notes
 
 
-def _get_notes(*, slice: Optional[Slice], **initparams: QueryParms) -> Iterator[Note]:
+def _fetch_notes(*, slice: Optional[Slice], **initparams: QueryParms) -> Iterator[Note]:
     client = get_client()
 
-    def _getter(**params: QueryParms) -> List[Note]:
-        return _note_getter(client, **params)
+    def _fetcher(**params: QueryParms) -> List[Note]:
+        return _note_fetcher(client, **params)
 
-    iter = IterGet(_getter, **initparams)
+    iter = IterGet(_fetcher, **initparams)
 
     if slice:
         iter = iter.withSlice(slice)
@@ -88,43 +90,43 @@ def _get_notes(*, slice: Optional[Slice], **initparams: QueryParms) -> Iterator[
     return iter
 
 
-def get_note(id: str) -> Optional[Note]:
+def fetch_note(id: str) -> Optional[Note]:
     client = get_client()
-    notes = _note_getter(client, id=id)
+    notes = _note_fetcher(client, id=id)
     return list_to_optional(notes)
 
 
-def get_notes_for_dblp_rec_invitation(*, slice: Optional[Slice]) -> Iterator[Note]:
-    return _get_notes(slice=slice, invitation="dblp.org/-/record", sort="number:desc")
+def fetch_notes_for_dblp_rec_invitation(*, slice: Optional[Slice]) -> Iterator[Note]:
+    return _fetch_notes(slice=slice, invitation="dblp.org/-/record", sort="number:desc")
 
 
-def get_notes_for_author(authorid: str) -> Iterator[Note]:
-    return _get_notes(slice=None, **{"content.authorids": authorid})
+def fetch_notes_for_author(authorid: str) -> Iterator[Note]:
+    return _fetch_notes(slice=None, **{"content.authorids": authorid})
 
 
-def profile_getter(client: op.Client, **params: QueryParms) -> List[Profile]:
+def profile_fetcher(client: op.Client, **params: QueryParms) -> List[Profile]:
     rawresponse = requests.get(profiles_url(), params=params, headers=client.headers)
     response = _handle_response(rawresponse)
     profiles = [load_profile(p) for p in response.json()["profiles"]]
     return profiles
 
 
-def get_profile(user_id: str) -> Optional[Profile]:
+def fetch_profile(user_id: str) -> Optional[Profile]:
     client = get_client()
     if is_valid_email(user_id):
-        return list_to_optional(profile_getter(client, emails=user_id))
+        return list_to_optional(profile_fetcher(client, emails=user_id))
 
-    return list_to_optional(profile_getter(client, id=user_id))
+    return list_to_optional(profile_fetcher(client, id=user_id))
 
 
-def get_profiles(*, slice: Optional[Slice]) -> Iterator[Profile]:
+def fetch_profiles(*, slice: Optional[Slice]) -> Iterator[Profile]:
     client = get_client()
 
-    def _getter(**params: QueryParms) -> List[Profile]:
-        return profile_getter(client, **params)
+    def _fetcher(**params: QueryParms) -> List[Profile]:
+        return profile_fetcher(client, **params)
 
     params = {"invitation": "~/-/profiles"}
-    iter = IterGet(_getter, **params)
+    iter = IterGet(_fetcher, **params)
     if slice:
         iter = iter.withSlice(slice)
 

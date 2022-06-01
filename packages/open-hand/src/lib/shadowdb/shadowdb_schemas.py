@@ -1,7 +1,7 @@
 from marshmallow import Schema, fields, EXCLUDE, post_load
 from dataclasses import dataclass
 
-from typing import Any, List, Optional, Set
+from typing import Any, List, Optional
 
 from lib.predef.schemas import OptBoolField, OptStringField, PartialSchema, StrField, OptIntField, IntField
 
@@ -142,7 +142,6 @@ class NameEntry:
     preferred: Optional[bool]
     username: Optional[str]
 
-
 class NameEntrySchema(Schema):
     first = OptStringField
     last = StrField
@@ -151,7 +150,7 @@ class NameEntrySchema(Schema):
     username = OptStringField
 
     @post_load
-    def make(self, data: Any, **kwargs) -> NameEntry:
+    def make(self, data: Any, **_) -> NameEntry:
         return NameEntry(**data)
 
 
@@ -164,7 +163,7 @@ class ProfileContentSchema(Schema):
     names = fields.List(fields.Nested(NameEntrySchema))
 
     @post_load
-    def make(self, data: Any, **kwargs) -> ProfileContent:
+    def make(self, data: Any, **_) -> ProfileContent:
         return ProfileContent(**data)
 
 
@@ -179,7 +178,7 @@ class ProfileSchema(Schema):
     content = fields.Nested(ProfileContentSchema)
 
     @post_load
-    def make(self, data: Any, **kwargs) -> Profile:
+    def make(self, data: Any, **_) -> Profile:
         return Profile(**data)
 
 
@@ -196,7 +195,7 @@ class EquivalenceSchema(PartialSchema):
     ids = fields.List(StrField)
 
     @post_load
-    def make(self, data: Any, **kwargs) -> Equivalence:
+    def make(self, data: Any, **_) -> Equivalence:
         return Equivalence(**data)
 
 

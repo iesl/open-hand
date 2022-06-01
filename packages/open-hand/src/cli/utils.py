@@ -1,18 +1,18 @@
-from typing import Union, Optional, Tuple
+from typing import Any, Dict, Union, Optional, Tuple
 from celery.app.base import Celery
-from click.core import Context
 
 import click
 from lib.predef.typedefs import Slice
 
-def run(ctx: Context, task, *args, **kwds):
-    remote: bool = ctx.parent.params["remote"]
-    if remote:
-        print("Calling remote function")
-        task.delay(*args, **kwds).get()
-    else:
-        print("Calling local function")
-        task(*args, **kwds)
+
+# def run(ctx: Context, task, *args, **kwds):
+#     remote: bool = ctx.parent.params["remote"]
+#     if remote:
+#         print("Calling remote function")
+#         task.delay(*args, **kwds).get()
+#     else:
+#         print("Calling local function")
+#         task(*args, **kwds)
 
 
 from celery import Task
@@ -39,7 +39,7 @@ class MTask(Task):
     Celery task running within a Flask application context.
     """
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Dict[str, Any]):
         # self.app is the Celery app instance
         with self.app.flask_app.app_context():
             Task.__call__(self, *args, **kwargs)

@@ -2,11 +2,17 @@ from typing import Optional
 from lib.predef.listops import ListOps
 from lib.predef.typedefs import Slice
 
-
 from lib.predef.utils import is_valid_email
 
 from lib.open_exchange.note_schemas import Note
-from lib.open_exchange.open_fetch import get_note, get_notes_for_author, get_notes_for_dblp_rec_invitation, get_profile, get_profiles
+from lib.open_exchange.open_fetch import (
+    fetch_note,
+    fetch_notes_for_author,
+    fetch_notes_for_dblp_rec_invitation,
+    fetch_profile,
+    fetch_profiles,
+)
+
 from lib.open_exchange.profile_schemas import Profile
 
 from .queries import getQueryAPI
@@ -19,13 +25,13 @@ def putstr(s: str, level: int):
 
 
 def populate_shadowdb_from_notes(slice: Optional[Slice]):
-    for note in get_notes_for_dblp_rec_invitation(slice=slice):
+    for note in fetch_notes_for_dblp_rec_invitation(slice=slice):
         shadow_note(note, level=0)
 
 
 def populate_shadowdb_from_profiles(slice: Optional[Slice]):
     print(f"Populating shadow DB; range = {slice}")
-    for profile in get_profiles(slice=slice):
+    for profile in fetch_profiles(slice=slice):
         shadow_profile(profile, level=0)
 
 
@@ -49,7 +55,7 @@ def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int)
         # if alias is set, just record username/id/email equivalency
         return
 
-    notes = list(get_notes_for_author(profile.id))
+    notes = list(fetch_notes_for_author(profile.id))
     putstr(f"  note count = {len(notes)}", level)
     # TODO will all usernames/aliases return the same list of notes?? check...
     for note in notes:
@@ -76,7 +82,7 @@ def shadow_note(note: Note, *, level: int):
             if not is_valid_email(author.id):
                 continue
 
-            profile = get_profile(author.id)
+            profile = fetch_profile(author.id)
 
             if profile is None:
                 continue
@@ -86,7 +92,7 @@ def shadow_note(note: Note, *, level: int):
 
 def shadow_paper_by_id(id: str):
     """Shadow an openreview note as a PaperRec"""
-    note = get_note(id)
+    note = fetch_note(id)
     if note is None:
         print(f"No Paper for id = {id}")
         return
@@ -95,7 +101,7 @@ def shadow_paper_by_id(id: str):
 
 
 def shadow_profile_by_id(id: str):
-    profile = get_profile(id)
+    profile = fetch_profile(id)
     if profile is None:
         print(f"No Profile for id = {id}")
         return

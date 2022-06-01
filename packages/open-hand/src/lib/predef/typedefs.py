@@ -3,6 +3,7 @@ from typing import NewType, NamedTuple
 ClusterID = NewType("ClusterID", str)
 # TildeID = NewType("TildeID", str)
 TildeID = str
+OpenID = str
 # SignatureID = NewType("SignatureID", str)
 SignatureID = str
 

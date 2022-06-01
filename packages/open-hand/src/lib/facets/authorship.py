@@ -5,7 +5,7 @@ from itertools import groupby
 import click
 
 from lib.predef.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
-from lib.predef.typedefs import ClusterID, SignatureID, TildeID
+from lib.predef.typedefs import ClusterID, OpenID, SignatureID, TildeID
 from lib.predef.output import dim, yellowB
 from lib.predef.utils import is_valid_email, nextnums
 
@@ -49,12 +49,6 @@ def get_predicted_clustering(init: MentionRecords) -> MentionClustering:
     return MentionClustering(mentions, clustering=clustering)
 
 
-def get_openid_clustering(clustering: MentionClustering, profiles: ProfileStore):
-    for cluster_id in clustering.cluster_ids():
-        cluster = clustering.cluster(cluster_id)
-        rimary_ids = get_primary_tildeids(profiles, cluster)
-
-
 def get_tildeid(profile_store: ProfileStore, openId: str) -> Optional[TildeID]:
     if is_tildeid(openId):
         return openId
@@ -69,7 +63,7 @@ def get_tildeid(profile_store: ProfileStore, openId: str) -> Optional[TildeID]:
     return maybeProfileId
 
 
-def get_primary_tildeids(profile_store: ProfileStore, signedPapers: List[SignedPaper]) -> Set[str]:
+def get_focused_openids(profile_store: ProfileStore, signedPapers: List[SignedPaper]) -> Set[TildeID]:
     results: List[str] = []
     for pws in signedPapers:
         prime_sig = pws.primary_signature()
@@ -80,6 +74,21 @@ def get_primary_tildeids(profile_store: ProfileStore, signedPapers: List[SignedP
                 results.append(maybeTildeId)
 
     return set(results)
+
+
+def get_openid_clustering(profiles: ProfileStore, openIds: Set[OpenID]):
+    ## get the profile(s) for each openId
+
+    for openid in openIds:
+        profiles.add_profile(openid)
+
+    canonical_ids = profiles.canonicalize_ids(list(openIds))
+
+    clustering: Dict[ClusterID, List[SignedPaper]] = dict()
+    # Each openId is now a unique user
+    for openId in canonical_ids:
+        clustering[ClusterID(openId)]
+        pass
 
 
 def get_primary_name_variants(signedPapers: List[SignedPaper]) -> Set[str]:
@@ -94,8 +103,8 @@ def get_primary_name_variants(signedPapers: List[SignedPaper]) -> Set[str]:
 
 
 def get_canonical_tilde_ids(profile_store: ProfileStore, cluster: List[SignedPaper]) -> Set[TildeID]:
-    tildeids = get_primary_tildeids(profile_store, cluster)
-    return profile_store.canonicalize_ids(list(tildeids))
+    openids = get_focused_openids(profile_store, cluster)
+    return profile_store.canonicalize_ids(list(openids))
 
 
 def align_cluster(profile_store: ProfileStore, cluster: List[SignedPaper]) -> Dict[TildeID, Alignment[SignatureID]]:
@@ -146,6 +155,16 @@ def format_signature(item: HasFocus[SignatureRec]) -> str:
     return dim(f"{ts}{sig.author_info.fullname}")
 
 
+def format_signature_id(item: HasFocus[SignatureRec]) -> str:
+    sig = item.val
+    openId = sig.author_info.openId
+    if openId is None:
+        openId = "undefined"
+    if openId is not None and is_tildeid(openId):
+        return yellowB(f"{openId}")
+    return dim(openId)
+
+
 def render_paper(paper: PaperRec):
     title = click.style(paper.title, fg="blue")
     author_names = [f"{p.author_name}" for p in paper.authors]
@@ -163,10 +182,10 @@ def render_papers(papers: List[PaperRec]):
 def render_signature(sig_id: SignatureID, entry_num: int, mentions: MentionRecords):
     sig = mentions.signatures[sig_id]
     pwpa = SignedPaper.from_signature(mentions, sig)
-    render_pwpa(pwpa, entry_num)
+    render_signed_paper(pwpa, entry_num)
 
 
-def render_pwpa(pwpa: SignedPaper, n: int):
+def render_signed_paper(pwpa: SignedPaper, n: int):
     title = click.style(pwpa.paper.title, fg="blue")
     sid = pwpa.primary_signature().signature_id
     fmtsigs = [format_signature(sig) for sig in pwpa.signatures.items()]
@@ -207,9 +226,8 @@ def displayMentionsInClusters(mentions: MentionRecords):
     for cluster_id in clustering.cluster_ids():
         cluster = clustering.cluster(cluster_id)
 
-        canonical_ids = get_canonical_tilde_ids(profile_store, cluster)
-
-        primary_ids = get_primary_tildeids(profile_store, cluster)
+        primary_ids = get_focused_openids(profile_store, cluster)
+        canonical_ids = profile_store.canonicalize_ids(list(primary_ids))
         idstr = ", ".join(canonical_ids)
         other_ids = primary_ids.difference(canonical_ids)
         other_idstr = ", ".join(other_ids)
@@ -239,7 +257,7 @@ def displayMentionsInClusters(mentions: MentionRecords):
         for _, aligned in alignments.items():
             ls, rs, bs = separateOOBs(aligned.values)
 
-            print("Papers Only In Cluster")
+            print("Papers Only In Predicted Cluster")
             for sig_id in ls.value:
                 render_signature(sig_id, next(pnum), ubermentions)
                 displayed_sigs.add(sig_id)
@@ -257,7 +275,7 @@ def displayMentionsInClusters(mentions: MentionRecords):
         print("Unaligned Papers")
         for pws in cluster:
             if pws.primary_signature().signature_id not in displayed_sigs:
-                render_pwpa(pws, next(pnum))
+                render_signed_paper(pws, next(pnum))
 
         click.echo("\n")
 
@@ -291,11 +309,11 @@ def displayMentionsSorted(mentions: MentionRecords):
                 sig = ubermentions.signatures[sig_id]
                 displayed_sigs.add(sig_id)
                 pwpa = SignedPaper.from_signature(ubermentions, sig)
-                render_pwpa(pwpa, next(pnum))
+                render_signed_paper(pwpa, next(pnum))
 
         print("Unaligned Papers")
         for pws in cluster:
             if pws.primary_signature().signature_id not in displayed_sigs:
-                render_pwpa(pws, next(pnum))
+                render_signed_paper(pws, next(pnum))
 
         click.echo("\n")

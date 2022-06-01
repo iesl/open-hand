@@ -63,7 +63,7 @@ def dopredict(
     if model is None:
         model = load_model()
 
-    (clustered_signatures, _) = model.predict(andData.get_blocks(), andData)
+    (clustered_signatures, _) = model.predict(andData.get_blocks(), andData) # type: ignore
     cluster_records: List[ClusteringRecord] = []
 
     for cluster_id, sigids in clustered_signatures.items():

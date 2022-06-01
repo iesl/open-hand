@@ -16,7 +16,7 @@ def show():
 
 
 @show.command()
-@click.option("--env", type=click.Choice(["test", "env", "prod"]), required=True, help="Check that config is valid")
+@click.option("--env", type=click.Choice(["test", "dev", "prod"]), required=True, help="Check that config is valid")
 def config(env: str):
     """Ensure config is valid"""
     print(f"Checking env {env}")

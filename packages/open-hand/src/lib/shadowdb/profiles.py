@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Set
 from disjoint_set import DisjointSet
 
 from lib.open_exchange.profile_schemas import Profile
-from lib.open_exchange.open_fetch import get_notes_for_author, get_profile
+from lib.open_exchange.open_fetch import fetch_notes_for_author, fetch_profile
 
 from lib.predef.typedefs import TildeID
 from lib.predef.log import createlogger
@@ -30,7 +30,7 @@ class ProfileStore:
     def add_profile(self, id: TildeID) -> Optional[TildeID]:
         if id not in self.ds:
             self.log.debug(f"add_profile({id}): retrieving...")
-            p = get_profile(id)
+            p = fetch_profile(id)
             if p is None:
                 self.log.warn(f"No such profile: {id}")
                 return
@@ -86,7 +86,7 @@ class ProfileStore:
         self.log.info(f"fetch_user_mentions({id})...")
         self.add_profile(id)
         if id not in self.userMentions:
-            notes = list(get_notes_for_author(id))
+            notes = list(fetch_notes_for_author(id))
             self.log.info(f"    ({id}) note count = {len(notes)}")
             mentions = mention_records_from_notes(notes)
             self.log.info(f"    ({id}) paper mention count = {len(mentions.get_papers())}")

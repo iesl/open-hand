@@ -2,6 +2,7 @@ from typing import List
 
 from lib.predef.zipper import Zipper
 
+
 def test_zipper_create():
     l1: List[str] = ["a", "b", "c"]
 
@@ -14,7 +15,8 @@ def test_zipper_create():
         assert zfwd is not None
         assert zfwd.focus == l1[i]
 
-    assert z1.forward(len(l1)+1) is None
+    assert z1.forward(len(l1) + 1) is None
+
 
 def test_zipper_find():
     l1: List[str] = ["apple", "banana", "cherry"]

@@ -9,14 +9,23 @@ from lib.s2andx.predict import dopredict, predict_all
 
 
 @cli.command()
-@click.argument("canopy", type=str)
+@click.argument("canopy", type=str, default='')
 @click.option("--profile", is_flag=True, help="profile program execution")
 @click.option("--use-name-dicts", is_flag=True, help="Use (expensive to load) model data for names")
 @click.option("--commit", "-c", is_flag=True, help="commit results to mongodb")
-def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
+@click.option("--all", "-A", is_flag=True, help="Run prediction over all canopies")
+def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool, all: bool):
     """Run prediction on canopy"""
 
-    click.echo(f"canopy={canopy}")
+    if all:
+        predict_all(profile=profile)
+        return
+
+    if canopy == '':
+        print("Please specify a canopy or --all")
+        return
+
+    print(f"Running prediction over canopy `{canopy}`")
 
     pre = preload_data(use_name_counts=use_name_dicts, use_name_tuples=True)
     model = load_model()
@@ -26,10 +35,3 @@ def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool):
         print(f"Mentions for cluster {cluster.cluster_id}")
         displayMentionsInClusters(cluster.mentions)
         print("")
-
-
-@cli.command("predict-all")
-@click.option("--profile", is_flag=True, help="profile program execution")
-def predict_all_cli(profile: bool):
-    """Run prediction on all canopies"""
-    predict_all(profile=profile)

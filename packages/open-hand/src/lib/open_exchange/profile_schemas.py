@@ -1,8 +1,13 @@
+# pyright: reportUnusedImport=false
+# pyright: reportUnusedExpression=false
+# pyright: reportUnknownParameterType=false
+# pyright: reportMissingParameterType=false
+
 from pprint import pprint
 from marshmallow import fields
 from dataclasses import dataclass
 
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 
 from marshmallow.decorators import post_load, pre_load
 from lib.predef.schemas import PartialSchema
@@ -44,7 +49,7 @@ class ExpertiseTimelineSchema(PartialSchema):
     keywords = fields.List(StrField)
 
     @pre_load
-    def clean(self, data: Any, many: Any, **kwargs):
+    def clean(self, data: Any, **kwargs):
         return clean_start_end(data)
 
     @post_load
@@ -107,7 +112,7 @@ class NameEntrySchema(PartialSchema):
     username = OptStringField
 
     @pre_load
-    def clean(self, data: Any, many: Any, **kwargs):
+    def clean(self, data: Any, **kwargs):
         if "preferred" not in data:
             data["preferred"] = False
         if "username" not in data:
@@ -222,7 +227,7 @@ class ProfileSchema(PartialSchema):
 
 def load_profile(data: Any) -> Profile:
     try:
-        p: Profile = ProfileSchema().load(data)
+        p: Profile = cast(Profile, ProfileSchema().load(data))
         return p
     except Exception as inst:
         print(type(inst))  # the exception instance

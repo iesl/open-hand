@@ -1,13 +1,19 @@
+# pyright: reportUnusedImport=false
+# pyright: reportUnusedExpression=false
+# pyright: reportUnknownParameterType=false
+# pyright: reportMissingParameterType=false
+
 # Schemas for data fetched from OpenReview via REST Endpoints
 # Fetched data is generally loaded and then immediately transformed
 #    into formats for local storage and use in the inference engine
 
+
 from pprint import pprint
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 from dataclasses import dataclass
 
 from marshmallow import fields
-from marshmallow.decorators import post_load, pre_load
+from marshmallow.decorators import post_load
 
 from lib.predef.schemas import IntField, OptStringField, PartialSchema, StrField
 
@@ -92,7 +98,8 @@ class NotesSchema(PartialSchema):
 
 def load_notes(data: Any) -> Notes:
     try:
-        notes: Notes = NotesSchema().load(data)
+        # pyright: ignore
+        notes: Notes = cast(Notes, NotesSchema().load(data))
         return notes
     except Exception as inst:
         print(type(inst))  # the exception instance

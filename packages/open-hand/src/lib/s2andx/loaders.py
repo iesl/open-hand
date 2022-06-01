@@ -1,5 +1,4 @@
 from typing import NamedTuple, Set, Dict, Tuple
-from s2and.data import ANDData
 
 import pickle
 import os
@@ -84,20 +83,20 @@ def load_name_counts() -> NameCountDict:
     return counts
 
 
+# from s2and.data import ANDData
 ## TODO can this be run once for papers, then again for signatures, or does the normalization need the paper data
 ##    Is it embarrassingly parallel for both papers/signatures?
-def normalize_signatures_papers(signature_dict, paper_dict, pre: DataPreloads):
+# def normalize_signatures_papers(signature_dict, paper_dict, pre: DataPreloads):
+#     name_counts = pre.name_counts if pre.name_counts is not None else False
+#     name_tuples = pre.name_tuples if pre.name_tuples is not None else NameEquivalenceSet()
+#     anddata = ANDData(
+#         signatures=signature_dict,
+#         papers=paper_dict,
+#         name="unnamed",
+#         mode="inference",  # or 'train'
+#         block_type="s2",  # or 'original', refers to canopy method 's2' => author_info.block is canopy
+#         name_tuples=name_tuples,
+#         load_name_counts=name_counts,
+#     )
 
-    name_counts = pre.name_counts if pre.name_counts is not None else False
-    name_tuples = pre.name_tuples if pre.name_tuples is not None else NameEquivalenceSet()
-    anddata = ANDData(
-        signatures=signature_dict,
-        papers=paper_dict,
-        name="unnamed",
-        mode="inference",  # or 'train'
-        block_type="s2",  # or 'original', refers to canopy method 's2' => author_info.block is canopy
-        name_tuples=name_tuples,
-        load_name_counts=name_counts,
-    )
-
-    return (anddata.signatures, anddata.papers)
+#     return (anddata.signatures, anddata.papers)

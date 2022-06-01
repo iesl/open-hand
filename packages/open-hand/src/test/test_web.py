@@ -10,7 +10,7 @@ from jinja2.environment import Environment
 # from jinja2.exceptions import TemplateSyntaxError
 # from jinja2.exceptions import UndefinedError
 from jinja2.loaders import DictLoader, FileSystemLoader
-from lib.shadowdb.data import MentionRecords, SignedPaper
+from lib.shadowdb.data import MentionRecords
 
 from lib.shadowdb.shadowdb_schemas import AuthorInfoBlock, AuthorRec, PaperRec, SignatureRec
 
@@ -26,7 +26,6 @@ def test_env():
             )
         )
     )
-    env.globals["bar"] = 23
     return env
 
 
@@ -88,19 +87,19 @@ def gen_mentions(paper: PaperRec) -> MentionRecords:
     return MentionRecords(papers=paper_dict, signatures=signature_dict)
 
 
-class TestImports:
-    def test_paperrec_macros(self, fs_env):
+# class TestImports:
+#     def test_paperrec_macros(self, fs_env):
 
-        paper = gen_paperrec()
-        mentions = gen_mentions(paper)
-        signatures = [mentions.signatures[k] for k in mentions.signatures.keys()]
-        sig1 = signatures[1]
+#         paper = gen_paperrec()
+#         mentions = gen_mentions(paper)
+#         signatures = [mentions.signatures[k] for k in mentions.signatures.keys()]
+#         sig1 = signatures[1]
 
-        paper_with_signatures = SignedPaper.from_signature(mentions, sig1)
+#         paper_with_signatures = SignedPaper.from_signature(mentions, sig1)
 
-        tmp = "{% import '_paperrec.html' as _paperrec %}" "{{ _paperrec.paper(pws) }}"
-        t = fs_env.from_string(tmp)
+#         tmp = "{% import '_paperrec.html' as _paperrec %}" "{{ _paperrec.paper(pws) }}"
+#         t = fs_env.from_string(tmp)
 
-        res = t.render(pws=paper_with_signatures)
-        text = os.linesep.join([s for s in res.splitlines() if len(s.strip()) > 0])
-        print(text)
+#         res = t.render(pws=paper_with_signatures)
+#         text = os.linesep.join([s for s in res.splitlines() if len(s.strip()) > 0])
+#         print(text)

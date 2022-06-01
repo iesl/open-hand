@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 from typing import Any, Optional, List
 from dataclasses import dataclass, asdict
 from lib.open_exchange.note_schemas import Note

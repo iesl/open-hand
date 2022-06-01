@@ -4,16 +4,13 @@ from typing import Optional
 
 import click
 
-from lib.shadowdb.loader import shadow_paper_by_id, shadow_profile_by_id, populate_shadowdb_from_notes, populate_shadowdb_from_profiles
-from lib.shadowdb.queries import getQueryAPI
-
 from .utils import validate_slice
 
 from lib.open_exchange.open_fetch import (
-    get_notes_for_author,
-    get_notes_for_dblp_rec_invitation,
-    get_profile,
-    get_profiles,
+    fetch_notes_for_author,
+    fetch_notes_for_dblp_rec_invitation,
+    fetch_profile,
+    fetch_profiles,
 )
 from lib.predef.typedefs import Slice
 
@@ -23,23 +20,18 @@ from .cli_base import cli
 
 
 @cli.group()
-def orx():
-    """OpenReview exchange; interact with REST API"""
+def fetch():
+    """OpenReview fetcher; interact with REST API"""
 
 
-@orx.group()
-def get():
-    """OpenReview exchange; fetch notes"""
-
-
-@get.command("author")
+@fetch.command("author")
 @click.argument("authorid", type=str)
 def author(authorid: str):
 
-    notes = list(get_notes_for_author(authorid))
+    notes = list(fetch_notes_for_author(authorid))
     print(f"{authorid} note count: {len(notes)}")
 
-    profile = get_profile(authorid)
+    profile = fetch_profile(authorid)
     if profile is None:
         print(f"No Profile for {authorid}")
     else:
@@ -62,16 +54,16 @@ def author(authorid: str):
         print(f"  {authorstr}")
 
 
-@get.command()
+@fetch.command()
 @click.option("--slice", type=(int, int), callback=validate_slice)
 def profiles(slice: Slice):
-    profiles = get_profiles(slice=slice)
+    profiles = fetch_profiles(slice=slice)
     for p in profiles:
         names = p.content.names
         print(f"Profile: {names}")
 
 
-@get.command()
+@fetch.command()
 @click.option("--brief", is_flag=True)
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)
 def notes(brief: bool, slice: Optional[Slice]):
@@ -80,37 +72,9 @@ def notes(brief: bool, slice: Optional[Slice]):
     else:
         print(f"Fetching All Notes")
 
-    notes = get_notes_for_dblp_rec_invitation(slice=slice)
+    notes = fetch_notes_for_dblp_rec_invitation(slice=slice)
     for note in notes:
         if brief:
             print(f"{note.id} #{note.number}: {note.content.title}")
         else:
             pprint(asdict(note))
-
-
-@orx.group()
-def shadowdb():
-    """Create/Update shadow database for OpenReview notes/profiles"""
-
-
-@shadowdb.command("paper")
-@click.argument("id", type=str)
-def paper(id: str):
-    shadow_paper_by_id(id)
-
-
-@shadowdb.command("profile")
-@click.argument("id", type=str)
-def shadowdb_profile(id: str):
-    shadow_profile_by_id(id)
-
-
-@shadowdb.command("update")
-@click.option("--slice", type=(int, int), default=None, callback=validate_slice)
-def shadowdb_populate(slice: Optional[Slice]):
-    populate_shadowdb_from_notes(slice)
-
-
-@shadowdb.command("reset")
-def shadowdb_reset():
-    getQueryAPI().db.reset_db()

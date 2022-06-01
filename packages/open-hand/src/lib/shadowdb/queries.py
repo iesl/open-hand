@@ -1,5 +1,5 @@
 import pprint
-from typing import Any, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, cast
 
 from .data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
 
@@ -27,7 +27,7 @@ equiv_schema = EquivalenceSchema()
 
 def load_signature(enc: Any) -> SignatureRec:
     try:
-        dec: SignatureRec = signature_schema.load(enc)
+        dec: SignatureRec = cast(SignatureRec, signature_schema.load(enc))
         return dec
     except Exception as inst:
         print(type(inst))  # the exception instance
@@ -40,7 +40,7 @@ def load_signature(enc: Any) -> SignatureRec:
 
 def load_paper(enc: Any) -> PaperRec:
     try:
-        dec: PaperRec = paper_schema.load(enc)
+        dec: PaperRec = cast(PaperRec, paper_schema.load(enc))
         return dec
     except Exception as inst:
         print(type(inst))  # the exception instance
@@ -52,7 +52,7 @@ def load_paper(enc: Any) -> PaperRec:
 
 
 def load_cluster(enc: Any) -> Cluster:
-    dec: Cluster = cluster_schema.load(enc)
+    dec: Cluster = cast(Cluster, cluster_schema.load(enc))
     return dec
 
 
@@ -100,7 +100,7 @@ class QueryAPI:
 
     def find_equivalence(self, strs: List[str]) -> List[str]:
         cursor = self.equivalence.find({"ids": {"$in": list(strs)}})
-        id_sets: List[Equivalence] = [equiv_schema.load(c) for c in cursor]
+        id_sets: List[Equivalence] = [cast(Equivalence, equiv_schema.load(c)) for c in cursor]
         allids: Set[str] = set()
         for ids in id_sets:
             allids = allids.union(set(ids.ids))
@@ -195,8 +195,10 @@ class QueryAPI:
         return MentionRecords(papers=paper_dict, signatures=sig_dict)
 
     def get_canopy_strs(self) -> List[str]:
-        distinct_canopies = self.db.db.command({"distinct": "signatures", "key": "author_info.block"})
-        canopies = distinct_canopies["values"]
+        distinct_canopies: Dict[str, Any] = self.db.db.command(
+            {"distinct": "signatures", "key": "author_info.block"}
+        )
+        canopies: List[str] = distinct_canopies["values"]
         return canopies
 
     def get_cluster(self, clusterstr: str) -> ClusteringRecord:
@@ -238,9 +240,7 @@ class QueryAPI:
         cluster_id = c0["cluster_id"]
         canopystr = c0["canopy"]
 
-        return ClusteringRecord(
-            mentions=mentions, cluster_id=cluster_id, canopy=canopystr
-        )
+        return ClusteringRecord(mentions=mentions, cluster_id=cluster_id, canopy=canopystr)
 
     def commit_cluster(self, cluster: ClusteringRecord):
         cluster_members = [

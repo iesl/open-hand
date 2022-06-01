@@ -66,7 +66,7 @@ def show_canopies(page: Optional[int] = None):
 
 @bp.route("/canopy/<string:id>")
 def show_canopy(id: str):
-    mentions = getQueryAPI().get_canopy(id)
+    # mentions = getQueryAPI().get_canopy(id)
     # _, cluster_dict = mentions_to_displayables(mentions)
     # cluster_ids = list(cluster_dict)
 
@@ -81,6 +81,6 @@ def show_clusters():
 
 @bp.route("/cluster/<string:id>")
 def show_cluster(id: str):
-    mentions = getQueryAPI().get_canopy(id)
-    papers, signatures = mentions.papers, mentions.signatures
+    # mentions = getQueryAPI().get_canopy(id)
+    # papers, signatures = mentions.papers, mentions.signatures
     return render_template("cluster.html")

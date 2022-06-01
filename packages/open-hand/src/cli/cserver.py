@@ -1,4 +1,5 @@
-from cli import utils
+from . import utils
+
 # from cli import commands as cmd
 
 ## Commands in this module are called from the cli module, and have the same names as

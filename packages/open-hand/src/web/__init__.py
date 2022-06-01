@@ -1,4 +1,5 @@
 import os
+from typing import Any, Dict, Optional
 
 from flask import Flask
 
@@ -10,7 +11,8 @@ from .util.assets import bundles
 from lib.predef.log import logger
 from pprint import pp
 
-def create_app(test_config=None):
+
+def create_app(test_config: Optional[Dict[str, Any]]=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=False, instance_path=str(WEB_INSTANCE_PATH.resolve()))
 
