@@ -47,6 +47,7 @@ def gen_authorrecs(n: int) -> List[AuthorRec]:
 def gen_paperrec() -> PaperRec:
     rec = PaperRec(
         abstract=None,
+        note_number=1,
         authors=gen_authorrecs(4),
         journal_name=None,
         paper_id="p#1",

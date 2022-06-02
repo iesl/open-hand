@@ -6,6 +6,7 @@ T = TypeVar("T")
 
 Getter = Callable[[], List[T]]
 
+
 class IterGet(Generic[T]):
     """Create an Iterator[T] given a getter function
 

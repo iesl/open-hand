@@ -5,7 +5,7 @@ from lib.predef.config import setenv
 from lib.predef.consts import PRJ_ROOT_PATH
 
 from lib.shadowdb.mongoconn import MongoDB
-from lib.shadowdb.queries import QueryAPI, getQueryAPI
+from lib.shadowdb.shadowdb import ShadowDB, getShadowDB
 
 
 @pytest.fixture(autouse=True)
@@ -27,11 +27,11 @@ def mongoDB():
 
 @pytest.fixture
 def queryAPI():
-    return getQueryAPI()
+    return getShadowDB()
 
 
 class TestShadowDB:
-    def test_equivalence_table(self, queryAPI: QueryAPI):
+    def test_equivalence_table(self, queryAPI: ShadowDB):
         eq0 = queryAPI.create_equivalence(["a", "b", "c"])
         assert sorted(eq0) == ["a", "b", "c"]
 

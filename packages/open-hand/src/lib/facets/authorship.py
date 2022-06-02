@@ -12,7 +12,7 @@ from lib.predef.utils import is_valid_email, nextnums
 from lib.open_exchange.utils import is_tildeid
 from lib.predef.zipper import HasFocus
 
-from lib.shadowdb.queries import getQueryAPI
+from lib.shadowdb.shadowdb import getShadowDB
 from lib.shadowdb.profiles import ProfileStore
 
 from lib.shadowdb.data import (
@@ -37,7 +37,7 @@ def get_predicted_clustering(init: MentionRecords) -> MentionClustering:
 
     cluster_ids = list(cluster_groups)
 
-    mentions = getQueryAPI().add_all_referenced_signatures(init)
+    mentions = getShadowDB().add_all_referenced_signatures(init)
     clusters: List[Tuple[ClusterID, List[SignedPaper]]] = []
 
     for id in cluster_ids:

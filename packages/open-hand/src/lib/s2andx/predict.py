@@ -6,14 +6,14 @@ from s2and.model import Clusterer
 from s2and.data import ANDData
 
 from lib.shadowdb.data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
-from lib.shadowdb.queries import getQueryAPI
+from lib.shadowdb.shadowdb import getShadowDB
 from .model import load_model
 
 from .loaders import DataPreloads, NameCountDict, NameEquivalenceSet, preload_data
 
 
 def choose_canopy(n: int) -> str:
-    return getQueryAPI().get_canopy_strs()[n]
+    return getShadowDB().get_canopy_strs()[n]
 
 
 def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
@@ -36,7 +36,7 @@ def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
 def predict_all(*, commit: bool = True, profile: bool = False):
     model = load_model()
     pre = preload_data(use_name_counts=False, use_name_tuples=True)
-    canopies = getQueryAPI().get_canopy_strs()
+    canopies = getShadowDB().get_canopy_strs()
     for canopy in canopies:
         dopredict(canopy, commit=commit, model=model, pre=pre, profile=profile)
 
@@ -53,7 +53,7 @@ def dopredict(
     if profile:
         profiler.enable()
 
-    mentions: MentionRecords = getQueryAPI().get_canopy(canopy)
+    mentions: MentionRecords = getShadowDB().get_canopy(canopy)
     pcount = len(mentions.papers)
     scount = len(mentions.signatures)
     logger.info(f"Mention counts papers={pcount} / signatures={scount}")
@@ -63,7 +63,7 @@ def dopredict(
     if model is None:
         model = load_model()
 
-    (clustered_signatures, _) = model.predict(andData.get_blocks(), andData) # type: ignore
+    (clustered_signatures, _) = model.predict(andData.get_blocks(), andData)  # type: ignore
     cluster_records: List[ClusteringRecord] = []
 
     for cluster_id, sigids in clustered_signatures.items():
@@ -92,6 +92,6 @@ def dopredict(
 
 
 def commit_clusters(clusters: List[ClusteringRecord]):
-    queryAPI = getQueryAPI()
+    queryAPI = getShadowDB()
     for c in clusters:
         queryAPI.commit_cluster(c)

@@ -7,6 +7,7 @@ import click
 from .utils import validate_slice
 
 from lib.open_exchange.open_fetch import (
+    fetch_note,
     fetch_notes_for_author,
     fetch_notes_for_dblp_rec_invitation,
     fetch_profile,
@@ -62,6 +63,11 @@ def profiles(slice: Slice):
         names = p.content.names
         print(f"Profile: {names}")
 
+@fetch.command()
+@click.argument("id", type=str)
+def profile(id: str):
+    profile = fetch_profile(id)
+    pprint(asdict(profile))
 
 @fetch.command()
 @click.option("--brief", is_flag=True)
@@ -78,3 +84,10 @@ def notes(brief: bool, slice: Optional[Slice]):
             print(f"{note.id} #{note.number}: {note.content.title}")
         else:
             pprint(asdict(note))
+
+
+@fetch.command()
+@click.argument("id", type=str)
+def note(id: str):
+    note = fetch_note(id)
+    pprint(asdict(note))

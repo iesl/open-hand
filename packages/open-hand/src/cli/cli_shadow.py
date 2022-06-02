@@ -10,7 +10,7 @@ from lib.shadowdb.open_etl import (
 from lib.predef.typedefs import Slice
 from .utils import validate_slice
 
-from lib.shadowdb.queries import getQueryAPI
+from lib.shadowdb.shadowdb import getShadowDB
 from .cli_base import cli
 
 
@@ -43,4 +43,4 @@ def shadowdb_populate(slice: Optional[Slice]):
 @shadow.command("reset")
 def shadowdb_reset():
     """Clean/recreate DB collections"""
-    getQueryAPI().db.reset_db()
+    getShadowDB().db.reset_db()

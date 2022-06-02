@@ -3,7 +3,7 @@ import click
 from pprint import pprint
 
 from lib.predef.config import load_config, setenv
-from lib.shadowdb.queries import getQueryAPI
+from lib.shadowdb.shadowdb import getShadowDB
 from lib.facets.authorship import displayMentionsInClusters
 from lib.termio.canopies import list_canopies_counted
 
@@ -32,7 +32,7 @@ def config(env: str):
 @click.argument("canopy", type=str)
 def canopy_show(canopy: str):
     """Show a canopy"""
-    c = getQueryAPI().get_canopy(canopy)
+    c = getShadowDB().get_canopy(canopy)
     displayMentionsInClusters(c)
 
 
@@ -41,7 +41,7 @@ def canopy_show(canopy: str):
 def cluster_show(cluster_name: str):
     """Show the results of cluster prediction"""
 
-    cluster = getQueryAPI().get_cluster(cluster_name)
+    cluster = getShadowDB().get_cluster(cluster_name)
 
     for item in cluster.mentions.signatures.values():
         pprint(item)

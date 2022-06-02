@@ -1,8 +1,8 @@
-from lib.shadowdb.queries import getQueryAPI
+from lib.shadowdb.shadowdb import getShadowDB
 
 
 def list_canopies(offset: int):
-    cstrs = getQueryAPI().get_canopy_strs()
+    cstrs = getShadowDB().get_canopy_strs()
     slice = cstrs[offset : offset + 15]
     print(f"Total Canopies = {len(cstrs)}")
     for i, s in enumerate(slice):
@@ -10,7 +10,7 @@ def list_canopies(offset: int):
 
 
 def list_canopies_counted(offset: int):
-    queryAPI = getQueryAPI()
+    queryAPI = getShadowDB()
     cstrs = queryAPI.get_canopy_strs()
     canopies = [(i, cstr, queryAPI.get_canopy(cstr)) for i, cstr in enumerate(cstrs)]
     counted_canopies = [(i, len(mentions.papers), cstr) for i, cstr, mentions in canopies]

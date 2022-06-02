@@ -118,6 +118,12 @@ class NameEntrySchema(PartialSchema):
         if "username" not in data:
             data["username"] = None
 
+        username = data["username"]
+        is_valid_username = isinstance(username, str) and len(username) > 0
+
+        if not is_valid_username:
+            data["username"] = None
+
         return data
 
     @post_load

@@ -40,6 +40,7 @@ class MongoDB:
 
     def create_collections(self):
         self.papers.create_index("paper_id", unique=True)
+        self.papers.create_index("note_number", unique=True)
 
         self.signatures.create_index("paper_id")
         self.signatures.create_index("signature_id", unique=True)

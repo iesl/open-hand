@@ -1,5 +1,7 @@
 import pprint
-from typing import Any, Dict, List, Optional, Set, cast
+from typing import Any, Dict, List, Optional, Set, cast, Tuple
+
+import pymongo
 
 from .data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
 
@@ -56,7 +58,7 @@ def load_cluster(enc: Any) -> Cluster:
     return dec
 
 
-class QueryAPI:
+class ShadowDB:
     db: MongoDB
 
     def __init__(self):
@@ -137,6 +139,17 @@ class QueryAPI:
         combined_sigdict = mentions.signatures | sigdict
         return MentionRecords(papers=mentions.papers, signatures=combined_sigdict)
 
+    def get_note_number_range(self) -> Tuple[int, int]:
+        def min_max_note_num(*, field: str, order: int) -> int:
+            cursor = self.papers.find({}, {field: 1}, sort=[(field, order)]).limit(1)
+            nums = [c[field] for c in cursor]
+            return nums[0] if len(nums) > 0 else 0
+
+        min = min_max_note_num(field="note_number", order=pymongo.ASCENDING)
+        max = min_max_note_num(field="note_number", order=pymongo.DESCENDING)
+
+        return (min, max)
+
     def get_canopied_signatures(self, canopystr: str) -> List[SignatureRec]:
         coll = self.signatures.aggregate(
             [
@@ -195,9 +208,7 @@ class QueryAPI:
         return MentionRecords(papers=paper_dict, signatures=sig_dict)
 
     def get_canopy_strs(self) -> List[str]:
-        distinct_canopies: Dict[str, Any] = self.db.db.command(
-            {"distinct": "signatures", "key": "author_info.block"}
-        )
+        distinct_canopies: Dict[str, Any] = self.db.db.command({"distinct": "signatures", "key": "author_info.block"})
         canopies: List[str] = distinct_canopies["values"]
         return canopies
 
@@ -254,11 +265,11 @@ class QueryAPI:
         self.clusters.insert_many(cluster_members)
 
 
-_query_api: Optional[QueryAPI] = None
+_query_api: Optional[ShadowDB] = None
 
 
-def getQueryAPI() -> QueryAPI:
+def getShadowDB() -> ShadowDB:
     global _query_api
     if _query_api is None:
-        _query_api = QueryAPI()
+        _query_api = ShadowDB()
     return _query_api

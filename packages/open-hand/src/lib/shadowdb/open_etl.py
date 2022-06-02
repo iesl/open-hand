@@ -1,4 +1,10 @@
+"""
+Create a local database from queries to the OpenReview REST API, mirroring
+the data
+"""
+
 from typing import Optional
+from lib.open_exchange.utils import is_tildeid
 from lib.predef.listops import ListOps
 from lib.predef.typedefs import Slice
 
@@ -15,7 +21,7 @@ from lib.open_exchange.open_fetch import (
 
 from lib.open_exchange.profile_schemas import Profile
 
-from .queries import getQueryAPI
+from .shadowdb import getShadowDB
 from .data import mention_records_from_note
 
 
@@ -25,8 +31,21 @@ def putstr(s: str, level: int):
 
 
 def populate_shadowdb_from_notes(slice: Optional[Slice]):
-    for note in fetch_notes_for_dblp_rec_invitation(slice=slice):
+    print(f"Populating ShadowDB from Notes {slice}")
+    queryAPI = getShadowDB()
+    min_num, max_num = queryAPI.get_note_number_range()
+
+    print(f"Recorded note numbers range from {min_num}-{max_num}")
+
+    skipped = 0
+    for note in fetch_notes_for_dblp_rec_invitation(slice=slice, newestFirst=False):
+        if note.number <= max_num:
+            skipped += 1
+            continue
+
         shadow_note(note, level=0)
+
+    print(f"Skipped {skipped} records")
 
 
 def populate_shadowdb_from_profiles(slice: Optional[Slice]):
@@ -36,7 +55,7 @@ def populate_shadowdb_from_profiles(slice: Optional[Slice]):
 
 
 def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int):
-    queryAPI = getQueryAPI()
+    queryAPI = getShadowDB()
     if alias is None:
         putstr(f"+ Profile {profile.id}", level)
     else:
@@ -65,26 +84,39 @@ def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int)
 def shadow_note(note: Note, *, level: int):
     """Shadow an openreview note as a PaperRec"""
 
-    queryAPI = getQueryAPI()
+    queryAPI = getShadowDB()
     putstr(f"+ Note: {note.id}, authors: {note.content.authors}", level)
+
+    if len(note.content.authors) == 0:
+        putstr(f"+ Skipping {note.id}, no authors found", level)
+        return
 
     mentions = mention_records_from_note(note)
 
     queryAPI.insert_papers(mentions.get_papers())
     queryAPI.insert_signatures(mentions.get_signatures())
 
+    ## Traverse the authorIDs in the note to profile.
+    ## May be tilde-id, email, or search string
+    ## e.g., ~Auth_Name1, name@place.com, http://search-string..
+    ## We need to look each of these up directly to make sure we
+    ## have a complete snapshot of all papers attributed to that author
     for paperRec in mentions.get_papers():
         for author in paperRec.authors:
             putstr(f"  - {author.author_name}; {author.id}", level)
             if author.id is None:
                 continue
 
-            if not is_valid_email(author.id):
+            do_profile_lookup = is_tildeid(author.id) or is_valid_email(author.id)
+
+            if not do_profile_lookup:
+                putstr(f"no profile for author {author.author_name}", level)
                 continue
 
             profile = fetch_profile(author.id)
 
             if profile is None:
+                putstr(f"no profile found for author {author.author_name}, {author.id}", level)
                 continue
 
             shadow_profile(profile, alias=author.id, level=level + 1)

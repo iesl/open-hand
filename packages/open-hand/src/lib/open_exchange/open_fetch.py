@@ -96,8 +96,9 @@ def fetch_note(id: str) -> Optional[Note]:
     return list_to_optional(notes)
 
 
-def fetch_notes_for_dblp_rec_invitation(*, slice: Optional[Slice]) -> Iterator[Note]:
-    return _fetch_notes(slice=slice, invitation="dblp.org/-/record", sort="number:desc")
+def fetch_notes_for_dblp_rec_invitation(*, slice: Optional[Slice], newestFirst: bool = True) -> Iterator[Note]:
+    sort = "number:desc" if newestFirst else "number:asc"
+    return _fetch_notes(slice=slice, invitation="dblp.org/-/record", sort=sort)
 
 
 def fetch_notes_for_author(authorid: str) -> Iterator[Note]:

@@ -113,12 +113,14 @@ def paperrec_from_note(note: Note) -> PaperRec:
         authors = ld.list_entry("authors", content)
         author_ids = ld.list_entry("authorids", content)
         authorRecs: List[AuthorRec] = []
+        note_number = note.number
 
         for idx, (id, name) in enumerate(zip(author_ids, authors)):
             authorRecs.append(AuthorRec(author_name=name, id=id, position=idx))
 
         prec = PaperRec(
             paper_id=paper_id,
+            note_number=note_number,
             title=title,
             abstract=abstract,
             authors=authorRecs,

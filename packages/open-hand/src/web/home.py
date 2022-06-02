@@ -10,7 +10,7 @@ from flask import (
 )
 from lib.shadowdb.data import MentionRecords
 
-from lib.shadowdb.queries import getQueryAPI
+from lib.shadowdb.shadowdb import getShadowDB
 
 import math
 
@@ -48,12 +48,12 @@ def show_canopies(page: Optional[int] = None):
     pagesize = 80
     offset = page * pagesize
 
-    canopystrs = getQueryAPI().get_canopy_strs()
+    canopystrs = getShadowDB().get_canopy_strs()
 
     pagecount = math.ceil(len(canopystrs) / pagesize)
 
     canopypage = canopystrs[offset : offset + pagesize]
-    canopies = [(i, cstr, getQueryAPI().get_canopy(cstr)) for i, cstr in enumerate(canopypage)]
+    canopies = [(i, cstr, getShadowDB().get_canopy(cstr)) for i, cstr in enumerate(canopypage)]
     counted_canopies = [
         (i, len(mentions.papers), cstr, author_name_variants(mentions)) for i, cstr, mentions in canopies
     ]
@@ -66,7 +66,7 @@ def show_canopies(page: Optional[int] = None):
 
 @bp.route("/canopy/<string:id>")
 def show_canopy(id: str):
-    # mentions = getQueryAPI().get_canopy(id)
+    # mentions = getShadowDB().get_canopy(id)
     # _, cluster_dict = mentions_to_displayables(mentions)
     # cluster_ids = list(cluster_dict)
 
@@ -81,6 +81,6 @@ def show_clusters():
 
 @bp.route("/cluster/<string:id>")
 def show_cluster(id: str):
-    # mentions = getQueryAPI().get_canopy(id)
+    # mentions = getShadowDB().get_canopy(id)
     # papers, signatures = mentions.papers, mentions.signatures
     return render_template("cluster.html")
