@@ -57,8 +57,8 @@ T = TypeVar("T")
 
 
 def list_to_optional(ts: List[T]) -> Optional[T]:
-    head, tail = ListOps.headopt_strict(ts)
-    if tail is not None:
+    head, tail = ListOps.destructure(ts)
+    if len(tail) > 0:
         logger.warn(f"Expected 0 or 1 items, got {len(ts)}")
         for t in ts:
             pprint(asdict(t))

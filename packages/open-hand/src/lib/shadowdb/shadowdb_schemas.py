@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Any, List, Optional
 
 from lib.predef.schemas import OptBoolField, OptStringField, PartialSchema, StrField, OptIntField, IntField
+from lib.open_exchange import profile_schemas as op
 
 
 @dataclass
@@ -143,6 +144,12 @@ class NameEntry:
     middle: Optional[str]
     preferred: Optional[bool]
     username: Optional[str]
+
+    @classmethod
+    def fromOpenNameEntry(cls, name: op.NameEntry) -> "NameEntry":
+        return cls(
+            first=name.first, middle=name.middle, last=name.last, preferred=name.preferred, username=name.username
+        )
 
 
 class NameEntrySchema(Schema):

@@ -1,3 +1,9 @@
+### A Zipper is a list-like data structure which has a current location, or 'focus'
+### It supports movement to the next/previous item
+### The helper class HasFocus is used as a marker trait, when converting the Zipper to a List,
+###     pairing each value with a flag indicating whether it is the focused element
+
+
 from dataclasses import dataclass
 from typing import Callable, Generic, List, Optional, TypeVar
 
@@ -26,7 +32,6 @@ class Zipper(Generic[T]):
         post = [HasFocus(val=t, has_focus=False) for t in self.post]
         f = HasFocus(val=self.focus, has_focus=True)
         return [*pre, f, *post]
-
 
     def forward(self, n: int = 1) -> "Optional[Zipper[T]]":
         if n == 0:

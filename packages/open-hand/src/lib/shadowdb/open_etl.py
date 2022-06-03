@@ -19,9 +19,15 @@ from lib.open_exchange.open_fetch import (
     fetch_profiles,
 )
 
-from lib.open_exchange.profile_schemas import Profile
+from lib.open_exchange.profile_schemas import NameEntry, Profile
 
 from .shadowdb import getShadowDB
+# from .shadowdb_schemas import (
+#     Profile as ShadowProfile,
+#     ProfileContent as ShadowProfileContent,
+#     NameEntry as ShadowNameEntry
+# )
+from . import shadowdb_schemas as sdb
 from .data import mention_records_from_note
 
 
@@ -47,6 +53,10 @@ def populate_shadowdb_from_notes(slice: Optional[Slice]):
 
     print(f"Skipped {skipped} records")
 
+def show_unpopulated_profiles():
+    print("Unpopulated Profiles:")
+    queryAPI = getShadowDB()
+    queryAPI.find_usernames_without_profiles()
 
 def populate_shadowdb_from_profiles(slice: Optional[Slice]):
     print(f"Populating shadow DB; range = {slice}")
@@ -54,7 +64,22 @@ def populate_shadowdb_from_profiles(slice: Optional[Slice]):
         shadow_profile(profile, level=0)
 
 
-def shadow_profile(profile: Profile, *, alias: Optional[str] = None, level: int):
+def shadow_profile(profile: Profile, level: int):
+    queryAPI = getShadowDB()
+    putstr(f"+ Profile {profile.id}", level)
+
+    nameentries = [sdb.NameEntry.fromOpenNameEntry(name) for name in profile.content.names]
+    shadow_profile = sdb.Profile(id=profile.id, content=sdb.ProfileContent(names=nameentries))
+    queryAPI.insert_profile(shadow_profile)
+
+    usernames = [name.username for name in profile.content.names if name.username is not None]
+    usernames.append(profile.id)
+    usernames = ListOps.uniq(usernames)
+    putstr(f"  usernames = {', '.join(usernames)}", level)
+
+    queryAPI.create_equivalence(usernames)
+
+def shadow_profile_greedy(profile: Profile, *, alias: Optional[str] = None, level: int):
     queryAPI = getShadowDB()
     if alias is None:
         putstr(f"+ Profile {profile.id}", level)
@@ -96,6 +121,36 @@ def shadow_note(note: Note, *, level: int):
     queryAPI.insert_papers(mentions.get_papers())
     queryAPI.insert_signatures(mentions.get_signatures())
 
+    for paperRec in mentions.get_papers():
+        for author in paperRec.authors:
+            putstr(f"  - {author.author_name}; {author.id}", level)
+            if author.id is None:
+                continue
+
+            is_valid_id = is_tildeid(author.id) or is_valid_email(author.id)
+
+            if not is_valid_id:
+                putstr(f"no profile for author {author.author_name}, id={author.id}", level)
+                continue
+
+            ## Insert singleton equivalence, to be joined later
+            queryAPI.create_equivalence([author.id])
+
+def shadow_note_and_alias(note: Note, *, level: int):
+    """Shadow an openreview note as a PaperRec"""
+
+    queryAPI = getShadowDB()
+    putstr(f"+ Note: {note.id}, authors: {note.content.authors}", level)
+
+    if len(note.content.authors) == 0:
+        putstr(f"+ Skipping {note.id}, no authors found", level)
+        return
+
+    mentions = mention_records_from_note(note)
+
+    queryAPI.insert_papers(mentions.get_papers())
+    queryAPI.insert_signatures(mentions.get_signatures())
+
     ## Traverse the authorIDs in the note to profile.
     ## May be tilde-id, email, or search string
     ## e.g., ~Auth_Name1, name@place.com, http://search-string..
@@ -119,8 +174,7 @@ def shadow_note(note: Note, *, level: int):
                 putstr(f"no profile found for author {author.author_name}, {author.id}", level)
                 continue
 
-            shadow_profile(profile, alias=author.id, level=level + 1)
-
+            shadow_profile_greedy(profile, alias=author.id, level=level + 1)
 
 def shadow_paper_by_id(id: str):
     """Shadow an openreview note as a PaperRec"""

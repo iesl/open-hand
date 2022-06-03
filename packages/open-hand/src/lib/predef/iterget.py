@@ -12,6 +12,9 @@ class IterGet(Generic[T]):
 
     Getter[T] is assumed to take as params a Dict, containing
     'offset' and 'limit' keys to control batch fetching
+
+    This class is tailor made to integrate with the syntax of the REST API
+    used in OpenReview for getting Notes/Profiles/etc.
     """
 
     get_function: Getter[T]

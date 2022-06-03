@@ -7,12 +7,13 @@ from pprint import pprint
 from marshmallow import fields
 from dataclasses import dataclass
 
-from typing import Any, List, Optional, cast
+from typing import Any, List, Optional, cast, Dict
 
 from marshmallow.decorators import post_load, pre_load
 from lib.predef.schemas import PartialSchema
 
 from lib.predef.schemas import OptBoolField, OptStringField, StrField
+from . import logger as log
 
 StartField = fields.Int(allow_none=True)
 EndField = fields.Int(allow_none=True)
@@ -28,11 +29,74 @@ def clean_start_end(data: Any):
     start = data["start"]
     end = data["end"]
 
-    if not isinstance(start, int):
+    if start is not None and not isinstance(start, int):
+        log.warn(f"expected int: start={start}; data={data}")
         data["start"] = None
 
-    if not isinstance(end, int):
+    if end is not None and not isinstance(end, int):
+        log.warn(f"expected int: end={end}; data={data}")
         data["end"] = None
+    return data
+
+
+def clean_position(data: Any):
+    if "position" in data:
+        position = data["position"]
+        if not isinstance(position, str):
+            log.warn(f"expected str: position={position}; data={data}")
+            data["position"] = str(position)
+
+    return data
+
+
+def clean_strings(data: Any, *keys: str):
+    for key in keys:
+        if key in data:
+            value = data[key]
+            if isinstance(value, str):
+                if len(value.strip()) == 0:
+                    log.warn(f"whitespace str: {key}='{value}'; data={data}")
+                    data[key] = None
+            else:
+                log.warn(f"expected str: {key}='{value}'; data={data}")
+
+    return data
+
+
+# print(f"Cleaning {key} required={value_required}")
+
+def clean_string_data(data: Dict[str, Any], **keys: bool):
+
+    def validate(key: str, val: Any) -> str:
+        if isinstance(val, str):
+            return val
+        log.warn(f"wrong type {key}='{val}'; setting to 'nil'; data={data}")
+        return 'nil'
+
+    for key in keys:
+        have_value = key in data
+        value = data[key] if have_value else None
+        value_required = keys[key]
+        # missing_required_key = not have_value and value_required
+        # if missing_required_key:
+        #     log.warn(f"missing required key '{key}'; setting to 'nil'; data={data}")
+        #     data[key] = "nil"
+        #     continue
+
+        if value_required:
+            data[key] = validate(key, value)
+            continue
+
+        have_wrong_type = have_value and not isinstance(data[key], str)
+        if have_value and isinstance(data[key], str):
+            value = data[key]
+
+            if len(value.strip()) == 0:
+                log.warn(f"whitespace-only str: {key}='{value}'; setting to None; data={data}")
+                data[key] = None
+            # else:
+            #     log.warn(f"expected str: {key}='{value}'; data={data}")
+
     return data
 
 
@@ -67,6 +131,11 @@ class InstitutionRecSchema(PartialSchema):
     domain = OptStringField
     name = StrField
 
+    @pre_load
+    def clean(self, data: Any, many: Any, **kwargs):
+        clean_strings(data, "name", "domain")
+        return data
+
     @post_load
     def make(self, data: Any, **kwarg) -> InstitutionRec:
         return InstitutionRec(**data)
@@ -88,6 +157,7 @@ class InstitutionTimelineSchema(PartialSchema):
 
     @pre_load
     def clean(self, data: Any, many: Any, **kwargs):
+        clean_position(data)
         return clean_start_end(data)
 
     @post_load
@@ -117,12 +187,19 @@ class NameEntrySchema(PartialSchema):
             data["preferred"] = False
         if "username" not in data:
             data["username"] = None
+        else:
+            username = data["username"]
+            is_str = isinstance(username, str)
+            is_emptystr = is_str and len(username.strip()) == 0
 
-        username = data["username"]
-        is_valid_username = isinstance(username, str) and len(username) > 0
+            if not is_str:
+                log.warn(f"username is not a str('{username}');  data={data}")
 
-        if not is_valid_username:
-            data["username"] = None
+            if is_emptystr:
+                log.warn(f"username is an empty str; data={data}")
+
+            if is_emptystr:
+                data["username"] = None
 
         return data
 

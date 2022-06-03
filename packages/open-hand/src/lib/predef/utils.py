@@ -1,6 +1,5 @@
 from typing import Generator
 
-
 def nextnums(init: int = 0) -> Generator[int, None, None]:
     i = init
     while 1:
@@ -9,7 +8,6 @@ def nextnums(init: int = 0) -> Generator[int, None, None]:
 
 
 from email_validator import validate_email, EmailNotValidError  # type: ignore
-
 
 def is_valid_email(s: str) -> bool:
     try:

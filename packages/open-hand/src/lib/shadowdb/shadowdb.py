@@ -3,6 +3,8 @@ from typing import Any, Dict, List, Optional, Set, cast, Tuple
 
 import pymongo
 
+from lib.predef.typedefs import OpenID
+
 from .data import ClusteringRecord, MentionRecords, papers2dict, signatures2dict
 
 from .mongoconn import MongoDB
@@ -19,6 +21,8 @@ from .shadowdb_schemas import (
     Equivalence,
     EquivalenceSchema,
 )
+
+from lib.predef.log import logger as log
 
 signature_schema = SignatureRecSchema()
 cluster_schema = ClusterSchema()
@@ -97,6 +101,11 @@ class ShadowDB:
         self.clusters.insert_one(enc)
 
     def insert_profile(self, profile: Profile):
+        existing = [p['id'] for p in self.profiles.find({"id": profile.id})]
+        if len(existing) > 0:
+            log.info(f"insert_profile({profile.id}); skip existing")
+            return
+
         enc: Any = profile_schema.dump(profile)
         self.profiles.insert_one(enc)
 
@@ -149,6 +158,34 @@ class ShadowDB:
         max = min_max_note_num(field="note_number", order=pymongo.DESCENDING)
 
         return (min, max)
+
+    def find_usernames_without_profiles(self) -> List[OpenID]:
+        cursor = self.equivalence.aggregate(
+            [
+                {"$match": {"ids": {"$size": 1}}},
+                {"$set": {"id": {"$arrayElemAt": ["$ids", 0]}}},
+                {
+                    "$lookup": {
+                        "from": "profiles",
+                        "localField": "id",
+                        "foreignField": "id",
+                        "as": "profiles",
+                    }
+                },
+            ]
+        )
+
+        final_values = [(item["id"], item["profiles"]) for item in cursor]
+        unmatched = [id for id, ps in final_values if len(ps) == 0]
+        matched = [id for id, ps in final_values if len(ps) > 0]
+
+        print(f"{len(matched)} recorded Usernames have associated Profiles")
+        pprint.pprint(matched[0:5])
+
+        print(f"{len(unmatched)} recorded Usernames have *NO* associated Profiles")
+        pprint.pprint(unmatched[0:5])
+
+        return []
 
     def get_canopied_signatures(self, canopystr: str) -> List[SignatureRec]:
         coll = self.signatures.aggregate(
