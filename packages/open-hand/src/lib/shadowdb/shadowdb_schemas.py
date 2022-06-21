@@ -67,7 +67,7 @@ class AuthorInfoBlock:
     last: Optional[str]
     middle: Optional[str]
     openId: Optional[str]
-    position: int
+    position: int # author num, zero-indexed
     suffix: Optional[str]
 
 
@@ -94,15 +94,11 @@ class AuthorInfoBlockSchema(Schema):
 
 @dataclass
 class SignatureRec:
-    author_id: str
-    paper_id: str
-    signature_id: str
+    author_id: str  # = openreview userId/openId (e.g., ~A_Person1, email, etc.)
+    paper_id: str  # = openreview.noteId
+    signature_id: str  # = "{paper_id}_{authindex}"
     author_info: AuthorInfoBlock
     cluster_id: Optional[str]
-
-    @property
-    def foo(self):
-        pass
 
 
 class SignatureRecSchema(Schema):

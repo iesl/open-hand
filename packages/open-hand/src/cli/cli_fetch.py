@@ -28,6 +28,7 @@ def fetch():
 @fetch.command("author")
 @click.argument("authorid", type=str)
 def author(authorid: str):
+    """Fetch and display author profile info and papers"""
 
     notes = list(fetch_notes_for_author(authorid))
     print(f"{authorid} note count: {len(notes)}")
@@ -58,21 +59,26 @@ def author(authorid: str):
 @fetch.command()
 @click.option("--slice", type=(int, int), callback=validate_slice)
 def profiles(slice: Slice):
+    """Fetch and display a list of user profiles from OpenReview"""
     profiles = fetch_profiles(slice=slice)
     for p in profiles:
         names = p.content.names
         print(f"Profile: {names}")
 
+
 @fetch.command()
 @click.argument("id", type=str)
 def profile(id: str):
+    """Fetch (by id) and display a user profile from OpenReview"""
     profile = fetch_profile(id)
     pprint(asdict(profile))
+
 
 @fetch.command()
 @click.option("--brief", is_flag=True)
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)
 def notes(brief: bool, slice: Optional[Slice]):
+    """Fetch and display a list of notes from OpenReview"""
     if slice:
         print(f"Fetching Notes {slice}")
     else:
@@ -89,5 +95,6 @@ def notes(brief: bool, slice: Optional[Slice]):
 @fetch.command()
 @click.argument("id", type=str)
 def note(id: str):
+    """Fetch (by id) and display a note from OpenReview"""
     note = fetch_note(id)
     pprint(asdict(note))

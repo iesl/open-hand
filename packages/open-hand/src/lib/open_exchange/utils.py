@@ -1,7 +1,8 @@
 import re
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Union
 from bibtexparser.bibdatabase import BibDatabase
 from typing import Any, List, Optional, Dict
+
 from . import logger as log
 
 TILDE_ID_RE = re.compile("^~.+\\d$")
@@ -44,36 +45,78 @@ def list_entry(key: str, content: Any, bibdb: Optional[BibDatabase] = None) -> L
     return req_entry(key, content, bibdb)
 
 
-def clean_string_data(data: Dict[str, Any], **keys: bool):
+def clean_string_data(data: Dict[str, Any], **keyspec: bool):
+    def warn(key: str, info: str):
+        m = f"data['{key}'] is {info}; data={data}"
+        log.warn(m)
 
-    def validate(key: str, val: Any) -> str:
-        if isinstance(val, str):
-            return val
-        log.warn(f"wrong type {key}='{val}'; setting to 'nil'; data={data}")
-        return 'nil'
+    def sub(key: str, v: Optional[str]):
+        data[key] = v
 
-    for key in keys:
-        have_value = key in data
-        value = data[key] if have_value else None
-        value_required = keys[key]
-        # missing_required_key = not have_value and value_required
-        # if missing_required_key:
-        #     log.warn(f"missing required key '{key}'; setting to 'nil'; data={data}")
-        #     data[key] = "nil"
-        #     continue
+    for key in keyspec:
+        is_present = key in data
+        is_nullable = keyspec[key]
+        value = data[key] if is_present else None
+        is_correct_type = isinstance(value, str)
+        is_empty_str = isinstance(value, str) and len(value.strip()) == 0
+        is_valid = is_present and is_correct_type and not is_empty_str
 
-        if value_required:
-            data[key] = validate(key, value)
+        if is_valid:
             continue
 
-        have_wrong_type = have_value and not isinstance(data[key], str)
-        if have_value and isinstance(data[key], str):
-            value = data[key]
+        if is_nullable:
+            sub(key, None)
+            continue
 
-            if len(value.strip()) == 0:
-                log.warn(f"whitespace-only str: {key}='{value}'; setting to None; data={data}")
-                data[key] = None
-            # else:
-            #     log.warn(f"expected str: {key}='{value}'; data={data}")
+        if not is_present:
+            warn(key, "required but missing")
+        elif not is_correct_type:
+            warn(key, "required but wrong type")
+        elif is_empty_str:
+            warn(key, "required, present, but only whitespace")
 
-    return data
+        sub(key, None)
+
+
+def to_int(value: Optional[Union[str, int]], coerceWarning: str) -> Optional[int]:
+    if value is None:
+        return None
+    if isinstance(value, int):
+        return value
+
+    try:
+        return int(value)
+    except:
+        log.warn(coerceWarning)
+        return None
+
+def clean_int_data(data: Dict[str, Any], **keyspec: bool):
+    def warn(key: str, info: str):
+        m = f"data['{key}'] is {info}; data={data}"
+        log.warn(m)
+
+    def sub(key: str, v: Optional[int]):
+        data[key] = v
+
+    for key in keyspec:
+        is_present = key in data
+        is_nullable = keyspec[key]
+        value = data[key] if is_present else None
+        as_int = to_int(value, f"Failed to coerce data['{key}']={value} to int")
+        is_correct_type = as_int is not None
+
+        if is_present and is_correct_type:
+            sub(key, as_int)
+            continue
+
+        if is_nullable:
+            sub(key, None)
+            continue
+
+        warn(key, "wrong type")
+        sub(key, None)
+
+def set_data_defaults(data: Dict[str, Any], **defaults: Any):
+    for key in defaults:
+        if key not in data:
+            data[key] = defaults[key]

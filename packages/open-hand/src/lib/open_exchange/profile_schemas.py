@@ -7,97 +7,16 @@ from pprint import pprint
 from marshmallow import fields
 from dataclasses import dataclass
 
-from typing import Any, List, Optional, cast, Dict
+from typing import Any, List, Optional, cast
 
 from marshmallow.decorators import post_load, pre_load
+from lib.open_exchange.utils import clean_int_data, clean_string_data, set_data_defaults
 from lib.predef.schemas import PartialSchema
 
 from lib.predef.schemas import OptBoolField, OptStringField, StrField
-from . import logger as log
 
 StartField = fields.Int(allow_none=True)
 EndField = fields.Int(allow_none=True)
-
-
-def clean_start_end(data: Any):
-    if "start" not in data:
-        data["start"] = None
-
-    if "end" not in data:
-        data["end"] = None
-
-    start = data["start"]
-    end = data["end"]
-
-    if start is not None and not isinstance(start, int):
-        log.warn(f"expected int: start={start}; data={data}")
-        data["start"] = None
-
-    if end is not None and not isinstance(end, int):
-        log.warn(f"expected int: end={end}; data={data}")
-        data["end"] = None
-    return data
-
-
-def clean_position(data: Any):
-    if "position" in data:
-        position = data["position"]
-        if not isinstance(position, str):
-            log.warn(f"expected str: position={position}; data={data}")
-            data["position"] = str(position)
-
-    return data
-
-
-def clean_strings(data: Any, *keys: str):
-    for key in keys:
-        if key in data:
-            value = data[key]
-            if isinstance(value, str):
-                if len(value.strip()) == 0:
-                    log.warn(f"whitespace str: {key}='{value}'; data={data}")
-                    data[key] = None
-            else:
-                log.warn(f"expected str: {key}='{value}'; data={data}")
-
-    return data
-
-
-# print(f"Cleaning {key} required={value_required}")
-
-def clean_string_data(data: Dict[str, Any], **keys: bool):
-
-    def validate(key: str, val: Any) -> str:
-        if isinstance(val, str):
-            return val
-        log.warn(f"wrong type {key}='{val}'; setting to 'nil'; data={data}")
-        return 'nil'
-
-    for key in keys:
-        have_value = key in data
-        value = data[key] if have_value else None
-        value_required = keys[key]
-        # missing_required_key = not have_value and value_required
-        # if missing_required_key:
-        #     log.warn(f"missing required key '{key}'; setting to 'nil'; data={data}")
-        #     data[key] = "nil"
-        #     continue
-
-        if value_required:
-            data[key] = validate(key, value)
-            continue
-
-        have_wrong_type = have_value and not isinstance(data[key], str)
-        if have_value and isinstance(data[key], str):
-            value = data[key]
-
-            if len(value.strip()) == 0:
-                log.warn(f"whitespace-only str: {key}='{value}'; setting to None; data={data}")
-                data[key] = None
-            # else:
-            #     log.warn(f"expected str: {key}='{value}'; data={data}")
-
-    return data
 
 
 @dataclass
@@ -114,7 +33,8 @@ class ExpertiseTimelineSchema(PartialSchema):
 
     @pre_load
     def clean(self, data: Any, **kwargs):
-        return clean_start_end(data)
+        clean_int_data(data, start=True, end=True)
+        return data
 
     @post_load
     def make(self, data: Any, **_) -> ExpertiseTimeline:
@@ -126,14 +46,13 @@ class InstitutionRec:
     domain: Optional[str]
     name: str
 
-
 class InstitutionRecSchema(PartialSchema):
     domain = OptStringField
-    name = StrField
+    name = OptStringField
 
     @pre_load
     def clean(self, data: Any, many: Any, **kwargs):
-        clean_strings(data, "name", "domain")
+        clean_string_data(data, name=True, domain=True)
         return data
 
     @post_load
@@ -157,8 +76,9 @@ class InstitutionTimelineSchema(PartialSchema):
 
     @pre_load
     def clean(self, data: Any, many: Any, **kwargs):
-        clean_position(data)
-        return clean_start_end(data)
+        clean_string_data(data, position=True)
+        clean_int_data(data, start=True, end=True)
+        return data
 
     @post_load
     def make(self, data: Any, **_) -> InstitutionTimeline:
@@ -183,24 +103,8 @@ class NameEntrySchema(PartialSchema):
 
     @pre_load
     def clean(self, data: Any, **kwargs):
-        if "preferred" not in data:
-            data["preferred"] = False
-        if "username" not in data:
-            data["username"] = None
-        else:
-            username = data["username"]
-            is_str = isinstance(username, str)
-            is_emptystr = is_str and len(username.strip()) == 0
-
-            if not is_str:
-                log.warn(f"username is not a str('{username}');  data={data}")
-
-            if is_emptystr:
-                log.warn(f"username is an empty str; data={data}")
-
-            if is_emptystr:
-                data["username"] = None
-
+        clean_string_data(data, username=True)
+        set_data_defaults(data, preferred=False)
         return data
 
     @post_load
@@ -226,7 +130,8 @@ class PersonalRelationSchema(PartialSchema):
 
     @pre_load
     def clean(self, data: Any, many: Any, **kwargs):
-        return clean_start_end(data)
+        clean_int_data(data, start=True, end=True)
+        return data
 
     @post_load
     def make(self, data: Any, **kwargs) -> PersonalRelation:
@@ -267,13 +172,7 @@ class ProfileContentSchema(PartialSchema):
 
     @pre_load
     def clean_expertise(self, data: Any, many: Any, **kwargs):
-        if "expertise" not in data:
-            data["expertise"] = []
-        if "history" not in data:
-            data["history"] = []
-        if "preferredEmail" not in data:
-            data["preferredEmail"] = None
-
+        set_data_defaults(data, expertise=[], history=[], preferredEmail=None)
         return data
 
     @post_load

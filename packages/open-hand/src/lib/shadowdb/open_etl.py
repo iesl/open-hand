@@ -19,14 +19,9 @@ from lib.open_exchange.open_fetch import (
     fetch_profiles,
 )
 
-from lib.open_exchange.profile_schemas import NameEntry, Profile
+from lib.open_exchange.profile_schemas import Profile
 
 from .shadowdb import getShadowDB
-# from .shadowdb_schemas import (
-#     Profile as ShadowProfile,
-#     ProfileContent as ShadowProfileContent,
-#     NameEntry as ShadowNameEntry
-# )
 from . import shadowdb_schemas as sdb
 from .data import mention_records_from_note
 
@@ -53,10 +48,12 @@ def populate_shadowdb_from_notes(slice: Optional[Slice]):
 
     print(f"Skipped {skipped} records")
 
+
 def show_unpopulated_profiles():
     print("Unpopulated Profiles:")
     queryAPI = getShadowDB()
     queryAPI.find_usernames_without_profiles()
+
 
 def populate_shadowdb_from_profiles(slice: Optional[Slice]):
     print(f"Populating shadow DB; range = {slice}")
@@ -78,6 +75,7 @@ def shadow_profile(profile: Profile, level: int):
     putstr(f"  usernames = {', '.join(usernames)}", level)
 
     queryAPI.create_equivalence(usernames)
+
 
 def shadow_profile_greedy(profile: Profile, *, alias: Optional[str] = None, level: int):
     queryAPI = getShadowDB()
@@ -136,6 +134,7 @@ def shadow_note(note: Note, *, level: int):
             ## Insert singleton equivalence, to be joined later
             queryAPI.create_equivalence([author.id])
 
+
 def shadow_note_and_alias(note: Note, *, level: int):
     """Shadow an openreview note as a PaperRec"""
 
@@ -175,6 +174,7 @@ def shadow_note_and_alias(note: Note, *, level: int):
                 continue
 
             shadow_profile_greedy(profile, alias=author.id, level=level + 1)
+
 
 def shadow_paper_by_id(id: str):
     """Shadow an openreview note as a PaperRec"""

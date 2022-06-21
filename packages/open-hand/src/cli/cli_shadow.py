@@ -37,19 +37,20 @@ def shadowdb_profile(id: str):
 @shadow.command("notes")
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)
 def shadowdb_populate_notes(slice: Optional[Slice]):
-    """Create the local shadow DB"""
+    """Fetch notes and populate shadow DB"""
     populate_shadowdb_from_notes(slice)
 
 
 @shadow.command("profiles")
 @click.option("--slice", type=(int, int), default=None, callback=validate_slice)
 def shadowdb_populate_profiles(slice: Optional[Slice]):
-    """Create the local shadow DB"""
+    """Fetch profiles and populate shadow DB"""
     populate_shadowdb_from_profiles(slice)
+
 
 @shadow.command("missing")
 def shadowdb_username_without_profiles():
-    """Create the local shadow DB"""
+    """Report which usernames have no associated profiles"""
     show_unpopulated_profiles()
 
 

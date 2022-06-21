@@ -101,7 +101,7 @@ class ShadowDB:
         self.clusters.insert_one(enc)
 
     def insert_profile(self, profile: Profile):
-        existing = [p['id'] for p in self.profiles.find({"id": profile.id})]
+        existing = [p["id"] for p in self.profiles.find({"id": profile.id})]
         if len(existing) > 0:
             log.info(f"insert_profile({profile.id}); skip existing")
             return

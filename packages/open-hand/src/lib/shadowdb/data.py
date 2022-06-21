@@ -147,7 +147,6 @@ def mention_records_from_note(note: Note) -> MentionRecords:
         recs.papers[prec.paper_id] = prec
 
         authorRecs = prec.authors
-        # author_ids = prec.authors
 
         paper_id = prec.paper_id
 
