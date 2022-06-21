@@ -67,7 +67,7 @@ class AuthorInfoBlock:
     last: Optional[str]
     middle: Optional[str]
     openId: Optional[str]
-    position: int # author num, zero-indexed
+    position: int  # author num, zero-indexed
     suffix: Optional[str]
 
 

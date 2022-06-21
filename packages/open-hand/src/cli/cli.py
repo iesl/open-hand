@@ -14,5 +14,6 @@ cli_shadow  # suppress warnings
 def go():
     cli(obj={})
 
+
 if __name__ == "__main__":
     go()

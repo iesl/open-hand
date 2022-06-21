@@ -46,6 +46,7 @@ class InstitutionRec:
     domain: Optional[str]
     name: str
 
+
 class InstitutionRecSchema(PartialSchema):
     domain = OptStringField
     name = OptStringField

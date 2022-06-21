@@ -55,10 +55,12 @@ def assert_never(x: Any) -> NoReturn:
 
 U = TypeVar("U")
 
+
 class Fold(Generic[T, U]):
     onLeft: Callable[[T], U]
     onRight: Callable[[T], U]
     onBoth: Callable[[T], U]
+
     def __init__(self, onLeft: Callable[[T], U], onRight: Callable[[T], U], onBoth: Callable[[T], U]):
         self.onLeft = onLeft
         self.onRight = onRight
@@ -74,6 +76,7 @@ class Fold(Generic[T, U]):
         else:
             assert_never(oob)
 
+
 def separateOOBs(oobs: List[OneOrBoth[T]]) -> Tuple[Left[List[T]], Right[List[T]], Both[List[T]]]:
     ls: List[T] = []
     rs: List[T] = []
@@ -87,6 +90,7 @@ def separateOOBs(oobs: List[OneOrBoth[T]]) -> Tuple[Left[List[T]], Right[List[T]
         fold(oob)
 
     return (Left(ls), Right(rs), Both(bs))
+
 
 if __name__ == "__main__":
 

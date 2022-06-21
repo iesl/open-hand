@@ -3,6 +3,7 @@ from typing import Generic, List, Optional, Tuple, TypeVar
 
 T = TypeVar("T")
 
+
 @dataclass
 class ListOps(Generic[T]):
     @staticmethod

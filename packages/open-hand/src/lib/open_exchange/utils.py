@@ -7,6 +7,7 @@ from . import logger as log
 
 TILDE_ID_RE = re.compile("^~.+\\d$")
 
+
 def is_tildeid(id: str) -> bool:
     return TILDE_ID_RE.match(id) is not None
 
@@ -90,6 +91,7 @@ def to_int(value: Optional[Union[str, int]], coerceWarning: str) -> Optional[int
         log.warn(coerceWarning)
         return None
 
+
 def clean_int_data(data: Dict[str, Any], **keyspec: bool):
     def warn(key: str, info: str):
         m = f"data['{key}'] is {info}; data={data}"
@@ -115,6 +117,7 @@ def clean_int_data(data: Dict[str, Any], **keyspec: bool):
 
         warn(key, "wrong type")
         sub(key, None)
+
 
 def set_data_defaults(data: Dict[str, Any], **defaults: Any):
     for key in defaults:

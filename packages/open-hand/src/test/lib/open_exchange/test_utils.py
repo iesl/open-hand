@@ -1,11 +1,11 @@
-
 from lib.open_exchange.utils import clean_string_data
+
 
 def test_clean_string_data():
     input = dict(
-        req_okay='okay',
+        req_okay="okay",
         req_bad=21,
-        opt_okay='okay',
+        opt_okay="okay",
         opt_bad=42,
     )
 
