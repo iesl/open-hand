@@ -3,90 +3,30 @@
 # m4_ignore(
 echo "This is just a script template, not the script (yet) - pass it to 'argbash' to fix this." >&2
 exit 11  #)Created by argbash-init v2.10.0
-# DEFINE_SCRIPT_DIR()
-# ARG_OPTIONAL_BOOLEAN([rebuild-script])
-# ARG_OPTIONAL_BOOLEAN([info])
-# ARG_OPTIONAL_BOOLEAN([make])
-# ARG_OPTIONAL_BOOLEAN([download])
-# ARG_OPTIONAL_BOOLEAN([install])
-# ARG_OPTIONAL_BOOLEAN([install-env])
-# ARG_OPTIONAL_BOOLEAN([dry-run])
-# ARG_HELP([<The general help message of my script>])
-# ARGBASH_GO
+# DEFINE_SCRIPT_DIR([_script_dir])
+#
+# ARG_OPTIONAL_BOOLEAN([dry-run], [], [Display Commands])
+#
+# ARG_OPTIONAL_ACTION([info],[],[Show python install info],[show_paths])
+# ARG_OPTIONAL_ACTION([make],[],[Configure/Make python],[make_pytho])
+# ARG_OPTIONAL_ACTION([download],[],[Download/Unpack Python *.tgz],[download_python])
+# ARG_OPTIONAL_ACTION([install-python],[],[Install python to .local/python/],[install_python])
+# ARG_OPTIONAL_ACTION([install-env],[],[Install env to .local/envs/],[install_env])
+# ARG_OPTIONAL_ACTION([all],[],[Download/Make/Install/Setup Everything],[run_all])
+#
+# ARG_HELP([<Python/virtual env download/make/install>])
+#
+# ARGBASH_PREPARE()
 
 # [ <-- needed because of Argbash
 
 # shellcheck disable=2154
+readonly script_dir="$_script_dir"
+
+source "$script_dir/_utils.sh"
+
+# shellcheck disable=2154
 source "$script_dir/paths.sh"
-
-# shellcheck disable=2154
-info=$_arg_info
-
-# shellcheck disable=2154
-rebuild_script=$_arg_rebuild_script
-
-# shellcheck disable=2154
-dryrun=$_arg_dry_run
-
-# shellcheck disable=2154
-download=$_arg_download
-
-# shellcheck disable=2154
-arg_make=$_arg_make
-
-# shellcheck disable=2154
-install=$_arg_install
-
-# shellcheck disable=2154
-install_env=$_arg_install_env
-
-
-doit() {
-    local cmds=("$@")
-    if [ "$dryrun" = on ]; then
-        echo "dry> ${cmds[*]}"
-    else
-        echo "run> ${cmds[*]}"
-        "${cmds[@]}"
-    fi
-
-    echo ""
-}
-
-with_dirs() {
-    local dirnames=("$@")
-    for d in "${dirnames[@]}"; do
-        if [ ! -d "$d" ]; then
-            echo "could not cd to '$d' in ${dirnames[*]}"
-            exit 1
-        fi
-        cd "$d" || exit 1
-    done
-    echo "In dir: $(pwd)"
-}
-
-do_rebuild_script() {
-    echo "Rebuilding script.."
-    with_dirs "$script_dir"
-    argbash py-install.m4 -o py-install
-    exit 0
-}
-
-download_python() {
-    echo "Download Python $PYVER"
-    with_dirs "$INSTALL_TMPD"
-    if [ ! -f "$PYTGZ" ]; then
-        echo "No $PYTGZ found, downloading"
-        doit wget "$PYSRC_URL"
-    fi
-    if [ ! -f "$PYTGZ" ]; then
-        echo "Could not download Python from $PYSRC_URL"
-        exit 1
-    fi
-    if [ -f "$PYTGZ" ]; then
-        echo "$PYTGZ downloaded"
-    fi
-}
 
 unpack_python() {
     echo "Unpacking Python $PYVER"
@@ -104,6 +44,23 @@ unpack_python() {
     else
         echo "Unpacked Python $PYSRC"
     fi
+}
+
+download_python() {
+    echo "Download Python $PYVER"
+    with_dirs "$INSTALL_TMPD"
+    if [ ! -f "$PYTGZ" ]; then
+        echo "No $PYTGZ found, downloading"
+        doit wget "$PYSRC_URL"
+    fi
+    if [ ! -f "$PYTGZ" ]; then
+        echo "Could not download Python from $PYSRC_URL"
+        exit 1
+    fi
+    if [ -f "$PYTGZ" ]; then
+        echo "$PYTGZ downloaded"
+    fi
+    unpack_python
 }
 
 make_python() {
@@ -135,29 +92,20 @@ install_env() {
     doit "$PYTHOND/bin/virtualenv" "$ENV_ROOT"
 }
 
-test "$info" = on && show_paths && exit 0
-test "$rebuild_script" = on && do_rebuild_script && exit 0
-
-if [ "$download" = on ]; then
-    echo "Downloading Python"
+run_all() {
+    echo "Running Everything"
     download_python
-    unpack_python
-fi
-
-if [ "$arg_make" = on ]; then
-    echo "Making Python"
     make_python
-fi
-
-if [ "$install" = on ]; then
-    echo "Installing Python"
     install_python
-fi
-
-if [ "$install_env" = on ]; then
-    echo "(Re)installing Env"
     install_env
-fi
+}
 
+#########################
+## Run Main
+#########################
+parse_commandline "$@"
+
+## Print help if no other action has been taken
+_PRINT_HELP=yes die "" 1
 
 # ] <-- needed because of Argbash

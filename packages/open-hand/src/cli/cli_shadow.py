@@ -14,7 +14,6 @@ from .utils import validate_slice
 from lib.shadowdb.shadowdb import getShadowDB
 from .cli_base import cli
 
-
 @cli.group()
 def shadow():
     """Create/update local shadow DB of OpenReview papers/authors"""

@@ -3,21 +3,22 @@ celery==5.2.7
 Flask==2.1.2
 Flask-Assets==2.0
 libsass==0.21.0
-marshmallow==3.16.0
+marshmallow==3.17.0
 ipython==8.4.0
 gunicorn==20.1.0
 disjoint-set==0.7.3
-bibtexparser==1.2.0
+bibtexparser==1.3.0
 email-validator==1.2.1
+rich==12.5.1
 
 celery[redis]
 
 ## Dependecy version inspections utils:
-johnnydep==1.13
+johnnydep==1.14
 luddite==1.0.2
 pydeps==1.10.18
 
-black==22.3.0
+black==22.6.0
 pytest==7.1.2
 pytest-cov==3.0.0
-pyright==1.1.251
+pyright==1.1.258
