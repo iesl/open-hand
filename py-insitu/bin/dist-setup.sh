@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-## TODO this is part of parent project
-# echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list
-# sudo apt install mongodb-org
-
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get dist-upgrade
