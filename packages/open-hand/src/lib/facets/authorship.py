@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Set
 
 from itertools import groupby
@@ -25,13 +24,13 @@ from lib.shadowdb.data import (
 
 
 def get_predicted_clustering(init: MentionRecords) -> MentionClustering:
-    def by_cluster(s: SignatureRec):
+    def sortkey_by_cluster(s: SignatureRec):
         return s.cluster_id if s.cluster_id is not None else "<unclustered>"
 
     paperlist = init.get_papers()
     print(f"get_predicted_clustering count={len(paperlist)}")
 
-    grouped = groupby(init.get_signatures(), by_cluster)
+    grouped = groupby(init.get_signatures(), sortkey_by_cluster)
 
     cluster_groups: Dict[str, List[SignatureRec]] = dict([(id, list(grp)) for id, grp in grouped])
 
@@ -194,28 +193,67 @@ def render_signed_paper(pwpa: SignedPaper, n: int):
     click.echo(f"      {auths}")
 
 
-@dataclass
-class DisplayableClustering:
-    predicted_clustering: MentionClustering
-    ground_clustering: MentionClustering
 
-    # def get_cluster_ids(self) -> List[ClusterID]:
-    #     return self.clustering.cluster_ids()
+def createDisplayableClustering(mentions: MentionRecords):
+    clustering: MentionClustering = get_predicted_clustering(mentions)
 
-    # def get_canonical_author_id(self, cluster_id: ClusterID):
-    #     pass
+    profile_store = ProfileStore()
 
-    # def get_author_id_variants(self, author_id: TildeID):
-    #     pass
+    for cluster_id in clustering.cluster_ids():
+        cluster = clustering.cluster(cluster_id)
 
-    # def get_name_variants(self, author_id: TildeID):
-    #     pass
+        primary_ids = get_focused_openids(profile_store, cluster)
+        canonical_ids = profile_store.canonicalize_ids(list(primary_ids))
+        idstr = ", ".join(canonical_ids)
+        other_ids = primary_ids.difference(canonical_ids)
+        other_idstr = ", ".join(other_ids)
 
+        names = list(get_primary_name_variants(cluster))
 
-@dataclass
-class ClusteredSignatures:
-    clusterId: ClusterID
-    signatureIds: List[SignatureID]
+        name1 = names[0]
+        namestr = ", ".join(names[1:])
+
+        click.echo(f"Cluster for {name1}")
+        if len(names) > 1:
+            click.echo(f"  aka {namestr}")
+
+        if len(canonical_ids) == 0:
+            click.echo(f"  No Valid User ID")
+        elif len(canonical_ids) == 1:
+            if len(other_ids) == 0:
+                click.echo(f"  id: {idstr}")
+            else:
+                click.echo(f"  id: {idstr} alts: {other_idstr}")
+
+        alignments = align_cluster(profile_store, cluster)
+        displayed_sigs: Set[SignatureID] = set()
+        ubermentions = profile_store.allMentions
+
+        pnum = nextnums()
+        for _, aligned in alignments.items():
+            ls, rs, bs = separateOOBs(aligned.values)
+
+            print("Papers Only In Predicted Cluster")
+            for sig_id in ls.value:
+                render_signature(sig_id, next(pnum), ubermentions)
+                displayed_sigs.add(sig_id)
+
+            print("Papers in Both Profile and Cluster")
+            for sig_id in bs.value:
+                render_signature(sig_id, next(pnum), ubermentions)
+                displayed_sigs.add(sig_id)
+
+            print("Papers Only In Profile")
+            for sig_id in rs.value:
+                render_signature(sig_id, next(pnum), ubermentions)
+                displayed_sigs.add(sig_id)
+
+        print("Unaligned Papers")
+        for pws in cluster:
+            if pws.primary_signature().signature_id not in displayed_sigs:
+                render_signed_paper(pws, next(pnum))
+
+        click.echo("\n")
 
 
 def displayMentionsInClusters(mentions: MentionRecords):

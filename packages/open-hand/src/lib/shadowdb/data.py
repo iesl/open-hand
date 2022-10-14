@@ -15,8 +15,14 @@ from lib.predef.zipper import Zipper
 from .shadowdb_schemas import AuthorRec, PaperRec, AuthorInfoBlock, SignatureRec
 
 
+## TODO this should probably go in the shadow db section, as it represents the stored tuples,
+## not the hydrated versions of the data
 @dataclass
 class MentionRecords:
+    """ Record of all clusterable mentions
+    Mentions in this case are Signatures, which
+    represent a particular author for a given paper
+    """
     papers: Dict[str, PaperRec]
     signatures: Dict[str, SignatureRec]
 
@@ -47,7 +53,8 @@ class ClusteringRecord:
 
 @dataclass
 class SignedPaper:
-    """A paper with a primary author of interest"""
+    """A paper with a primary author of interest
+    """
 
     paper: PaperRec
     signatures: Zipper[SignatureRec]
@@ -85,6 +92,24 @@ class MentionClustering:
 
     def cluster(self, id: ClusterID) -> List[SignedPaper]:
         return self.clustering[id]
+
+@dataclass
+class DisplayableClustering:
+    predicted_clustering: MentionClustering
+    ground_clustering: MentionClustering
+
+    # def get_cluster_ids(self) -> List[ClusterID]:
+    #     return self.clustering.cluster_ids()
+
+    # def get_canonical_author_id(self, cluster_id: ClusterID):
+    #     pass
+
+    # def get_author_id_variants(self, author_id: TildeID):
+    #     pass
+
+    # def get_name_variants(self, author_id: TildeID):
+    #     pass
+
 
 
 def papers2dict(ps: List[PaperRec]) -> Dict[str, PaperRec]:
@@ -178,6 +203,7 @@ def mention_records_from_note(note: Note) -> MentionRecords:
                 email=None,
                 fullname=authorRec.author_name,
             )
+            ## TODO double check author_id
             sigRec = SignatureRec(
                 paper_id=paper_id, author_id=signature_id, signature_id=signature_id, author_info=aib, cluster_id=None
             )

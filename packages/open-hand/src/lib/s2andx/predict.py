@@ -29,6 +29,8 @@ def init_canopy_data(mentions: MentionRecords, pre: DataPreloads):
         block_type="s2",  # or 'original', refers to canopy method 's2' => author_info.block is canopy
         name_tuples=name_tuples,
         load_name_counts=name_counts,
+        n_jobs=1,
+        fasttext_model=pre.fasttext_model
     )
     return anddata
 
@@ -61,6 +63,7 @@ def dopredict(
     andData = init_canopy_data(mentions, pre)
 
     if model is None:
+        logger.info(f"model is none")
         model = load_model()
 
     (clustered_signatures, _) = model.predict(andData.get_blocks(), andData)  # type: ignore
@@ -77,7 +80,7 @@ def dopredict(
         cluster_records.append(rec)
 
     if commit:
-        logger.info(f"Committing {len(cluster_records)} clusters for {canopy}")
+        logger.info(f"Committing {len(cluster_records)} clusters for canopy '{canopy}'")
         commit_clusters(cluster_records)
 
     if profile:

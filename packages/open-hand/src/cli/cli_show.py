@@ -35,21 +35,6 @@ def canopy_show(canopy: str):
     c = getShadowDB().get_canopy(canopy)
     displayMentionsInClusters(c)
 
-
-@show.command("cluster")
-@click.argument("cluster_name", type=str)
-def cluster_show(cluster_name: str):
-    """Show the results of cluster prediction"""
-
-    cluster = getShadowDB().get_cluster(cluster_name)
-
-    for item in cluster.mentions.signatures.values():
-        pprint(item)
-
-    for item in cluster.mentions.papers.values():
-        pprint(item)
-
-
 @show.command("canopies")
 @click.argument("index", type=int)
 def canopy_list(index: int):

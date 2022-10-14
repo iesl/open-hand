@@ -66,12 +66,12 @@ def show_canopies(page: Optional[int] = None):
 
 @bp.route("/canopy/<string:id>")
 def show_canopy(id: str):
-    # mentions = getShadowDB().get_canopy(id)
+    mentions = getShadowDB().get_canopy(id)
     # _, cluster_dict = mentions_to_displayables(mentions)
     # cluster_ids = list(cluster_dict)
 
-    # return render_template("canopy.html", canopy=id, cluster_ids=cluster_ids, cluster_dict=cluster_dict)
-    return render_template("canopy.html")
+    return render_template("canopy.html", canopy=id, cluster_ids=cluster_ids, cluster_dict=cluster_dict)
+    # return render_template("canopy.html")
 
 
 @bp.route("/clusters")

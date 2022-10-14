@@ -17,7 +17,7 @@ fi
 cd "$S2AND_ROOT" || exit
 
 echo "In dir $(pwd)"
-pip3 --require-virtualenv install -r requirements.in
+# pip3 --require-virtualenv install -r requirements.in
 pip3 --require-virtualenv install -e .
 
 cd "$PROJECT_ROOT" || exit
