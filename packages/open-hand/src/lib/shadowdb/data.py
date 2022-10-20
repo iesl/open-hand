@@ -19,10 +19,11 @@ from .shadowdb_schemas import AuthorRec, PaperRec, AuthorInfoBlock, SignatureRec
 ## not the hydrated versions of the data
 @dataclass
 class MentionRecords:
-    """ Record of all clusterable mentions
+    """Record of all clusterable mentions
     Mentions in this case are Signatures, which
     represent a particular author for a given paper
     """
+
     papers: Dict[str, PaperRec]
     signatures: Dict[str, SignatureRec]
 
@@ -53,8 +54,7 @@ class ClusteringRecord:
 
 @dataclass
 class SignedPaper:
-    """A paper with a primary author of interest
-    """
+    """A paper with a primary author of interest"""
 
     paper: PaperRec
     signatures: Zipper[SignatureRec]
@@ -77,7 +77,7 @@ class SignedPaper:
             raise Exception("")
         zip_to_focus = sigzips.forward(focal_signature)
         if zip_to_focus is None:
-            raise Exception("")
+            raise Exception("author position is out of range")
 
         return SignedPaper(paper=paper, signatures=zip_to_focus)
 
@@ -92,6 +92,7 @@ class MentionClustering:
 
     def cluster(self, id: ClusterID) -> List[SignedPaper]:
         return self.clustering[id]
+
 
 @dataclass
 class DisplayableClustering:
@@ -109,7 +110,6 @@ class DisplayableClustering:
 
     # def get_name_variants(self, author_id: TildeID):
     #     pass
-
 
 
 def papers2dict(ps: List[PaperRec]) -> Dict[str, PaperRec]:
@@ -189,6 +189,7 @@ def mention_records_from_note(note: Note) -> MentionRecords:
 
             openId = authorRec.id
             signature_id = f"{paper_id}_{authorRec.position}"
+            author_id: str = openId or signature_id
 
             aib = AuthorInfoBlock(
                 position=position,
@@ -203,9 +204,9 @@ def mention_records_from_note(note: Note) -> MentionRecords:
                 email=None,
                 fullname=authorRec.author_name,
             )
-            ## TODO double check author_id
+
             sigRec = SignatureRec(
-                paper_id=paper_id, author_id=signature_id, signature_id=signature_id, author_info=aib, cluster_id=None
+                paper_id=paper_id, author_id=author_id, signature_id=signature_id, author_info=aib, cluster_id=None
             )
 
             recs.signatures[signature_id] = sigRec

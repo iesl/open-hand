@@ -6,7 +6,7 @@ the data
 from typing import Optional
 from lib.open_exchange.utils import is_tildeid
 from lib.predef.listops import ListOps
-from lib.predef.typedefs import Slice
+from lib.predef.typedefs import AuthorID, Slice
 
 from lib.predef.utils import is_valid_email
 
@@ -186,7 +186,7 @@ def shadow_paper_by_id(id: str):
     shadow_note(note, level=0)
 
 
-def shadow_profile_by_id(id: str):
+def shadow_profile_by_id(id: AuthorID):
     profile = fetch_profile(id)
     if profile is None:
         print(f"No Profile for id = {id}")

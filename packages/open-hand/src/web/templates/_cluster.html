@@ -1,11 +1,11 @@
-{% macro render(cluster) %}
+{% macro render(signed_papers) %}
 
-{% import '_paperrec.html' as paperrec %}
+{% import '_signed_paper.html' as SignedPaper %}
 
-{% for member in cluster %}
+{% for paper in signed_papers %}
   <div class="cluster-record">
-    {{ paperrec.paper(member) }}
-  </div>
+    {{ SignedPaper.render(paper) }}
+    </div>
 {% endfor %}
 
 {% endmacro %}

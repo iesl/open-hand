@@ -1,0 +1,36 @@
+{% macro render(catalog_group, catalog) %}
+
+{% import '_signed_paper.html' as SignedPaper %}
+{% set usernames = catalog.usernames %}
+{% set signed_papers = catalog.signed_papers %}
+{% set aggregate_authorship = catalog_group.get_aggregate_authorship(catalog) %}
+{% set primary_catalog = aggregate_authorship.primary_catalog %}
+{% set entries = aggregate_authorship.entries %}
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 0.5%"></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in entries %}
+    {% set signed_paper = entry.signed_paper %}
+    {% set secondary_catalog = entry.secondary_catalog %}
+    <tr class="cluster-record">
+      <td style="width: 0.5%">
+        {% if secondary_catalog != primary_catalog %}
+        <span>{{ secondary_catalog }}</span>
+        {% endif %}
+      </td>
+      <td>
+        {{ SignedPaper.render(signed_paper) }}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+  </tbody>
+</table>
+{% endmacro %}

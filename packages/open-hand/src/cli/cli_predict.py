@@ -1,9 +1,9 @@
 import click
 
 from lib.s2andx.loaders import preload_data
+from lib.termio.canopies import displayMentionsInClusters
 from .cli_base import cli
 
-from lib.facets.authorship import displayMentionsInClusters
 from lib.s2andx.model import load_model
 from lib.s2andx.predict import dopredict, predict_all
 

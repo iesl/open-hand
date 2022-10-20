@@ -1,15 +1,16 @@
+from dataclasses import dataclass
+
 from typing import Dict, List, Optional, Tuple, Set
 
 from itertools import groupby
-import click
+from lib.open_exchange.open_fetch import fetch_notes_for_author, fetch_profile
 
-from lib.predef.alignment import Alignment, Left, OneOrBoth, Right, Both, separateOOBs
-from lib.predef.typedefs import ClusterID, OpenID, SignatureID, TildeID
-from lib.predef.output import dim, yellowB
-from lib.predef.utils import is_valid_email, nextnums
+from lib.predef.alignment import Alignment, Left, OneOrBoth, Right, Both
+from lib.predef.listops import ListOps
+from lib.predef.typedefs import AuthorID, CatalogID, CatalogType, ClusterID, SignatureID, TildeID
+from lib.predef.utils import is_valid_email
 
 from lib.open_exchange.utils import is_tildeid
-from lib.predef.zipper import HasFocus
 
 from lib.shadowdb.shadowdb import getShadowDB
 from lib.shadowdb.profiles import ProfileStore
@@ -17,10 +18,67 @@ from lib.shadowdb.profiles import ProfileStore
 from lib.shadowdb.data import (
     MentionClustering,
     MentionRecords,
-    PaperRec,
     SignedPaper,
     SignatureRec,
+    mention_records_from_note,
 )
+
+
+@dataclass
+class CatalogEntry:
+    signed_paper: SignedPaper
+    secondary_catalog: Optional[CatalogID]
+
+
+@dataclass
+class AggregateAuthorship:
+    primary_catalog: CatalogID
+    entries: List[CatalogEntry]
+
+
+@dataclass
+class AuthorCatalog:
+    """Authorship info, including names, papers, emails
+    When built from OpenReview API, it reflects information contained
+    in the user's profile, plus all known papers by the author.
+    """
+
+    signed_papers: List[SignedPaper]
+    usernames: List[AuthorID]
+    id: CatalogID
+    type: CatalogType
+
+
+class CatalogGroup:
+    catalogs: Dict[CatalogID, AuthorCatalog]
+
+    def __init__(self, catalogs: List[AuthorCatalog]):
+        self.catalogs = dict([(c.id, c) for c in catalogs])
+
+    def get_catalogs(self, type: CatalogType) -> List[AuthorCatalog]:
+        return [cat for cat in self.catalogs.values() if cat.type == type]
+
+    def get_aggregate_authorship(self, catalog: AuthorCatalog) -> AggregateAuthorship:
+        entries: Dict[SignatureID, CatalogEntry] = {}
+        primary_catalog = catalog.id
+        for signed_paper in catalog.signed_papers:
+            other_catalog: Optional[CatalogID] = None
+            for catid, cat in self.catalogs.items():
+                if catid != catalog.id and signed_paper in cat.signed_papers:
+                    other_catalog = catid
+
+            entry = CatalogEntry(signed_paper, other_catalog)
+            entries[signed_paper.signatureId()] = entry
+
+        # Include papers from catalogs with author ids that match the initial catalog
+        for other_cat_id, other_cat in self.catalogs.items():
+            if other_cat_id != catalog.id and ListOps.has_intersection(catalog.usernames, other_cat.usernames):
+                for signed_paper in other_cat.signed_papers:
+                    if signed_paper.signatureId() not in entries:
+                        entry = CatalogEntry(signed_paper, other_cat_id)
+                        entries[signed_paper.signatureId()] = entry
+
+        return AggregateAuthorship(primary_catalog, list(entries.values()))
 
 
 def get_predicted_clustering(init: MentionRecords) -> MentionClustering:
@@ -62,6 +120,17 @@ def get_tildeid(profile_store: ProfileStore, openId: str) -> Optional[TildeID]:
     return maybeProfileId
 
 
+def get_signatory_authorids(signedPapers: List[SignedPaper]) -> Set[AuthorID]:
+    results: Set[AuthorID] = set()
+    for pws in signedPapers:
+        prime_sig = pws.primary_signature()
+        openId = prime_sig.author_info.openId
+        if openId is not None:
+            results.add(openId)
+
+    return results
+
+
 def get_focused_openids(profile_store: ProfileStore, signedPapers: List[SignedPaper]) -> Set[TildeID]:
     results: List[str] = []
     for pws in signedPapers:
@@ -73,21 +142,6 @@ def get_focused_openids(profile_store: ProfileStore, signedPapers: List[SignedPa
                 results.append(maybeTildeId)
 
     return set(results)
-
-
-def get_openid_clustering(profiles: ProfileStore, openIds: Set[OpenID]):
-    ## get the profile(s) for each openId
-
-    for openid in openIds:
-        profiles.add_profile(openid)
-
-    canonical_ids = profiles.canonicalize_ids(list(openIds))
-
-    clustering: Dict[ClusterID, List[SignedPaper]] = dict()
-    # Each openId is now a unique user
-    for openId in canonical_ids:
-        clustering[ClusterID(openId)]
-        pass
 
 
 def get_primary_name_variants(signedPapers: List[SignedPaper]) -> Set[str]:
@@ -118,12 +172,12 @@ def align_cluster(profile_store: ProfileStore, cluster: List[SignedPaper]) -> Di
 def align_cluster_to_user(
     profile_store: ProfileStore, cluster: List[SignedPaper], user_id: TildeID
 ) -> Alignment[SignatureID]:
-    papersWithPrimaryAuthor = profile_store.fetch_signatures_as_pwpa(user_id)
-    pwpas = papersWithPrimaryAuthor
+    papersWithPrimaryAuthor = profile_store.fetch_signatures_as_signed_papers(user_id)
+    signed_papers = papersWithPrimaryAuthor
 
-    print(f"Aligning {user_id} w/{len(pwpas)} papers to cluster w/{len(cluster)} papers")
+    print(f"Aligning {user_id} w/{len(signed_papers)} papers to cluster w/{len(cluster)} papers")
     aligned: List[OneOrBoth[SignatureID]] = []
-    primary_sigs: List[SignatureRec] = [p.primary_signature() for p in pwpas]
+    primary_sigs: List[SignatureRec] = [p.primary_signature() for p in signed_papers]
     primary_sigs_ids: List[SignatureID] = [s.signature_id for s in primary_sigs]
     sig_set: Set[SignatureID] = set(primary_sigs_ids)
 
@@ -142,216 +196,60 @@ def align_cluster_to_user(
     return Alignment(values=aligned)
 
 
-def format_signature(item: HasFocus[SignatureRec]) -> str:
-    sig = item.val
+def fetch_openreview_author_catalog(authorId: AuthorID) -> Optional[AuthorCatalog]:
+    open_profile = fetch_profile(authorId)
+    if open_profile is None:
+        return
+    usernames = [name.username for name in open_profile.content.names if name.username is not None]
+    usernames.append(open_profile.id)
+    usernames = ListOps.uniq(usernames)
+    notes = list(fetch_notes_for_author(open_profile.id))
+    author_mentions = MentionRecords(papers=dict(), signatures=dict())
+    for note in notes:
+        note_mention = mention_records_from_note(note)
+        author_mentions = author_mentions.merge(note_mention)
 
-    openId = sig.author_info.openId
-    ts = ""
-    if openId is not None and is_tildeid(openId):
-        ts = "~"
-    if item.has_focus:
-        return yellowB(f"{ts}{sig.author_info.fullname}")
-    return dim(f"{ts}{sig.author_info.fullname}")
+    signed_papers: List[SignedPaper] = []
+    for signature in author_mentions.get_signatures():
+        if signature.author_id in usernames:
+            sig = SignedPaper.from_signature(author_mentions, signature)
+            signed_papers.append(sig)
 
-
-def format_signature_id(item: HasFocus[SignatureRec]) -> str:
-    sig = item.val
-    openId = sig.author_info.openId
-    if openId is None:
-        openId = "undefined"
-    if openId is not None and is_tildeid(openId):
-        return yellowB(f"{openId}")
-    return dim(openId)
-
-
-def render_paper(paper: PaperRec):
-    title = click.style(paper.title, fg="blue")
-    author_names = [f"{p.author_name}" for p in paper.authors]
-    auths = ", ".join(author_names)
-    id = paper.paper_id
-    click.echo(f"{title} ({id})")
-    click.echo(f"      {auths}")
+    return AuthorCatalog(usernames=usernames, signed_papers=signed_papers, type="OpenReviewProfile", id=authorId)
 
 
-def render_papers(papers: List[PaperRec]):
-    for p in papers:
-        render_paper(p)
+def get_predicted_author_catalogs(canopystr: str) -> List[AuthorCatalog]:
+    canopyMentions = getShadowDB().get_canopy(canopystr)
+    clustering: MentionClustering = get_predicted_clustering(canopyMentions)
+    catalogs: List[AuthorCatalog] = []
+    for index, signed_papers in enumerate(clustering.clustering.values()):
+        catalog_id = f"pred#{index}"
+        uniq_author_ids = get_signatory_authorids(signed_papers)
+        catalog = AuthorCatalog(signed_papers, usernames=list(uniq_author_ids), id=catalog_id, type="Predicted")
+        catalogs.append(catalog)
+
+    return catalogs
 
 
-def render_signature(sig_id: SignatureID, entry_num: int, mentions: MentionRecords):
-    sig = mentions.signatures[sig_id]
-    pwpa = SignedPaper.from_signature(mentions, sig)
-    render_signed_paper(pwpa, entry_num)
+def fetch_catalogs_for_authors(author_ids: List[AuthorID]) -> List[AuthorCatalog]:
+    remaining_ids = [*author_ids]
+    fetched_catalogs: List[AuthorCatalog] = []
+    while remaining_ids:
+        id = remaining_ids.pop()
+        cat = fetch_openreview_author_catalog(id)
+        if cat:
+            catalog_id = f"true#{len(fetched_catalogs)}"
+            cat.id = catalog_id
+            fetched_catalogs.append(cat)
+            for userid in cat.usernames:
+                if userid in remaining_ids:
+                    remaining_ids.remove(userid)
+    return fetched_catalogs
 
 
-def render_signed_paper(pwpa: SignedPaper, n: int):
-    title = click.style(pwpa.paper.title, fg="blue")
-    sid = pwpa.primary_signature().signature_id
-    fmtsigs = [format_signature(sig) for sig in pwpa.signatures.items()]
-    auths = ", ".join(fmtsigs)
-    click.echo(f"{n}.   {title} ({sid})")
-    click.echo(f"      {auths}")
+def createCatalogGroupForCanopy(canopystr: str) -> CatalogGroup:
+    predicted_catalogs = get_predicted_author_catalogs(canopystr)
+    predicted_author_ids: List[AuthorID] = ListOps.uniq(ListOps.flatten([c.usernames for c in predicted_catalogs]))
+    true_catalogs: List[AuthorCatalog] = fetch_catalogs_for_authors(predicted_author_ids)
 
-
-
-def createDisplayableClustering(mentions: MentionRecords):
-    clustering: MentionClustering = get_predicted_clustering(mentions)
-
-    profile_store = ProfileStore()
-
-    for cluster_id in clustering.cluster_ids():
-        cluster = clustering.cluster(cluster_id)
-
-        primary_ids = get_focused_openids(profile_store, cluster)
-        canonical_ids = profile_store.canonicalize_ids(list(primary_ids))
-        idstr = ", ".join(canonical_ids)
-        other_ids = primary_ids.difference(canonical_ids)
-        other_idstr = ", ".join(other_ids)
-
-        names = list(get_primary_name_variants(cluster))
-
-        name1 = names[0]
-        namestr = ", ".join(names[1:])
-
-        click.echo(f"Cluster for {name1}")
-        if len(names) > 1:
-            click.echo(f"  aka {namestr}")
-
-        if len(canonical_ids) == 0:
-            click.echo(f"  No Valid User ID")
-        elif len(canonical_ids) == 1:
-            if len(other_ids) == 0:
-                click.echo(f"  id: {idstr}")
-            else:
-                click.echo(f"  id: {idstr} alts: {other_idstr}")
-
-        alignments = align_cluster(profile_store, cluster)
-        displayed_sigs: Set[SignatureID] = set()
-        ubermentions = profile_store.allMentions
-
-        pnum = nextnums()
-        for _, aligned in alignments.items():
-            ls, rs, bs = separateOOBs(aligned.values)
-
-            print("Papers Only In Predicted Cluster")
-            for sig_id in ls.value:
-                render_signature(sig_id, next(pnum), ubermentions)
-                displayed_sigs.add(sig_id)
-
-            print("Papers in Both Profile and Cluster")
-            for sig_id in bs.value:
-                render_signature(sig_id, next(pnum), ubermentions)
-                displayed_sigs.add(sig_id)
-
-            print("Papers Only In Profile")
-            for sig_id in rs.value:
-                render_signature(sig_id, next(pnum), ubermentions)
-                displayed_sigs.add(sig_id)
-
-        print("Unaligned Papers")
-        for pws in cluster:
-            if pws.primary_signature().signature_id not in displayed_sigs:
-                render_signed_paper(pws, next(pnum))
-
-        click.echo("\n")
-
-
-def displayMentionsInClusters(mentions: MentionRecords):
-    clustering: MentionClustering = get_predicted_clustering(mentions)
-
-    profile_store = ProfileStore()
-
-    for cluster_id in clustering.cluster_ids():
-        cluster = clustering.cluster(cluster_id)
-
-        primary_ids = get_focused_openids(profile_store, cluster)
-        canonical_ids = profile_store.canonicalize_ids(list(primary_ids))
-        idstr = ", ".join(canonical_ids)
-        other_ids = primary_ids.difference(canonical_ids)
-        other_idstr = ", ".join(other_ids)
-
-        names = list(get_primary_name_variants(cluster))
-
-        name1 = names[0]
-        namestr = ", ".join(names[1:])
-
-        click.echo(f"Cluster for {name1}")
-        if len(names) > 1:
-            click.echo(f"  aka {namestr}")
-
-        if len(canonical_ids) == 0:
-            click.echo(f"  No Valid User ID")
-        elif len(canonical_ids) == 1:
-            if len(other_ids) == 0:
-                click.echo(f"  id: {idstr}")
-            else:
-                click.echo(f"  id: {idstr} alts: {other_idstr}")
-
-        alignments = align_cluster(profile_store, cluster)
-        displayed_sigs: Set[SignatureID] = set()
-        ubermentions = profile_store.allMentions
-
-        pnum = nextnums()
-        for _, aligned in alignments.items():
-            ls, rs, bs = separateOOBs(aligned.values)
-
-            print("Papers Only In Predicted Cluster")
-            for sig_id in ls.value:
-                render_signature(sig_id, next(pnum), ubermentions)
-                displayed_sigs.add(sig_id)
-
-            print("Papers in Both Profile and Cluster")
-            for sig_id in bs.value:
-                render_signature(sig_id, next(pnum), ubermentions)
-                displayed_sigs.add(sig_id)
-
-            print("Papers Only In Profile")
-            for sig_id in rs.value:
-                render_signature(sig_id, next(pnum), ubermentions)
-                displayed_sigs.add(sig_id)
-
-        print("Unaligned Papers")
-        for pws in cluster:
-            if pws.primary_signature().signature_id not in displayed_sigs:
-                render_signed_paper(pws, next(pnum))
-
-        click.echo("\n")
-
-
-def displayMentionsSorted(mentions: MentionRecords):
-    print("Mention Display")
-
-    clustering = get_predicted_clustering(mentions)
-
-    profile_store = ProfileStore()
-
-    for cluster_id in clustering.cluster_ids():
-        cluster = clustering.cluster(cluster_id)
-
-        names = get_primary_name_variants(cluster)
-        namestr = ", ".join(names)
-
-        click.echo(f"Cluster for {namestr}")
-
-        alignments = align_cluster(profile_store, cluster)
-        displayed_sigs: Set[SignatureID] = set()
-        ubermentions = profile_store.allMentions
-
-        pnum = nextnums(0)
-
-        for _, aligned in alignments.items():
-            ls, rs, bs = separateOOBs(aligned.values)
-            allValues = ls.value + rs.value + bs.value
-            sortedValues = sorted(allValues)
-            for sig_id in sortedValues:
-                sig = ubermentions.signatures[sig_id]
-                displayed_sigs.add(sig_id)
-                pwpa = SignedPaper.from_signature(ubermentions, sig)
-                render_signed_paper(pwpa, next(pnum))
-
-        print("Unaligned Papers")
-        for pws in cluster:
-            if pws.primary_signature().signature_id not in displayed_sigs:
-                render_signed_paper(pws, next(pnum))
-
-        click.echo("\n")
+    return CatalogGroup([*predicted_catalogs, *true_catalogs])

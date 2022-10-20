@@ -19,7 +19,7 @@
 
         {% for canopynum, canopysize, canopystr, namevariants in canopies %}
             <tr>
-                <td><a href="{{ url_for('.show_canopy', id=canopystr) }}">{{ canopystr }},</a></td>
+                <td><a href="{{ url_for('.show_canopy', canopy=canopystr) }}">{{ canopystr }},</a></td>
 
                 <td> {{ canopysize }} </td>
                 <td>

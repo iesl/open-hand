@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Canopy '{{ canopy }}'{% endblock %}
+{% block header %} {% endblock %}
+
+{% import '_signed_paper.html' as SignedPaper %}
+{% import '_cluster.html' as Cluster %}
+
+{% block content %}
+  <div>
+    <h2> Canopy '{{ canopy }}' </h2>
+  </div>
+  {% set predicted_catalogs = canopy_diff.predicted_catalogs %}
+  {% set true_catalogs = canopy_diff.true_catalogs %}
+  {% set catalog_overlaps = canopy_diff.catalog_overlaps %}
+
+  <div class="mention-list">
+    <h3>TODO</h3>
+  </div>
+{% endblock %}

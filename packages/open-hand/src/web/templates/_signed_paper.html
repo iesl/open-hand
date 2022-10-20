@@ -1,0 +1,26 @@
+{% macro render(signed_paper) %}
+
+<div>
+  <div class="paper-title">{{ signed_paper.paper.title }} ({{ signed_paper.paper.paper_id }})</div>
+  <div>
+    <ul class="h-indent-ul paper-authors">
+    {% for sigbatch in signed_paper.signatures.items() | batch(8) %}
+      <li>
+      {% for sig in sigbatch %}
+        {% set sigrec = sig.val %}
+        {% if sig.has_focus %}
+        <span class="author">{{sigrec.author_info.fullname}},</span>
+        {% else %}
+        <span class="coauthor">
+          <a href="{{ url_for('.show_canopy', canopy=sigrec.author_info.block) }}">{{sigrec.author_info.fullname}},</a>
+        </span>
+        {% endif %}
+        &nbsp;
+      {% endfor %}
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% endmacro %}

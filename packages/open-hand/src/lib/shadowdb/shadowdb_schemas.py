@@ -27,7 +27,6 @@ class AuthorRecSchema(Schema):
 @dataclass
 class PaperRec:
     # this field name is tied to the name used in the s2and package
-    # TODO possibly use @property def paper_id() to just use 'id'
     paper_id: str
     note_number: int  # the number recorded in the Note record from OpenReview
     abstract: Optional[str]

@@ -1,12 +1,21 @@
-from typing import NewType, NamedTuple
+from typing import NewType, NamedTuple, Union, Literal
 
 ClusterID = NewType("ClusterID", str)
-# TildeID = NewType("TildeID", str)
-TildeID = str
-OpenID = str
-# SignatureID = NewType("SignatureID", str)
-SignatureID = str
 
+TildeID = str
+EmailID = str
+AuthorQueryID = str
+AuthorID = Union[TildeID, EmailID, AuthorQueryID]
+OpenID = AuthorID
+
+PaperID = str
+SignatureID = str
+CatalogID = str
+
+CatalogType = Union[
+    Literal["Predicted"],
+    Literal["OpenReviewProfile"]
+]
 
 class Slice(NamedTuple):
     start: int

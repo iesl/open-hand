@@ -106,7 +106,7 @@ class ProfileStore:
 
         return signatures_for_author
 
-    def fetch_signatures_as_pwpa(self, id: TildeID) -> List[SignedPaper]:
+    def fetch_signatures_as_signed_papers(self, id: TildeID) -> List[SignedPaper]:
         sigs = self.fetch_signatures(id)
-        pwpas = [SignedPaper.from_signature(self.allMentions, s) for s in sigs]
-        return pwpas
+        signed_papers = [SignedPaper.from_signature(self.allMentions, s) for s in sigs]
+        return signed_papers
