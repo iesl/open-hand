@@ -1,46 +1,43 @@
 {% extends 'base.html' %}
 
+{% set predicted_catalogs = catalog_group.get_catalogs('Predicted') %}
+{% set profile_catalogs = catalog_group.get_catalogs('OpenReviewProfile') %}
+{% set cluster_count = predicted_catalogs | length %}
+{% set profile_count = profile_catalogs | length %}
+{% set mention_count = catalog_group.mention_count() %}
+
 {% block title %}Canopy '{{ canopy }}'{% endblock %}
-{% block header %} {% endblock %}
+
+{% block header %}
+<ul class="h-indent-ul">
+
+  <li>
+    <h2> Canopy '{{ canopy }}' </h2>
+  </li>
+
+  <li>
+    <div>{{mention_count}} Initial Author Mentions</div>
+  </li>
+
+  <li>
+    <div>{{cluster_count}} Clusters</div>
+  </li>
+
+  <li>
+    <div>{{profile_count}} Matched OpenReview Profiles</div>
+  </li>
+
+</ul>
+{% endblock %}
 
 {% import '_catalog.html' as Catalog %}
 
 {% block content %}
-  <div>
-    <h2> Canopy '{{ canopy }}' </h2>
-  </div>
-  <div class="header">
-    <!-- # of mentions in canopy  -->
-    <!-- # of predicted clusters -->
-    <!-- # of matching openreview profiles -->
-  </div>
-  <div class="">
-    {% for catalog in catalog_group.get_catalogs('Predicted') %}
-    <div class="catalog">
-      <h3> Catalog '{{ catalog.id }}' </h2>
-      {{ Catalog.render(catalog_group, catalog) }}
-    </div>
-    {% endfor %}
-  </div>
-{% endblock %}
 
-
-<!-- {% set clustered = cluster_ids | reject('==', '<unclustered>') | list %}
-  {% set unclustered = cluster_ids | select('==', '<unclustered>') | list %}
-  {% set all_ids = clustered + unclustered %}
- -->
-<!-- <div>Cluster Count = {{ clustered | length }}</div> -->
-
-<!-- {% for cluster_id in all_ids %}
-  <div class="cluster-records">
-    {% if cluster_id == '<unclustered>' %}
-    <h4>Unclustered Mentions</h4>
-    {% else %}
-    <h4>Cluster <em>"{{cluster_id}}"</em></h4>
-    {% endif %}
-
-    {% set cluster = cluster_dict[cluster_id] %}
-    {{ Cluster.render(cluster) }}
-  </div>
+<div class="">
+  {% for catalog in predicted_catalogs %}
+  {{ Catalog.render(catalog_group, catalog) }}
   {% endfor %}
- -->
+</div>
+
+{% endblock %}

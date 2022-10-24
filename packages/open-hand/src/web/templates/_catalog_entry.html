@@ -1,0 +1,12 @@
+{% macro render(entry) %}
+
+{% import '_signed_paper.html' as SignedPaper %}
+
+{% set signed_paper = entry.signed_paper %}
+{% set is_mention = entry.is_mention %}
+{% set mention_cls = "signature-mention" if entry.is_mention else "" %}
+<div class="catalog-entry {{mention_cls}}">
+  {{ SignedPaper.render(signed_paper) }}
+</div>
+
+{% endmacro %}

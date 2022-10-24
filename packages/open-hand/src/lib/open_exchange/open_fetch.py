@@ -7,6 +7,7 @@ import requests
 from requests import Response
 
 import openreview as op
+from requests.sessions import Session
 
 from lib.predef.config import get_config
 from lib.predef.iterget import IterGet
@@ -20,15 +21,27 @@ from .profile_schemas import Profile, load_profile
 from .note_schemas import Note, load_notes
 
 
+cached_client: Optional[op.Client] = None
+
 def get_client() -> op.Client:
-    config = get_config()
-    baseurl = config.openreview.restApi
-    username = config.openreview.restUser
-    password = config.openreview.restPassword
-    client = op.Client(baseurl=baseurl, username=username, password=password)
+    global cached_client
+    if not cached_client:
+        config = get_config()
+        baseurl = config.openreview.restApi
+        username = config.openreview.restUser
+        password = config.openreview.restPassword
+        cached_client = op.Client(baseurl=baseurl, username=username, password=password)
 
-    return client
+    return cached_client
 
+
+cached_session: Optional[Session] = None
+
+def get_session() -> Session:
+    global cached_session
+    if not cached_session:
+        cached_session = requests.Session()
+    return cached_session
 
 def resolve_api_url(urlpath: str) -> str:
     config = get_config()
@@ -70,7 +83,8 @@ QueryParms = Any
 
 
 def _note_fetcher(client: op.Client, **params: QueryParms) -> List[Note]:
-    rawresponse = requests.get(notes_url(), params=params, headers=client.headers)
+    s = get_session()
+    rawresponse = s.get(notes_url(), params=params, headers=client.headers)
     response = _handle_response(rawresponse)
     notes = load_notes(response.json())
     return notes.notes
@@ -106,7 +120,8 @@ def fetch_notes_for_author(authorid: str) -> Iterator[Note]:
 
 
 def profile_fetcher(client: op.Client, **params: QueryParms) -> List[Profile]:
-    rawresponse = requests.get(profiles_url(), params=params, headers=client.headers)
+    s = get_session()
+    rawresponse = s.get(profiles_url(), params=params, headers=client.headers)
     response = _handle_response(rawresponse)
     profiles = [load_profile(p) for p in response.json()["profiles"]]
     return profiles

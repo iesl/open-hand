@@ -10,9 +10,9 @@
     <table>
         <thead>
         <tr>
-            <th class="blue"> Canopy Name</th>
-            <th> Canopy Size</th>
-            <th> Name Variations</th>
+            <th width="1px" class="blue"> Canopy Name</th>
+            <th width="1px">Canopy Size</th>
+            <th>Name Variations</th>
         </tr>
         </thead>
         <tbody>
@@ -21,7 +21,7 @@
             <tr>
                 <td><a href="{{ url_for('.show_canopy', canopy=canopystr) }}">{{ canopystr }},</a></td>
 
-                <td> {{ canopysize }} </td>
+                <td width="0.5%"> {{ canopysize }} </td>
                 <td>
 
                     {% for v in namevariants %}

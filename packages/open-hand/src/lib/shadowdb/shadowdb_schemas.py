@@ -28,7 +28,7 @@ class AuthorRecSchema(Schema):
 class PaperRec:
     # this field name is tied to the name used in the s2and package
     paper_id: str
-    note_number: int  # the number recorded in the Note record from OpenReview
+    note_number: Optional[int]  # the number recorded in the Note record from OpenReview
     abstract: Optional[str]
     authors: List[AuthorRec]
     journal_name: Optional[str]

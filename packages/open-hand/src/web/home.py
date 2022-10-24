@@ -65,9 +65,24 @@ def show_canopies(page: Optional[int] = None):
     )
 
 
+import cProfile, pstats
+
 @bp.route("/canopy/<string:canopy>")
 def show_canopy(canopy: str):
+    profile = False
+    profiler = cProfile.Profile()
+    if profile:
+        profiler.enable()
+
     catalog_group = createCatalogGroupForCanopy(canopy)
+
+    if profile:
+        profiler.disable()
+        stats = pstats.Stats(profiler).sort_stats("tottime")
+        cname = canopy.replace(" ", "_")
+        stats_file = f"canopy_{cname}.prof"
+        logger.info(f"Writing stats to {stats_file}")
+        stats.dump_stats(stats_file)
     return render_template("canopy.html", canopy=canopy, catalog_group=catalog_group)
 
 

@@ -8,14 +8,16 @@
 #    into formats for local storage and use in the inference engine
 
 
+from array import array
 from pprint import pprint
 from typing import Any, List, Optional, cast
 from dataclasses import dataclass
 
 from marshmallow import fields
-from marshmallow.decorators import post_load
+from marshmallow.decorators import post_load, pre_load
 
-from lib.predef.schemas import IntField, OptStringField, PartialSchema, StrField
+from lib.predef.schemas import IntField, OptIntField, OptStringField, PartialSchema, StrField
+from . import logger as log
 
 
 @dataclass
@@ -28,7 +30,11 @@ class NoteContent:
     venue: Optional[str]
     venueid: Optional[str]
     _bibtex: Optional[str]
-    paperhash: str
+    paperhash: Optional[str]
+    # This field does not exist in OpenReview, but is included as a flag that
+    #   there was an error unserializing the record obtained from the OpenReview
+    #   REST api
+    errors: Optional[str]
 
 
 class NoteContentSchema(PartialSchema):
@@ -40,11 +46,38 @@ class NoteContentSchema(PartialSchema):
     venue = OptStringField
     venueid = OptStringField
     _bibtex = OptStringField
-    paperhash = StrField
+    paperhash = OptStringField
+    errors = OptStringField
+
+    @pre_load
+    def clean_input(self, data: Any, many: Any, **kwargs):
+        """Filter out any notes that do not have the required fields
+        May indicate an error in the OpenReview database, but in any case,
+        notes are not useful unless they have certain fields
+        """
+        valid_title = "title" in data and type(data["title"]) is str
+        if not valid_title:
+            data["title"] = ""
+        valid_authors = "authors" in data and isinstance(data["authors"], list)
+        if not valid_authors:
+            data["authors"] = []
+        valid_authorids = "authorids" in data and isinstance(data["authorids"], list)
+        if not valid_authorids:
+            data["authorids"] = []
+        is_valid = valid_title and valid_authors and valid_authorids
+
+        data["errors"] = None if is_valid else "NoteContentSchema missing required fields"
+
+        return data
 
     @post_load
     def make(self, data: Any, **kwargs) -> NoteContent:
-        return NoteContent(**data)
+        try:
+            return NoteContent(**data)
+        except Exception as ex:
+            print("NoteContentSchema Error")
+            print(data)
+            raise ex
 
 
 @dataclass
@@ -53,8 +86,9 @@ class Note:
     content: NoteContent
     forum: str
     invitation: str
-    number: int
+    number: Optional[int]
     signatures: List[str]
+    ## The Following fields are contained in the Note record, but currently not used
     # nonreaders: []
     # original: None
     # readers: [everyone]
@@ -73,12 +107,17 @@ class NoteSchema(PartialSchema):
     content = fields.Nested(NoteContentSchema)
     forum = StrField
     invitation = StrField
-    number = IntField
+    number = OptIntField
     signatures = fields.List(StrField)
 
     @post_load
     def make(self, data: Any, **kwargs) -> Note:
-        return Note(**data)
+        try:
+            return Note(**data)
+        except Exception as ex:
+            print("NoteSchema Error")
+            print(data)
+            raise ex
 
 
 @dataclass
@@ -100,11 +139,12 @@ def load_notes(data: Any) -> Notes:
     try:
         # pyright: ignore
         notes: Notes = cast(Notes, NotesSchema().load(data))
+        filtered_notes = [note for note in notes.notes if not note.content.errors]
+        notes.notes = filtered_notes
+
         return notes
     except Exception as inst:
         print(type(inst))  # the exception instance
         print("args", inst.args)  # arguments stored in .args
         print(inst)  # __str__ allows args to be printed directly,
-        print("data:")
-        pprint(data)
         raise

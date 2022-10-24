@@ -1,36 +1,45 @@
 {% macro render(catalog_group, catalog) %}
 
 {% import '_signed_paper.html' as SignedPaper %}
+{% import '_catalog_entry.html' as CatalogEntry %}
 {% set usernames = catalog.usernames %}
+{% set abbreviated = True %}
 {% set signed_papers = catalog.signed_papers %}
 {% set aggregate_authorship = catalog_group.get_aggregate_authorship(catalog) %}
-{% set primary_catalog = aggregate_authorship.primary_catalog %}
-{% set entries = aggregate_authorship.entries %}
+{% set focused_catalog = aggregate_authorship.primary_catalog %}
+{% set all_entries = aggregate_authorship.entries %}
+{% set entries = all_entries[:3] if abbreviated else all_entries %}
+{% set remaining_entries = all_entries[3:] if abbreviated else all_entries %}
+{% set remaining_entry_count = remaining_entries|length %}
+{% set name_variants = aggregate_authorship.name_variants %}
+<div class="author-catalog">
 
-<table>
-  <thead>
-    <tr>
-      <th style="width: 0.5%"></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
+  <div class="catalog-header">
+    <div class="name-variants">
+      {% for name in name_variants %}
+      <span>{{name}}, </span>
+      {% endfor %}
+    </div>
+    <div class="usernames">
+      {% for username in usernames %}
+      <span>{{username}}, </span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="catalog-entries">
     {% for entry in entries %}
-    {% set signed_paper = entry.signed_paper %}
-    {% set secondary_catalog = entry.secondary_catalog %}
-    <tr class="cluster-record">
-      <td style="width: 0.5%">
-        {% if secondary_catalog != primary_catalog %}
-        <span>{{ secondary_catalog }}</span>
-        {% endif %}
-      </td>
-      <td>
-        {{ SignedPaper.render(signed_paper) }}
-      </td>
-    </tr>
+    {{ CatalogEntry.render(entry) }}
     {% endfor %}
-  </tbody>
+    {% if remaining_entry_count > 0 %}
+    <button class="collapse">Show/Hide</button> {{remaining_entry_count}} more...
+    <div class="collapsible collapsed">
+      {% for entry in remaining_entries %}
+      {{ CatalogEntry.render(entry) }}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
 
-  </tbody>
-</table>
+</div>
 {% endmacro %}

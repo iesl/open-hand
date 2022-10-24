@@ -40,7 +40,7 @@ def populate_shadowdb_from_notes(slice: Optional[Slice]):
 
     skipped = 0
     for note in fetch_notes_for_dblp_rec_invitation(slice=slice, newestFirst=False):
-        if note.number <= max_num:
+        if note.number and note.number <= max_num:
             skipped += 1
             continue
 

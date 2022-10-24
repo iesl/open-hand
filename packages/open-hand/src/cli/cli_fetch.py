@@ -71,7 +71,10 @@ def profiles(slice: Slice):
 def profile(id: str):
     """Fetch (by id) and display a user profile from OpenReview"""
     profile = fetch_profile(id)
-    pprint(asdict(profile))
+    if profile:
+        pprint(asdict(profile))
+    else:
+        print("No Profile found")
 
 
 @fetch.command()

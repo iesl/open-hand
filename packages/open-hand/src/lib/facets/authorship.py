@@ -27,26 +27,42 @@ from lib.shadowdb.data import (
 @dataclass
 class CatalogEntry:
     signed_paper: SignedPaper
+    is_mention: bool
     secondary_catalog: Optional[CatalogID]
 
 
 @dataclass
 class AggregateAuthorship:
     primary_catalog: CatalogID
+    name_variants: Set[str]
     entries: List[CatalogEntry]
 
 
-@dataclass
 class AuthorCatalog:
     """Authorship info, including names, papers, emails
     When built from OpenReview API, it reflects information contained
     in the user's profile, plus all known papers by the author.
     """
-
-    signed_papers: List[SignedPaper]
-    usernames: List[AuthorID]
+    signed_papers: Dict[SignatureID, SignedPaper]
+    usernames: Set[AuthorID]
+    name_variants: Set[str]
     id: CatalogID
     type: CatalogType
+
+    def __init__(self, signed_papers: List[SignedPaper], id: CatalogID, type: CatalogType, author_ids: Optional[Set[AuthorID]]):
+        self.signed_papers = dict([(p.signatureId(), p) for p in signed_papers])
+        self.usernames = get_signatory_authorids(signed_papers)
+        if author_ids:
+            self.usernames.update(author_ids)
+        self.name_variants = get_primary_name_variants(signed_papers)
+        self.id = id
+        self.type = type
+
+    def contains_signature(self, p: SignedPaper) -> bool:
+        return p.signatureId() in self.signed_papers
+
+    def paper_count(self) -> int:
+        return len(self.signed_papers)
 
 
 class CatalogGroup:
@@ -58,27 +74,42 @@ class CatalogGroup:
     def get_catalogs(self, type: CatalogType) -> List[AuthorCatalog]:
         return [cat for cat in self.catalogs.values() if cat.type == type]
 
+    def mention_count(self) -> int:
+        return sum([c.paper_count() for c in self.get_catalogs("Predicted")])
+
+    def get_catalogs_for_paper(self, signed_paper: SignedPaper) -> List[CatalogID]:
+        catalogs: List[CatalogID] = []
+        for catid, cat in self.catalogs.items():
+            if signed_paper.signatureId() in cat.signed_papers:
+                catalogs.append(catid)
+
+        return catalogs
+
     def get_aggregate_authorship(self, catalog: AuthorCatalog) -> AggregateAuthorship:
         entries: Dict[SignatureID, CatalogEntry] = {}
         primary_catalog = catalog.id
-        for signed_paper in catalog.signed_papers:
-            other_catalog: Optional[CatalogID] = None
-            for catid, cat in self.catalogs.items():
-                if catid != catalog.id and signed_paper in cat.signed_papers:
-                    other_catalog = catid
+        other_catalogs = [c for c in self.catalogs.values() if c.id != primary_catalog]
+        name_variants: Set[str] = catalog.name_variants
 
-            entry = CatalogEntry(signed_paper, other_catalog)
+        for signed_paper in catalog.signed_papers.values():
+            in_catalogs = [c for c in other_catalogs if c.contains_signature(signed_paper)]
+
+            other_catalog: Optional[CatalogID] = in_catalogs[0].id if in_catalogs else None
+
+            entry = CatalogEntry(signed_paper, is_mention=True, secondary_catalog=other_catalog)
             entries[signed_paper.signatureId()] = entry
 
         # Include papers from catalogs with author ids that match the initial catalog
-        for other_cat_id, other_cat in self.catalogs.items():
-            if other_cat_id != catalog.id and ListOps.has_intersection(catalog.usernames, other_cat.usernames):
-                for signed_paper in other_cat.signed_papers:
+        for other_cat in other_catalogs:
+            shares_username = not catalog.usernames.isdisjoint(other_cat.usernames)
+            if shares_username:
+                name_variants = name_variants.union(other_cat.name_variants)
+                for signed_paper in other_cat.signed_papers.values():
                     if signed_paper.signatureId() not in entries:
-                        entry = CatalogEntry(signed_paper, other_cat_id)
+                        entry = CatalogEntry(signed_paper, is_mention=False, secondary_catalog=other_cat.id)
                         entries[signed_paper.signatureId()] = entry
 
-        return AggregateAuthorship(primary_catalog, list(entries.values()))
+        return AggregateAuthorship(primary_catalog, entries=list(entries.values()), name_variants=name_variants)
 
 
 def get_predicted_clustering(init: MentionRecords) -> MentionClustering:
@@ -215,7 +246,7 @@ def fetch_openreview_author_catalog(authorId: AuthorID) -> Optional[AuthorCatalo
             sig = SignedPaper.from_signature(author_mentions, signature)
             signed_papers.append(sig)
 
-    return AuthorCatalog(usernames=usernames, signed_papers=signed_papers, type="OpenReviewProfile", id=authorId)
+    return AuthorCatalog(signed_papers=signed_papers, type="OpenReviewProfile", id=authorId, author_ids=set(usernames))
 
 
 def get_predicted_author_catalogs(canopystr: str) -> List[AuthorCatalog]:
@@ -224,8 +255,7 @@ def get_predicted_author_catalogs(canopystr: str) -> List[AuthorCatalog]:
     catalogs: List[AuthorCatalog] = []
     for index, signed_papers in enumerate(clustering.clustering.values()):
         catalog_id = f"pred#{index}"
-        uniq_author_ids = get_signatory_authorids(signed_papers)
-        catalog = AuthorCatalog(signed_papers, usernames=list(uniq_author_ids), id=catalog_id, type="Predicted")
+        catalog = AuthorCatalog(signed_papers, id=catalog_id, type="Predicted", author_ids=None)
         catalogs.append(catalog)
 
     return catalogs
@@ -249,7 +279,7 @@ def fetch_catalogs_for_authors(author_ids: List[AuthorID]) -> List[AuthorCatalog
 
 def createCatalogGroupForCanopy(canopystr: str) -> CatalogGroup:
     predicted_catalogs = get_predicted_author_catalogs(canopystr)
-    predicted_author_ids: List[AuthorID] = ListOps.uniq(ListOps.flatten([c.usernames for c in predicted_catalogs]))
+    predicted_author_ids: List[AuthorID] = ListOps.uniq(ListOps.flatten([list(c.usernames) for c in predicted_catalogs]))
     true_catalogs: List[AuthorCatalog] = fetch_catalogs_for_authors(predicted_author_ids)
 
     return CatalogGroup([*predicted_catalogs, *true_catalogs])

@@ -73,5 +73,5 @@ def render_author_catalog(catalog: AuthorCatalog):
         click.echo(f"{un}")
 
     click.echo(f"Papers")
-    for i, sp in enumerate(catalog.signed_papers):
+    for i, sp in enumerate(catalog.signed_papers.values()):
         render_signed_paper(sp, i+1)

@@ -25,29 +25,69 @@
   @if $offset-right { right: $offset-right; }
 }
 
-
-.cluster-record {
-  margin-bottom: 0.5em;
-  padding-left: 5px;
+.fixed-header, .fixed-footer {
+    background-color: skyblue;
 }
 
-.paper-title {
-  // text-size-adjust:
-
-  font-weight: bold;
-}
-
-.paper-authors {
+.header {
+  background-color: wheat;
   padding-left: 1em;
-}
-.author {
-  font-weight: bolder;
-  color: blue;
+  margin-bottom: 1em;
 }
 
-.coauthor > a {
-  color: darkcyan;
+.signed-paper {
+  .paper-title {
+    font-weight: bold;
+  }
+
+  .paper-authors {
+    padding-left: 1em;
+
+    .author {
+      font-weight: bolder;
+      color: blue;
+    }
+    .coauthor > a {
+      color: darkcyan;
+    }
+  }
 }
+
+
+
+.author-catalog {
+  .catalog-header {
+    border-top: 1px solid black;
+    background-color: cornsilk;
+    .name-variants {
+      font-weight: bold;
+      font-size: large;
+    }
+    .usernames {
+      padding-left: 2em;
+    }
+  }
+
+  .catalog-entries {
+    margin-left: 4em;
+  }
+
+  .catalog-entry {
+    margin-bottom: 0.5em;
+  }
+
+  .signature-mention {
+    background-color: aqua;
+  }
+
+  .entries-footer {
+    margin-left: 2em;
+  }
+
+  margin-bottom: 30px;
+}
+
+
 
 a:link {
   text-decoration: none;
@@ -63,4 +103,21 @@ a:hover {
 
 a:active {
   text-decoration: underline;
+}
+
+.collapse {
+  background-color: lawngreen;
+  border: none;
+}
+
+.collapse:hover {
+  background-color: darkgreen;
+}
+
+.collapsible {
+  display: block;
+}
+
+.collapsed {
+  display: none;
 }

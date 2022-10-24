@@ -10,24 +10,21 @@
     {% endassets %}
 
     {% assets "home_js" %}
-    <script rel="text/javascript" href="{{ ASSET_URL }}"></script>
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
     {% endassets %}
   </head>
 
   <body class="">
 
-    <section class="fixed-header">
+    <div class="fixed-header">
       <div class="navbar">
-        <a href="{{ url_for('.show_canopies')}}">Browse Canopies</a>
+        <a class="navlink" href="{{ url_for('.show_canopies')}}">Browse Canopies</a>
       </div>
-    </section>
+    </div>
 
-    <section class="flash-messages">
-      {% for message in get_flashed_messages() %}
-      <div class="flash">{{ message }}</div>
-      {% endfor %}
-    </section>
-
+    <div class="header">
+      {% block header %}{% endblock %}
+    </div>
     <div class="main">
       {% block content %}{% endblock %}
     </div>

@@ -120,7 +120,11 @@ def signatures2dict(ps: List[SignatureRec]) -> Dict[str, SignatureRec]:
     return dict([(p.signature_id, p) for p in ps])
 
 
+bibparser = bibtexparser.bparser.BibTexParser()
+
 def paperrec_from_note(note: Note) -> PaperRec:
+    global bibparser
+
     try:
         paper_id: str = note.id
         content: Any = asdict(note.content)
@@ -128,7 +132,8 @@ def paperrec_from_note(note: Note) -> PaperRec:
         bibdb: Optional[BibDatabase] = None
         bibtex = ld.optstr_entry("_bibtex", content)
         if bibtex is not None:
-            bibdb = bibtexparser.loads(bibtex)
+            bibdb = bibparser.parse(bibtex)
+            # bibdb = bibtexparser.loads(bibtex)
 
         title = ld.str_entry("title", content, bibdb)
         venue = ld.optstr_entry("venue", content, bibdb)

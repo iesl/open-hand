@@ -31,7 +31,7 @@ class ProfileStore:
         if id not in self.ds:
             self.log.debug(f"add_profile({id}): retrieving...")
             p = fetch_profile(id)
-            if p is None:
+            if not p:
                 self.log.warn(f"No such profile: {id}")
                 return
             self.ds.find(p.id)  # implicitly adds id to disjoint set

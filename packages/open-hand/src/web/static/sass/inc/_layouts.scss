@@ -1,5 +1,5 @@
-body{
-    padding-top: 60px;
+body {
+    padding-top: 20px;
     padding-bottom: 40px;
 }
 
@@ -7,35 +7,29 @@ body{
     width: 90%;
     margin: 0 auto; /* Center the DIV horizontally */
 }
-.fixed-header, .fixed-footer{
+
+.main {
+    margin-top: 0;
+}
+
+.fixed-header, .fixed-footer {
     width: 100%;
     max-height: 3em;
     position: fixed;
-    background: #cdcdcd;
+    background-color: beige;
     padding: 10px 0;
-    color: #fff;
+
 }
 
 .fixed-header{
     top: 0;
 }
 
-.main {
-    top: 3em;
-    // height:
-}
 .fixed-footer{
     bottom: 0;
-    max-height: 3em;
 }
 
-/* Some more styles to beutify this example */
-nav a{
-    color: #fff;
-    text-decoration: none;
-    padding: 7px 25px;
-    display: inline-block;
-}
+
 .container p{
     line-height: 200px; /* Create scrollbar to test positioning */
 }
@@ -43,47 +37,12 @@ nav a{
 .navbar {
     display: flex;
     flex-direction: row;
+    padding-left: 1em;
+    font-size: large;
     border-collapse: collapse;
     overflow-y: hidden;
+
+    a {
+        text-decoration: underline;
+    }
 }
-
-
-.mention-list {
-
-}
-
-// .container {
-//     display: flex;
-//     flex-direction: column;
-//     height: 100vh;
-//     width: 100%;
-//     background-color: white;
-//     border: 1px solid black;
-//     text-align: left;
-//     border-collapse: collapse;
-//     overflow-y: hidden;
-//     padding-left: 2vh;
-// }
-
-// .header {
-//     justify-self: flex-start;
-//     background-color: #cdcdcd;
-//     padding: 8px;
-// }
-
-// .content {
-//     flex: 1 1 auto;
-//     height: 0px;
-//     min-height: 300px;
-
-//     border: 1px solid black;
-//     padding: 8px;
-//     overflow-y: scroll;
-// }
-
-// .footer {
-//     justify-self: flex-end;
-//     background-color: #cdcdcd;
-//     padding: 8px;
-// }
-
