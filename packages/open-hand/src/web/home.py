@@ -1,4 +1,5 @@
 from lib.facets.authorship import  createCatalogGroupForCanopy
+from lib.open_exchange.utils import is_tildeid
 from lib.predef.log import logger
 
 from typing import List, Optional
@@ -9,17 +10,28 @@ from flask import (
     url_for,
     # request, url_for, flash, g, redirect,
 )
+from lib.predef.typedefs import AuthorID
+from lib.predef.utils import is_valid_email
 from lib.shadowdb.data import MentionRecords
 
 from lib.shadowdb.shadowdb import getShadowDB
 
 import math
 
+from flask import render_template
 
 bp = Blueprint("app", __name__, template_folder="templates")
 
-from flask import render_template
 
+@bp.app_template_filter("author_id_prefix")
+def author_id_prefix(author_id: Optional[AuthorID]):
+    if not author_id:
+        return "✗"
+    if is_tildeid(author_id):
+        return "~"
+    if is_valid_email(author_id):
+        return "@"
+    return "?"
 
 @bp.route("/")
 def index():
@@ -69,7 +81,7 @@ import cProfile, pstats
 
 @bp.route("/canopy/<string:canopy>")
 def show_canopy(canopy: str):
-    profile = False
+    profile = True
     profiler = cProfile.Profile()
     if profile:
         profiler.enable()
@@ -84,15 +96,3 @@ def show_canopy(canopy: str):
         logger.info(f"Writing stats to {stats_file}")
         stats.dump_stats(stats_file)
     return render_template("canopy.html", canopy=canopy, catalog_group=catalog_group)
-
-
-@bp.route("/clusters")
-def show_clusters():
-    return render_template("canopies.html")
-
-
-@bp.route("/cluster/<string:id>")
-def show_cluster(id: str):
-    # mentions = getShadowDB().get_canopy(id)
-    # papers, signatures = mentions.papers, mentions.signatures
-    return render_template("cluster.html")

@@ -49,3 +49,4 @@ def create_app(test_config: Optional[Dict[str, Any]] = None):
     assets.cache = ASSET_CACHE_PATH
 
     return app
+

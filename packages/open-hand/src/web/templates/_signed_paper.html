@@ -8,11 +8,13 @@
       <li>
       {% for sig in sigbatch %}
         {% set sigrec = sig.val %}
+        {% set openId = sigrec.author_info.openId %}
+        {% set id_prefix = openId | author_id_prefix %}
         {% if sig.has_focus %}
-        <span class="author">{{sigrec.author_info.fullname}},</span>
+        <span class="author" title="{{openId}}">{{id_prefix}}{{sigrec.author_info.fullname}},</span>
         {% else %}
-        <span class="coauthor">
-          <a href="{{ url_for('.show_canopy', canopy=sigrec.author_info.block) }}">{{sigrec.author_info.fullname}},</a>
+        <span class="coauthor" title="{{openId}}">
+          <a href="{{ url_for('.show_canopy', canopy=sigrec.author_info.block) }}">{{id_prefix}}{{sigrec.author_info.fullname}},</a>
         </span>
         {% endif %}
         &nbsp;

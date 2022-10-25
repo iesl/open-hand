@@ -1,9 +1,7 @@
 @import 'inc/_solarized';
 @import 'inc/_list';
-@import 'inc/_alignment';
 @import 'inc/_tables';
 @import 'inc/_layouts';
-@import 'inc/_holygrail';
 
 
 // stretch element height to specified top and bottom position
@@ -24,6 +22,10 @@
   @if $offset-left { left: $offset-left; }
   @if $offset-right { right: $offset-right; }
 }
+
+$cluster_bg:  cornsilk;
+$mention_bg:  cyan;
+$profile_bg:  whitesmoke;
 
 .fixed-header, .fixed-footer {
     background-color: skyblue;
@@ -55,10 +57,24 @@
 
 
 
+.cluster{
+  background-color: $cluster_bg;
+}
+
+.mention {
+  background-color: $mention_bg;
+  margin-left: 1em;
+}
+
+.profile {
+  background-color: $profile_bg;
+  margin-left: 1em;
+}
+
 .author-catalog {
   .catalog-header {
     border-top: 1px solid black;
-    background-color: cornsilk;
+    background-color: $cluster_bg;
     .name-variants {
       font-weight: bold;
       font-size: large;
@@ -73,11 +89,12 @@
   }
 
   .catalog-entry {
+    background-color: $profile_bg;
     margin-bottom: 0.5em;
   }
 
   .signature-mention {
-    background-color: aqua;
+    background-color: $mention_bg;
   }
 
   .entries-footer {

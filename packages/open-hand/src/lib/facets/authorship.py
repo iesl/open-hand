@@ -75,8 +75,6 @@ class CatalogGroup:
         return [cat for cat in self.catalogs.values() if cat.type == type]
 
     def mention_count(self) -> int:
-        asdf = [c.paper_count() for c in self.get_catalogs("Predicted")]
-        print(f"mention_counts = {asdf}")
         return sum([c.paper_count() for c in self.get_catalogs("Predicted")])
 
     def get_catalogs_for_paper(self, signed_paper: SignedPaper) -> List[CatalogID]:
