@@ -56,7 +56,7 @@ def show_canopies(page: Optional[int] = None):
     canopypage = canopystrs[offset : offset + pagesize]
     canopies = [(i, cstr, getShadowDB().get_canopy(cstr)) for i, cstr in enumerate(canopypage)]
     counted_canopies = [
-        (i, len(mentions.papers), cstr, author_name_variants(mentions)) for i, cstr, mentions in canopies
+        (i, len(mentions.signatures.keys()), cstr, author_name_variants(mentions)) for i, cstr, mentions in canopies
     ]
     counted_canopies.sort(reverse=True, key=lambda r: r[1])
 

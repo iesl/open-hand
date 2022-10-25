@@ -75,6 +75,8 @@ class CatalogGroup:
         return [cat for cat in self.catalogs.values() if cat.type == type]
 
     def mention_count(self) -> int:
+        asdf = [c.paper_count() for c in self.get_catalogs("Predicted")]
+        print(f"mention_counts = {asdf}")
         return sum([c.paper_count() for c in self.get_catalogs("Predicted")])
 
     def get_catalogs_for_paper(self, signed_paper: SignedPaper) -> List[CatalogID]:
@@ -114,14 +116,14 @@ class CatalogGroup:
 
 def get_predicted_clustering(init: MentionRecords) -> MentionClustering:
     def sortkey_by_cluster(s: SignatureRec):
-        return s.cluster_id if s.cluster_id is not None else "<unclustered>"
+        return s.cluster_id or "<unclustered>"
 
-    paperlist = init.get_papers()
-    print(f"get_predicted_clustering count={len(paperlist)}")
+    init_signatures = init.get_signatures()
+    init_signatures.sort(key=sortkey_by_cluster)
 
-    grouped = groupby(init.get_signatures(), sortkey_by_cluster)
+    grouped = groupby(init_signatures, sortkey_by_cluster)
 
-    cluster_groups: Dict[str, List[SignatureRec]] = dict([(id, list(grp)) for id, grp in grouped])
+    cluster_groups: Dict[str, List[SignatureRec]] = dict([(key, list(grp)) for key, grp in grouped])
 
     cluster_ids = list(cluster_groups)
 
