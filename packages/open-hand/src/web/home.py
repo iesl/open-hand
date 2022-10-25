@@ -81,7 +81,7 @@ import cProfile, pstats
 
 @bp.route("/canopy/<string:canopy>")
 def show_canopy(canopy: str):
-    profile = True
+    profile = False
     profiler = cProfile.Profile()
     if profile:
         profiler.enable()
