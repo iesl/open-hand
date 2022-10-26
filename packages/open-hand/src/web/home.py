@@ -22,6 +22,15 @@ from flask import render_template
 
 bp = Blueprint("app", __name__, template_folder="templates")
 
+@bp.app_template_filter("openreview_author_url")
+def openreview_author_url(author_id: Optional[AuthorID]):
+    if not author_id:
+        return "#"
+    if is_tildeid(author_id):
+        return f"https://openreview.net/profile?id={author_id}"
+    if is_valid_email(author_id):
+        return f"https://openreview.net/profile?email={author_id}"
+    return "#"
 
 @bp.app_template_filter("author_id_prefix")
 def author_id_prefix(author_id: Optional[AuthorID]):
