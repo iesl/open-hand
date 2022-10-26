@@ -36,15 +36,21 @@ def populate_shadowdb_from_notes(slice: Optional[Slice]):
     queryAPI = getShadowDB()
     min_num, max_num = queryAPI.get_note_number_range()
 
-    print(f"Recorded note numbers range from {min_num}-{max_num}")
+    print(f"Existing note numbers in shadow DB range from {min_num}-{max_num}")
 
     skipped = 0
+    total = 0
     for note in fetch_notes_for_dblp_rec_invitation(slice=slice, newestFirst=False):
+        if total % 1000 == 0:
+            print(f"processed {total} records")
+
         if note.number and note.number <= max_num:
             skipped += 1
             continue
 
         shadow_note(note, level=0)
+        total += 1
+
 
     print(f"Skipped {skipped} records")
 
@@ -107,8 +113,10 @@ def shadow_profile_greedy(profile: Profile, *, alias: Optional[str] = None, leve
 def shadow_note(note: Note, *, level: int):
     """Shadow an openreview note as a PaperRec"""
 
+    verbose = False
     queryAPI = getShadowDB()
-    putstr(f"+ Note: {note.id}, authors: {note.content.authors}", level)
+    if verbose:
+        putstr(f"+ Note: {note.id}, authors: {note.content.authors}", level)
 
     if len(note.content.authors) == 0:
         putstr(f"+ Skipping {note.id}, no authors found", level)
@@ -121,14 +129,16 @@ def shadow_note(note: Note, *, level: int):
 
     for paperRec in mentions.get_papers():
         for author in paperRec.authors:
-            putstr(f"  - {author.author_name}; {author.id}", level)
+            if verbose:
+                putstr(f"  - {author.author_name}; {author.id}", level)
             if author.id is None:
                 continue
 
             is_valid_id = is_tildeid(author.id) or is_valid_email(author.id)
 
             if not is_valid_id:
-                putstr(f"no profile for author {author.author_name}, id={author.id}", level)
+                if verbose:
+                    putstr(f"no profile for author {author.author_name}, id={author.id}", level)
                 continue
 
             ## Insert singleton equivalence, to be joined later
