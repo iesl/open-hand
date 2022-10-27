@@ -10,7 +10,7 @@ from flask import (
     url_for,
     # request, url_for, flash, g, redirect,
 )
-from lib.predef.typedefs import AuthorID
+from lib.predef.typedefs import AuthorID, AuthorQueryID
 from lib.predef.utils import is_valid_email
 from lib.shadowdb.data import MentionRecords
 
@@ -22,15 +22,38 @@ from flask import render_template
 
 bp = Blueprint("app", __name__, template_folder="templates")
 
-@bp.app_template_filter("openreview_author_url")
-def openreview_author_url(author_id: Optional[AuthorID]):
+from urllib.parse import (
+    parse_qs,
+    urlparse
+)
+
+@bp.app_template_filter("openreview_author_url_title")
+def openreview_author_url_title(author_id: AuthorQueryID) -> str:
+    if author_id.startswith("http"):
+        try:
+            p = urlparse(author_id)
+            qdict = parse_qs(p.query)
+            querystr = qdict["q"][0]
+            if querystr and querystr.startswith("author"):
+                return f"dblp?{querystr[7:-2]}"
+            return "dblp?err"
+        except:
+            return "dblp?err"
+
+    return author_id
+
+
+@bp.app_template_filter("openreview_author_url_href")
+def openreview_author_url_href(author_id: Optional[AuthorID]):
     if not author_id:
-        return "#"
+        return ""
+    if author_id.startswith("http"):
+        return author_id
     if is_tildeid(author_id):
         return f"https://openreview.net/profile?id={author_id}"
     if is_valid_email(author_id):
         return f"https://openreview.net/profile?email={author_id}"
-    return "#"
+    return ""
 
 @bp.app_template_filter("author_id_prefix")
 def author_id_prefix(author_id: Optional[AuthorID]):

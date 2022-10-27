@@ -22,8 +22,9 @@
     </div>
     <div class="usernames">
       {% for username in usernames %}
-      {% set openreview_author_page = username | openreview_author_url %}
-      <span><a href="{{openreview_author_page}}">{{username}}</a>;&nbsp;</span>
+      {% set openreview_author_href = username | openreview_author_url_href %}
+      {% set openreview_author_title = username | openreview_author_url_title %}
+      <span><a target="_blank" href="{{openreview_author_href}}">{{openreview_author_title}}</a>;&nbsp;</span>
       {% endfor %}
     </div>
   </div>

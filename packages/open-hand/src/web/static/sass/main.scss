@@ -23,8 +23,8 @@
   @if $offset-right { right: $offset-right; }
 }
 
-$cluster_bg:  cornsilk;
-$mention_bg:  cyan;
+$cluster_bg:  cyan;
+$mention_bg:  cornsilk;
 $profile_bg:  whitesmoke;
 
 .fixed-header, .fixed-footer {
