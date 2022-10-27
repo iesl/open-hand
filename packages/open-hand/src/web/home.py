@@ -35,7 +35,7 @@ def openreview_author_url_title(author_id: AuthorQueryID) -> str:
             qdict = parse_qs(p.query)
             querystr = qdict["q"][0]
             if querystr and querystr.startswith("author"):
-                return f"dblp?{querystr[7:-2]}"
+                return f"dblp?{querystr[7:-1]}"
             return "dblp?err"
         except:
             return "dblp?err"
