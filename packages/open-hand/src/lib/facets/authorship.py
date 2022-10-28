@@ -235,7 +235,7 @@ def fetch_openreview_author_catalog(authorId: AuthorID) -> Optional[AuthorCatalo
     usernames = [name.username for name in open_profile.content.names if name.username is not None]
     usernames.append(open_profile.id)
     usernames = ListOps.uniq(usernames)
-    notes = list(fetch_notes_for_author(open_profile.id))
+    notes = list(fetch_notes_for_author(open_profile.id, invitation="dblp.org/-/record"))
     author_mentions = MentionRecords(papers=dict(), signatures=dict())
     for note in notes:
         note_mention = mention_records_from_note(note)
