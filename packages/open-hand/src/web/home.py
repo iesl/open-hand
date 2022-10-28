@@ -128,3 +128,7 @@ def show_canopy(canopy: str):
         logger.info(f"Writing stats to {stats_file}")
         stats.dump_stats(stats_file)
     return render_template("canopy.html", canopy=canopy, catalog_group=catalog_group)
+
+@bp.route("/stats-overview")
+def stats_overview():
+    return render_template("stats-overview.html")
