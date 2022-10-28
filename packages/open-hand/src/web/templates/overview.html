@@ -1,10 +1,180 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    <h1 class='blue'>{% block title %} Overview {% endblock %}</h1>
+    <h4 class='blue'>{% block title %} Overview {% endblock %}</h4>
 {% endblock %}
 
 {% block content %}
-    <p> {{stats}} </p>
+
+    <div class="overview-section">
+        <h2 class="sub-header"> Overview </h2>
+        <div class="statistics">
+            <p class="statistic">
+                <span class="label">Total canopies <span class="label-helper">([first_initial] [last_name] e.g. "a mccallum")</span></span>
+                <span class="value">{{stats['n_canopies']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Total papers</span> <span class="value">{{stats['n_papers']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Total signatures</span> <span class="value">{{stats['n_signatures']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Total signatures with OpenReview Profiles</span> <span class="value">{{stats['n_sigs_w_profile']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Total signatures <span style="color:darkred">without</span> OpenReview Profiles</span> <span class="value">{{stats['n_sigs_wo_profile']}}</span>
+            </p>
+
+            <hr class="statistics-separator">
+
+            <p class="statistic">
+                <span class="label">Total authors</span> <span class="value">{{stats['n_authors']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Total authors with OpenReview Profiles</span> <span class="value">{{stats['n_authors_w_profile']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Total unique author names</span> <span class="value">{{stats['n_unique_author_names']}}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="overview-section">
+        <h2 class="sub-header"> Signatures by canopy </h2>
+        <div class="statistics">
+            <p class="statistic">
+                <span class="label">Minimum signature count</span> <span class="value">{{stats['min_sigs_by_canopy']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Maximum signature count</span> <span class="value">{{stats['max_sigs_by_canopy']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Mean signature count</span> <span class="value">{{stats['mean_sigs_by_canopy']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Median signature count</span> <span class="value">{{stats['median_sigs_by_canopy']}}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="overview-section">
+        <h2 class="sub-header"> OpenReview profiles by canopy </h2>
+        <div class="statistics">
+            <p class="statistic">
+                <span class="label">Minimum profile count</span> <span class="value">{{stats['min_profiles_by_canopy']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Maximum profile count</span> <span class="value">{{stats['max_profiles_by_canopy']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Mean profile count</span> <span class="value">{{stats['mean_profiles_by_canopy']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Median profile count</span> <span class="value">{{stats['median_profiles_by_canopy']}}</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="overview-section">
+        <h2 class="sub-header"> Predicted clustering </h2>
+        <div class="statistics">
+            <p class="statistic">
+                <span class="label">Number of gold clusters</span> <span class="value">{{stats['n_gold_clusters']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Number of canopies <span class="label-helper">(baseline)</span> </span> <span class="value">{{stats['n_canopies']}}</span>
+            </p>
+            <p class="statistic">
+                <span class="label">Number of predicted clusters</span> <span class="value">{{stats['n_pred_clusters']}}</span>
+            </p>
+
+            <h3 class="sub-header" style="margin-top: 35px"> Baseline (using canopies as clusters) </h3>
+            <div class="statistics">
+                <p class="statistic">
+                    <span class="label">Adjusted Rand Index (ARI)</span> <span class="value">{{stats['bl_ari']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">Normalized Mutual Information (NMI)</span> <span class="value">{{stats['bl_nmi']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">Average of ARI and NMI </span> <span class="value">{{stats['bl_ari_nmi_avg']}}</span>
+                </p>
+                <hr class="statistics-separator">
+                <p class="statistic">
+                    <span class="label">B<sup>3</sup> Precision </span> <span class="value">{{stats['bl_b3_precision']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">B<sup>3</sup> Recall </span> <span class="value">{{stats['bl_b3_recall']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">B<sup>3</sup> F1 Score </span> <span class="value">{{stats['bl_b3_f1']}}</span>
+                </p>
+            </div>
+
+            <h3 class="sub-header" style="margin-top: 35px"> S2AND Clustering </h3>
+            <div class="statistics">
+                <p class="statistic">
+                    <span class="label">Adjusted Rand Index (ARI)</span> <span class="value">{{stats['ari']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">Normalized Mutual Information (NMI)</span> <span class="value">{{stats['nmi']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">Average of ARI and NMI </span> <span class="value">{{stats['ari_nmi_avg']}}</span>
+                </p>
+                <hr class="statistics-separator">
+                <p class="statistic">
+                    <span class="label">B<sup>3</sup> Precision </span> <span class="value">{{stats['b3_precision']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">B<sup>3</sup> Recall </span> <span class="value">{{stats['b3_recall']}}</span>
+                </p>
+                <p class="statistic">
+                    <span class="label">B<sup>3</sup> F1 Score </span> <span class="value">{{stats['b3_f1']}}</span>
+                </p>
+
+                <h4 class="sub-header" style="margin-top: 35px"> Split gold clusters </h4>
+                <div class="statistics">
+                    <p class="statistic">
+                        <span class="label">Total clusters split </span> <span class="value">{{stats['n_split_gold_clusters']}}</span>
+                    </p>
+                    <p class="statistic">
+                        <span class="label"> Maximum splits </span> <span class="value">{{stats['max_splits_per_gold_cluster']}}</span>
+                    </p>
+                    <p class="statistic">
+                        <span class="label">Mean splits </span> <span class="value">{{stats['mean_splits_per_gold_cluster']}}</span>
+                    </p>
+                </div>
+
+                <h4 class="sub-header" style="margin-top: 35px"> Over-merged gold clusters per predicted cluster </h4>
+                <div class="statistics">
+                    <p class="statistic">
+                        <span class="label">Total over-merged predicted clusters </span> <span class="value">{{stats['n_overmerged_pred_clusters']}}</span>
+                    </p>
+                    <p class="statistic">
+                        <span class="label">Maximum merged per predicted cluster </span> <span class="value">{{stats['max_merged_per_pred_cluster']}}</span>
+                    </p>
+                    <p class="statistic">
+                        <span class="label"> Mean merged per predicted cluster </span> <span class="value">{{stats['mean_merged_per_pred_cluster']}}</span>
+                    </p>
+                </div>
+
+                <h4 class="sub-header" style="margin-top: 35px"> Suggested links to profiles </h4>
+                <div class="statistics">
+                    <p class="statistic">
+                        <span class="label"> Total unlinked signatures with predicted links </span> <span class="value">{{stats['n_predicted_links']}}</span>
+                    </p>
+                </div>
+
+                <h4 class="sub-header" style="margin-top: 35px"> New (unregistered) authors found </h4>
+                <div class="statistics">
+                    <p class="statistic">
+                        <span class="label">Total </span> <span class="value">{{stats['n_new_profiles_found']}}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
