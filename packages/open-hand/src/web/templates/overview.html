@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1 class='blue'>{% block title %} Overview {% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <p> {{stats}} </p>
+
+{% endblock %}

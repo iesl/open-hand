@@ -1,6 +1,19 @@
+import base64
+from io import BytesIO
+from collections import defaultdict
+
 from lib.facets.authorship import  createCatalogGroupForCanopy
 from lib.open_exchange.utils import is_tildeid
 from lib.predef.log import logger
+
+from lib.open_exchange.open_fetch import (
+    fetch_profile,
+)
+import numpy as np
+from sklearn.metrics.cluster import adjusted_rand_score, normalized_mutual_info_score
+import matplotlib.pyplot as plt
+
+from s2and.eval import b3_precision_recall_fscore
 
 from typing import List, Optional
 from flask import (
@@ -129,6 +142,11 @@ def show_canopy(canopy: str):
         stats.dump_stats(stats_file)
     return render_template("canopy.html", canopy=canopy, catalog_group=catalog_group)
 
-@bp.route("/stats-overview")
-def stats_overview():
-    return render_template("stats-overview.html")
+import json
+
+@bp.route("/overview")
+def show_overview():
+    stats = {}
+    with open('web/static/data/stats.json', mode="r", encoding="utf-8") as f:
+        stats = json.load(f)
+    return render_template("overview.html", stats=stats)

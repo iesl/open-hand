@@ -6,6 +6,7 @@ from .cli_base import cli
 
 from lib.s2andx.model import load_model
 from lib.s2andx.predict import dopredict, predict_all
+from lib.facets.overview_stats import show_overview
 
 
 @cli.command()
@@ -35,3 +36,10 @@ def predict(canopy: str, commit: bool, profile: bool, use_name_dicts: bool, all:
         print(f"Mentions for cluster {cluster.cluster_id}")
         displayMentionsInClusters(cluster.mentions)
         print("")
+
+
+@cli.command()
+@click.option("--count", type=int, default=1000)
+def overview(count: int):
+    print(f"Computing overview for {count} canopies")
+    show_overview(count)

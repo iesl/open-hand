@@ -115,7 +115,7 @@ def fetch_notes_for_dblp_rec_invitation(*, slice: Optional[Slice], newestFirst: 
     return _fetch_notes(slice=slice, invitation="dblp.org/-/record", sort=sort)
 
 
-def fetch_notes_for_author(authorid: str, invitation: Optional[str]) -> Iterator[Note]:
+def fetch_notes_for_author(authorid: str, invitation: Optional[str] = None) -> Iterator[Note]:
     if invitation:
         return _fetch_notes(slice=None, invitation=invitation, **{"content.authorids": authorid})
     return _fetch_notes(slice=None, **{"content.authorids": authorid})
