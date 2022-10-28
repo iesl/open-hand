@@ -88,7 +88,8 @@ class CatalogGroup:
     def get_aggregate_authorship(self, catalog: AuthorCatalog) -> AggregateAuthorship:
         entries: Dict[SignatureID, CatalogEntry] = {}
         primary_catalog = catalog.id
-        other_catalogs = [c for c in self.catalogs.values() if c.id != primary_catalog]
+        other_catalogs = [c for c in self.catalogs.values() if
+                          c.id != primary_catalog and c.type == "OpenReviewProfile"]
         name_variants: Set[str] = catalog.name_variants
 
         for signed_paper in catalog.signed_papers.values():
