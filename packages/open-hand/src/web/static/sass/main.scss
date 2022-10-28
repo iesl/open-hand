@@ -142,3 +142,39 @@ a:active {
 .navlink {
   margin-right: 30px;
 }
+
+.overview-section {
+  padding: 0 0 0 50px;
+}
+
+.statistics {
+  padding: 0 0 0 35px;
+}
+
+.statistic {
+  border: 1px solid #ccc;
+  padding: 5px;
+  width: 500px;
+}
+
+.statistic .label {
+  font-weight: bold;
+  //text-transform: uppercase;
+}
+
+.statistic .label-helper {
+  text-transform: none;
+  font-size: 11px;
+  color: #666;
+  font-weight: normal;
+}
+
+.statistic .value {
+  float: right;
+}
+
+.sub-header {
+  border-bottom: 1px solid black;
+  width: 800px;
+  margin-bottom: 37px;
+}
